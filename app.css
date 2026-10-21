@@ -1,0 +1,199 @@
+/* 牧羊人的视觉：和小月亮、家庭学堂同一套组件，换一身草场的颜色——米白底、深青墨色、橄榄绿强调、衬线标题。
+   小月亮是灰白底 + 蜂蜜黄，学堂是浅蓝底 + 海军蓝；三个站并排打开一眼能分清。对比度：墨色/米白 ≈ 14:1，橄榄绿/白 ≈ 5:1。 */
+:root{
+  --bg:#F4F2EA; --surface:#FFFFFF; --field:#F8F7F1; --ink:#1F2A1B; --muted:#5E6B58; --line:#DDD9C8;
+  --slate:#4C7A3F; --slate-soft:#E3EEDC; --hero-a:#3F6B34; --hero-b:#7FA86A; --honey:#D9A441; --honey-soft:#FBF0D3;
+  --sage:#3F8664; --sage-soft:#DFF0E6; --rose:#B44B60; --rose-soft:#FBE6EA; --sky:#5F95CC;
+  --radius-lg:22px; --radius:12px; --radius-sm:8px;
+  --f-body:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --f-head:"Lora","Noto Serif SC","Songti SC","STSong","SimSun",Georgia,serif;
+  --f-num:"Outfit","Noto Sans SC",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#111810; --surface:#1A2318; --field:#1F2A1C; --ink:#E8EEE2; --muted:#A3B09A; --line:#2C392A;
+  --slate:#9CC98A; --slate-soft:#243521; --hero-a:#2C4A26; --hero-b:#466E3C; --honey:#F0C75A; --honey-soft:#3A321E;
+  --sage:#7EBC98; --sage-soft:#1E3328; --rose:#E58A9C; --rose-soft:#3A2228; --sky:#8DB8E4;
+}}
+:root[data-theme="dark"]{
+  --bg:#111810; --surface:#1A2318; --field:#1F2A1C; --ink:#E8EEE2; --muted:#A3B09A; --line:#2C392A;
+  --slate:#9CC98A; --slate-soft:#243521; --hero-a:#2C4A26; --hero-b:#466E3C; --honey:#F0C75A; --honey-soft:#3A321E;
+  --sage:#7EBC98; --sage-soft:#1E3328; --rose:#E58A9C; --rose-soft:#3A2228; --sky:#8DB8E4;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--slate);outline-offset:2px;border-radius:6px}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 120px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 8px}
+.brand{display:flex;flex-direction:column;position:relative}
+.brand > span{font-size:13px;color:var(--muted)}
+.brand-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bname{font-family:var(--f-head);font-weight:700;font-size:21px;letter-spacing:.01em;min-height:28px}
+.hdr{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none;padding-top:4px}
+.apps{display:inline-flex;gap:4px}
+.apps .badge{text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap}
+.badge{border:1px solid var(--line);background:var(--slate-soft);color:var(--slate);border-radius:999px;padding:2px 9px;font-size:12px;line-height:18px;cursor:pointer;min-height:24px}
+.badge:hover{background:var(--slate);color:#fff}
+.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;min-width:44px;height:44px;padding:0 14px;cursor:pointer;font-size:14px}
+.iconbtn.ok{color:var(--sage);border-color:var(--sage);font-weight:700}
+.status{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--muted)}
+.dot.ok{background:var(--sage)}
+h2{font-family:var(--f-head);font-size:19px;font-weight:700;margin:28px 0 10px;letter-spacing:.01em}
+h3{font-family:var(--f-head);font-size:16px;font-weight:700;margin:0 0 6px}
+p{margin:0 0 8px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+a{color:var(--slate)}
+
+/* “我的”页的入口列表 */
+.mlist{padding:4px 6px}
+.mrow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:10px 10px;border-radius:var(--radius-sm);color:var(--ink);border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mrow:hover{background:var(--bg)}
+.mrow:focus-visible{outline:3px solid var(--slate);outline-offset:-3px}
+.mrow .mi{flex:none;width:34px;height:34px;border-radius:10px;background:var(--slate-soft);color:var(--slate);display:inline-flex;align-items:center;justify-content:center;font-size:16px}
+.mrow .mt{flex:1;min-width:0;display:flex;flex-direction:column}
+.mrow .mt b{font-size:16px;font-weight:600}
+.mrow .mt small{font-size:12.5px;color:var(--muted);line-height:1.4}
+.mrow .mch{color:var(--muted);font-size:18px}
+
+/* 今天页头：橄榄绿渐变 + 白字；右上角一轮淡淡的太阳 */
+.hero{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:#fff;border-radius:var(--radius-lg);padding:22px 22px 18px;margin-top:8px;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(63,107,52,.18)}
+.hero .lbl{font-size:15px;font-weight:500;opacity:.9}
+.hero .big{font-family:var(--f-head);font-weight:700;font-size:clamp(26px,7vw,40px);line-height:1.2;letter-spacing:0;margin:6px 0 10px}
+.hero .meta{font-size:14px;display:flex;flex-wrap:wrap;gap:6px 16px;opacity:.92}
+.hero .moon{position:absolute;right:-26px;top:-34px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(255,255,255,.28),rgba(255,255,255,.06) 60%,transparent 72%);pointer-events:none}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.panel + .panel{margin-top:10px}
+.panel.done{border-color:var(--sage)}
+.panel .row{display:flex;gap:10px;align-items:center}
+.panel .row .v{flex:1;min-width:0}
+.empty{padding:28px 8px;text-align:center;color:var(--muted)}
+.empty button{margin-top:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer;min-height:36px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+ul.plain{margin:6px 0 0;padding-left:18px}
+ul.plain li{margin:4px 0}
+.scroll-x{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:13px}
+code{font-size:13px;background:var(--slate-soft);padding:1px 5px;border-radius:4px}
+.pill{font-size:12px;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.pill.ok{background:var(--sage-soft);color:var(--sage)}
+.pill.cat{background:var(--slate-soft);color:var(--slate)}
+.medrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.medrow:last-child{border-bottom:0}
+
+/* bottom nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
+nav.tabs .in{max-width:720px;margin:0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+nav.tabs button{background:none;border:0;padding:8px 0 10px;min-height:56px;cursor:pointer;font-size:12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.tabs button i{font-style:normal;font-size:20px}
+nav.tabs button[aria-current="page"]{color:var(--slate);font-weight:700}
+nav.tabs button[aria-current="page"] i{transform:translateY(-1px)}
+
+/* sheet → full-screen page in normal flow（nothing floats over iOS toolbars） */
+dialog.sheet{position:static;display:none;inset:auto;transform:none;margin:0 auto;width:100%;max-width:720px;max-height:none;overflow:visible;border:0;padding:0;background:var(--bg);color:var(--ink)}
+dialog.sheet[open]{display:block}
+body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
+.sheet-in{padding:0 16px calc(140px + env(safe-area-inset-bottom,0px));overflow:visible}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 -16px 8px;padding:12px 16px 10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:3;background:var(--bg);border-bottom:1px solid var(--line)}
+.sheet-head h3{font-size:19px;margin:0}
+.field{margin:12px 0}
+.field > label,.field > .lab{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
+.field input[type=text],.field input[type=password],.field input[type=number],.field input[type=date],.field input[type=time],.field textarea,.field select{width:100%;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:11px 12px;font-size:16px;min-height:46px}
+.field textarea{min-height:70px;resize:vertical}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-sm);padding:9px 12px;cursor:pointer;min-height:42px;font-size:15px}
+.seg button[aria-pressed="true"]{background:var(--slate);border-color:var(--slate);color:#fff}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#131921}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#131921}}
+.seg.mini{gap:4px}
+.seg.mini button{padding:5px 10px;min-height:34px;font-size:13px;border-radius:999px}
+.btns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:11px 18px;cursor:pointer;font-weight:500;min-height:46px}
+.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink);flex:1}
+.btn.danger{color:var(--rose);border-color:var(--rose)}
+.check{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.check input{width:20px;height:20px}
+
+/* 习惯行：图标 + 名字和状态 + 操作 */
+.habit{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.habit:last-child{border-bottom:0}
+.habit .hi{width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:18px}
+.habit .main{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0}
+.habit .main:focus-visible{outline:3px solid var(--slate);outline-offset:2px;border-radius:6px}
+.habit .title{font-size:15px;font-weight:500}
+.habit .meta{font-size:12.5px;color:var(--muted);line-height:1.4}
+.habit.done .title{color:var(--muted)}
+.habit .acts{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.habit .acts .iconbtn{min-width:40px;height:40px;padding:0;font-size:16px}
+.habit .chip[aria-pressed="true"]{background:var(--sage-soft);color:var(--sage);border-color:var(--sage)}
+.slots{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.slot{display:inline-flex;gap:4px;align-items:center}
+.slot .chip{padding:4px 10px;min-height:32px;font-size:13px}
+@media (max-width:420px){.habit{grid-template-columns:36px 1fr;}.habit .acts{grid-column:2;justify-content:flex-start}.slots{align-items:flex-start}}
+
+/* 经文正文 */
+.passage{margin-top:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--field);max-height:60vh;overflow:auto;font-size:16px;line-height:1.8}
+.passage .verse{margin:0 0 4px;text-indent:0}
+.passage .verse sup{font-family:var(--f-num);color:var(--muted);font-size:11px;margin-right:4px}
+.passage .verse .en{display:block;font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:6px}
+
+/* 祷告清单 */
+.pray{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.pray:last-child{border-bottom:0}
+.pray .main{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0}
+.pray .main:focus-visible{outline:3px solid var(--slate);outline-offset:2px;border-radius:6px}
+.pray .title{font-size:15px;white-space:pre-wrap}
+.pray .meta{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:2px}
+.pray.done .title{color:var(--muted)}
+.pray .acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:420px){.pray{grid-template-columns:1fr}.pray .acts{justify-content:flex-start}}
+
+/* 家人 */
+.fam{padding:6px 0;border-bottom:1px solid var(--line)}
+.fam:last-child{border-bottom:0}
+.fam-items{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.fam-item{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px}
+.fam-item.done{background:var(--sage-soft);border-color:var(--sage-soft)}
+
+/* 回顾：方块 + 格子 */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.stat{background:var(--surface);padding:12px 14px}
+@media (min-width:600px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat .v{font-family:var(--f-num);font-weight:600;font-size:26px;line-height:1.1}
+.stat .v small{font-size:14px;font-weight:400;color:var(--muted);margin-left:2px}
+.stat .k{font-size:13px;color:var(--muted)}
+.stats.tiles{margin-top:12px}
+.stat.tile{all:unset;box-sizing:border-box;cursor:pointer;background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px;text-align:left}
+.stat.tile:focus-visible{outline:3px solid var(--slate);outline-offset:-3px}
+.stat.tile.sel{box-shadow:inset 0 0 0 2px var(--slate)}
+.stat .d{font-size:12px}
+.stat .d.good{color:var(--sage)}
+.stat .d.bad{color:var(--rose)}
+svg text{font-family:var(--f-num);font-size:11px;fill:var(--muted)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px;background:var(--c)}
+.grid28{display:flex;flex-direction:column;gap:6px}
+.grow{display:grid;grid-template-columns:minmax(80px,30%) 1fr;gap:8px;align-items:center}
+.grow .gl{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grow .gc{display:grid;grid-template-columns:repeat(28,1fr);gap:2px}
+.grow .c{display:block;aspect-ratio:1;border-radius:2px;background:var(--line)}
+.grow .c.ok{background:var(--sage)}
+.grow .c.half{background:var(--honey)}
+.grow .c.no{background:var(--rose-soft)}
+.grow .c.none{background:var(--line);opacity:.5}
+
+.toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
