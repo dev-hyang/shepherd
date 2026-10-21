@@ -1,6 +1,6 @@
 import { myName } from "./core/auth.js";
 import { SISTER_APPS, THIS_APP } from "./core/config.js";
-import { locale, t } from "./core/i18n.js";
+import { LOCALES, locale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { $, esc } from "./core/util.js";
 import { WEEKDAY } from "./data/kinds.js";
@@ -17,6 +17,19 @@ const VIEWS = { today: viewToday, prayer: viewPrayer, review: viewReview, me: vi
 // 组件放在 home-pantry/shared；首次离线加载不到时，先用原来的 ‹ 上一个 / 下一个 › 胶囊，切换不受影响。
 const SWITCHER_URL = "https://dev-hyang.github.io/home-pantry/shared/app-switcher.js";
 let switcherMod = null, switcherTried = false;
+// 语言切换（四个姊妹站点共用）：地球按钮 + 列表，以后加语言只要在 LOCALES 里加一项
+const LANG_URL = "https://dev-hyang.github.io/home-pantry/shared/lang-switcher.js";
+let langMod = null, langTried = false;
+function renderLangSwitch(){
+  const host = $("#langsw"); if (!host) return;
+  if (langMod) {
+    const cur = locale();
+    langMod.mountLangSwitcher({ host, current: cur, ui: cur === "en" ? "en" : cur === "zh-TW" ? "tw" : "zh", languages: LOCALES.map(([code]) => ({ code })),
+      onSelect: code => document.dispatchEvent(new CustomEvent("eco-set-lang", { detail: code })) });
+    return;
+  }
+  if (!langTried) { langTried = true; import(LANG_URL).then(m => { langMod = m; renderLangSwitch(); }).catch(() => {}); }
+}
 function renderAppSwitch(){
   const host = $("#apps");
   if (switcherMod) { switcherMod.mountAppSwitcher({ host, current: THIS_APP, lang: locale() }); return; }
@@ -34,6 +47,7 @@ function renderStatus(){
   const d = new Date();
   $("#bsub").textContent = S.cloud === "ready" ? `${esc(myName())} · ${S.day.slice(5).replace("-", "/")} ${t("周{d}", { d: t(WEEKDAY[d.getDay()]) })}` : t("身心灵记录");
   renderAppSwitch();
+  renderLangSwitch();
   document.querySelectorAll("nav.tabs button").forEach(b => { const k = TAB_LABELS[b.dataset.tab]; if (!k) return; const txt = [...b.childNodes].find(x => x.nodeType === 3); if (txt) txt.nodeValue = t(k); else b.append(t(k)); });
 }
 function render(){

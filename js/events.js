@@ -118,3 +118,6 @@ document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible" && S.cloud === "ready" && S.wb.loaded && !$("#sheet").open) { await wb.loadAll(); render(); }
 });
 export { showSheet, head, kindOf, RATINGS };
+
+// 顶栏语言切换器（共用组件）选了语言：和设置里一样，记在本机，登录后也记到账号设置
+document.addEventListener("eco-set-lang", e => { setLocale(e.detail); render(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: e.detail }).catch(() => {}); });

@@ -197,4 +197,4 @@ svg text{font-family:var(--f-num);font-size:11px;fill:var(--muted)}
 .toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-.hdr .apps{margin:-4px -6px -2px 0}   /* 44px 的触控区，顶栏保持紧凑 */
+.hdr-tools{display:inline-flex;align-items:center;gap:2px;margin:-4px -6px -2px 0}   /* 语言、应用两个 44px 触控按钮并排，顶栏保持紧凑 */
