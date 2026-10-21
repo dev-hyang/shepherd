@@ -16,6 +16,7 @@ const KINDS = {
   sleep:      { label: "睡眠",     icon: "🌙", color: "#4F8FA8", mode: "value", unit: "小时" },
   med:        { label: "用药",     icon: "💊", color: "#B44B60", mode: "slots" },
   supplement: { label: "保健品",   icon: "🌿", color: "#3F8664", mode: "slots" },
+  focus:      { label: "专注",     icon: "🍅", color: "#C25450", mode: "minutes" },   // 由专注计时器自动记录，一段一条
   custom:     { label: "自定义",   icon: "✦",  color: "#8A6FB0", mode: "check" }
 };
 const kindOf = p => KINDS[p && p.kind] || KINDS.custom;
@@ -34,7 +35,8 @@ const TEMPLATE = [
   { kind: "prayer",     name: "", schedule: { days: ALL_DAYS, times: ["07:15", "21:30"], remind: true }, target: { per: "day", count: 1 } },
   { kind: "exercise",   name: "", schedule: { days: [1, 3, 5], times: ["18:00"], remind: true }, target: { per: "week", count: 3, minutes: 30 } },
   { kind: "screen",     name: "", schedule: { days: ALL_DAYS, times: ["21:00"], remind: true },  target: { per: "day", max: 120 } },
-  { kind: "diet",       name: "", schedule: { days: ALL_DAYS, times: ["20:30"], remind: false }, target: { per: "day" } }
+  { kind: "diet",       name: "", schedule: { days: ALL_DAYS, times: ["20:30"], remind: false }, target: { per: "day" } },
+  { kind: "focus",      name: "", schedule: { days: [1, 2, 3, 4, 5], times: [], remind: false }, target: { per: "day", count: 4 } }
 ];
 
 export { KINDS, kindOf, modeOf, ALL_DAYS, WEEKDAY, EXERCISE_TYPES, RATINGS, PRAYER_CATS, TEMPLATE };

@@ -16,6 +16,7 @@ function viewMe(){
   <div class="panel mlist">
     ${ready ? mrow('data-act="habits"', t("习惯与提醒"), t("读经、祷告、锻炼、饮食、屏幕……目标、日子、时间点、家人可见"), "✦") : ""}
     ${ready ? mrow('data-act="meds"', t("用药与保健品"), meds ? t("{n} 项 · 剂量、时间点、库存与补货提醒", { n: meds }) : t("剂量、时间点、库存与补货提醒"), "💊") : ""}
+    ${mrow('data-act="focus"', t("专注计时"), t("番茄工作法，每 20 分钟提醒看远处 20 秒护眼；完成的段自动记录"), "🍅")}
     ${ready ? mrow('data-act="plan"', t("读经计划"), t("一年通读、新约 90 天、诗篇箴言……或导入自己的；译本"), "📖") : ""}
     ${ready ? mrow('data-act="calendar"', t("日历订阅提醒"), t("把提醒放进手机日历，到点响铃"), "⏰") : ""}
     ${mrow('data-act="settings"', t("设置"), t("账号与家庭、语言、显示"), "⚙")}

@@ -26,6 +26,7 @@ function dayValue(p, day){
 function summarize(p, days){
   const mode = modeOf(p), vals = days.map(d => dayValue(p, d));
   const scheduled = days.filter(d => wb.scheduledOn(p, d)).length;
+  if (p.kind === "focus") { const segs = days.reduce((n, d) => n + wb.statusOf(p, d).sessions, 0), minutes = vals.reduce((n, v) => n + (v || 0), 0); return { main: segs, unit: "段", sub: t("{m} 分钟", { m: minutes }), minutes, sessions: segs }; }
   if (mode === "minutes") { const minutes = vals.reduce((s, v) => s + (v || 0), 0), sessions = days.filter(d => wb.statusOf(p, d).sessions).length; return { main: minutes, unit: "分钟", sub: t("{n} 次", { n: sessions }), minutes, sessions }; }
   if (mode === "value") { const vs = vals.filter(v => v != null); const avg = vs.length ? Math.round(vs.reduce((s, v) => s + v, 0) / vs.length * 10) / 10 : null; return { main: avg, unit: kindOf(p).unit, sub: t("{n} 天有记录", { n: vs.length }), lowerBetter: !!kindOf(p).lowerBetter }; }
   if (mode === "rating") { const vs = vals.filter(v => v != null); const good = vs.filter(v => v === 3).length; return { main: vs.length ? Math.round(good / vs.length * 100) : null, unit: "%", sub: t("{a}/{b} 天吃得好", { a: good, b: vs.length }) }; }

@@ -13,17 +13,17 @@
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const sb = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "", { auth: { persistSession: false } });
-const KIND_ICON: Record<string, string> = { scripture: "📖", prayer: "🕊", exercise: "🏃", diet: "🥗", screen: "📱", sleep: "🌙", med: "💊", supplement: "🌿", custom: "✦" };
+const KIND_ICON: Record<string, string> = { scripture: "📖", prayer: "🕊", exercise: "🏃", diet: "🥗", screen: "📱", sleep: "🌙", med: "💊", supplement: "🌿", focus: "🍅", custom: "✦" };
 const BYDAY = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 
 /* 三种语言的文字；名字留空的习惯按种类显示 */
 type Text = { cal: string; desc: string; kinds: Record<string, string>; dose: string; minutes: (m: number) => string; from: string; refill: string; left: (d: number, s: number, dose: string) => string };
 const TEXT: Record<string, Text> = {
-  "zh-CN": { cal: "牧羊人", desc: "牧羊人 · 身心灵记录的提醒", kinds: { scripture: "读经", prayer: "祷告", exercise: "锻炼", diet: "健康饮食", screen: "屏幕时长", sleep: "睡眠", med: "用药", supplement: "保健品", custom: "习惯" },
+  "zh-CN": { cal: "牧羊人", desc: "牧羊人 · 身心灵记录的提醒", kinds: { scripture: "读经", prayer: "祷告", exercise: "锻炼", diet: "健康饮食", screen: "屏幕时长", sleep: "睡眠", med: "用药", supplement: "保健品", focus: "专注", custom: "习惯" },
     dose: "剂量：", minutes: m => `约 ${m} 分钟`, from: "来自牧羊人", refill: "补货：", left: (d, s, dose) => `还剩约 ${d} 天的量（${s}${dose ? " × " + dose : ""}）` },
-  "zh-TW": { cal: "牧羊人", desc: "牧羊人 · 身心靈記錄的提醒", kinds: { scripture: "讀經", prayer: "禱告", exercise: "鍛鍊", diet: "健康飲食", screen: "螢幕時長", sleep: "睡眠", med: "用藥", supplement: "保健品", custom: "習慣" },
+  "zh-TW": { cal: "牧羊人", desc: "牧羊人 · 身心靈記錄的提醒", kinds: { scripture: "讀經", prayer: "禱告", exercise: "鍛鍊", diet: "健康飲食", screen: "螢幕時長", sleep: "睡眠", med: "用藥", supplement: "保健品", focus: "專注", custom: "習慣" },
     dose: "劑量：", minutes: m => `約 ${m} 分鐘`, from: "來自牧羊人", refill: "補貨：", left: (d, s, dose) => `還剩約 ${d} 天的量（${s}${dose ? " × " + dose : ""}）` },
-  "en": { cal: "Shepherd", desc: "Shepherd · body, mind & spirit reminders", kinds: { scripture: "Bible", prayer: "Prayer", exercise: "Exercise", diet: "Healthy eating", screen: "Screen time", sleep: "Sleep", med: "Medication", supplement: "Supplement", custom: "Habit" },
+  "en": { cal: "Shepherd", desc: "Shepherd · body, mind & spirit reminders", kinds: { scripture: "Bible", prayer: "Prayer", exercise: "Exercise", diet: "Healthy eating", screen: "Screen time", sleep: "Sleep", med: "Medication", supplement: "Supplement", focus: "Focus", custom: "Habit" },
     dose: "Dose: ", minutes: m => `about ${m} min`, from: "From Shepherd", refill: "Restock: ", left: (d, s, dose) => `About ${d} days left (${s}${dose ? " × " + dose : ""})` }
 };
 const textFor = (lang: unknown) => TEXT[typeof lang === "string" && lang in TEXT ? lang : "zh-CN"];

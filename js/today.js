@@ -54,7 +54,7 @@ async function loadPassage(item, zh, en){
 /* 今日习惯：每种打卡方式一行 */
 function habitsHTML(day, list){
   const rows = list.filter(p => p.kind !== "scripture");
-  if (!S.wb.practices.length) return `<h2>${t("今日习惯")}</h2><div class="panel"><div class="empty">${t("还没有习惯。")}<br>${t("一键起步会建立：读经、祷告、锻炼（每周 3 次）、屏幕时长、健康饮食，之后随时改。")}<br><button class="btn primary" data-act="template-apply">${t("一键起步")}</button> <button class="btn" data-act="habit-add">${t("自己添加")}</button></div></div>`;
+  if (!S.wb.practices.length) return `<h2>${t("今日习惯")}</h2><div class="panel"><div class="empty">${t("还没有习惯。")}<br>${t("一键起步会建立：读经、祷告、锻炼（每周 3 次）、屏幕时长、健康饮食、专注，之后随时改。")}<br><button class="btn primary" data-act="template-apply">${t("一键起步")}</button> <button class="btn" data-act="habit-add">${t("自己添加")}</button></div></div>`;
   const row = p => { const k = kindOf(p), st = wb.statusOf(p, day), tg = p.target || {}, sc = p.schedule || {};
     const times = sc.times && sc.times.length ? sc.times.join(" ") : "";
     let meta = "", acts = "";
@@ -63,6 +63,9 @@ function habitsHTML(day, list){
       case "count": meta = st.count ? t("今天 {n} 次", { n: st.count }) + (st.done ? " ✓" : "") : times;
         acts = `${st.count ? `<button class="chip" data-act="count-undo" data-pid="${esc(p.id)}">${t("撤销")}</button>` : ""}<button class="iconbtn ${st.done ? "ok" : ""}" data-act="count-add" data-pid="${esc(p.id)}" aria-label="${t("记一次")}">＋</button>`; break;
       case "minutes": { const wk = tg.per === "week" ? wb.weekOf(p, day) : null;
+        if (p.kind === "focus") { // 由计时器记录：一段一条；目标是每天几段
+          meta = `${t("今天 {n} 段 · {m} 分钟", { n: st.sessions, m: st.minutes })}${tg.count ? ` / ${t("{n} 段", { n: tg.count })}` : ""}${(tg.count ? st.sessions >= tg.count : st.sessions > 0) ? " ✓" : ""}`;
+          acts = `${st.sessions ? `<button class="chip" data-act="min-list" data-pid="${esc(p.id)}">${st.sessions}</button>` : ""}<button class="btn primary" style="flex:none;min-height:40px;padding:8px 16px" data-act="focus" data-pid="${esc(p.id)}">${t("开始")}</button>`; break; }
         meta = wk ? `${t("本周 {a}/{b} 次", { a: wk.sessions, b: wk.count || "–" })}${wk.minutesGoal ? ` · ${t("{a}/{b} 分钟", { a: wk.minutes, b: wk.minutesGoal })}` : ` · ${t("{m} 分钟", { m: wk.minutes })}`}${st.sessions ? " · " + t("今天 ✓") : ""}`
           : `${t("今天 {m} 分钟", { m: st.minutes })}${tg.minutes ? ` / ${tg.minutes}` : ""}${st.done ? " ✓" : ""}`;
         acts = `${st.sessions ? `<button class="chip" data-act="min-list" data-pid="${esc(p.id)}">${st.sessions}</button>` : ""}<button class="iconbtn ${st.done ? "ok" : ""}" data-act="min-add" data-pid="${esc(p.id)}" aria-label="${t("记一次")}">＋</button>`; break; }

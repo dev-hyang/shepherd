@@ -198,3 +198,21 @@ svg text{font-family:var(--f-num);font-size:11px;fill:var(--muted)}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .hdr-tools{display:inline-flex;align-items:center;gap:2px;margin:-4px -6px -2px 0}   /* 语言、应用两个 44px 触控按钮并排，顶栏保持紧凑 */
+
+/* 专注计时：圆环倒计时 + 护眼全屏浮层 */
+.fz{text-align:center;padding:8px 0 0}
+.fz-phase{font-size:14px;color:var(--muted);margin-bottom:6px}
+.fz-ring{position:relative;width:min(62vw,240px);margin:0 auto}
+.fz-ring svg{display:block}
+.fz-time{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(34px,10vw,48px);font-weight:600;letter-spacing:.02em}
+.fz .field input{text-align:center}
+.fz-row{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line)}
+.fz-row:last-of-type{border-bottom:0}
+.fz-row .lab{flex:0 0 44px;font-size:13px;color:var(--muted);padding-top:9px}
+.eye{position:fixed;inset:0;z-index:40;background:var(--hero-a);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+.eye-in{max-width:420px}
+.eye-icon{font-size:56px}
+.eye-title{font-family:var(--f-head);font-size:34px;font-weight:700;margin:8px 0 4px}
+.eye-sub{opacity:.9;font-size:15px}
+.eye-time{font-size:72px;font-weight:600;line-height:1.1;margin:16px 0}
+.eye .btn{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff}

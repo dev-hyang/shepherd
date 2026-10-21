@@ -6,6 +6,7 @@ import { $, esc, hm, toast } from "./core/util.js";
 import { EXERCISE_TYPES, PRAYER_CATS, RATINGS, kindOf } from "./data/kinds.js";
 import { parsePlan } from "./data/plans.js";
 import { openAbout } from "./about.js";
+import * as fz from "./focus.js";
 import { closeSheet, drawForm, getForm, head, openCalendar, openForm, openHabits, openInfo, openPlan, openPractice, openSettings, readForm, showSheet } from "./sheet.js";
 import { render } from "./views.js";
 import * as wb from "./wb.js";
@@ -89,6 +90,17 @@ document.addEventListener("click", async ev => {
       case "habit-restore": { const p = pidOf(d); if (p) { await wb.upsertPractice({ ...p, archived: false, active: true }); openHabits(); } break; }
       case "habit-share": { const p = pidOf(d); if (!p) break; if (p.share !== "family" && !S.family) { toast(t("先在设置里加入家庭")); break; }
         await wb.upsertPractice({ ...p, share: p.share === "family" ? "private" : "family" }); openHabits(); toast(p.share === "family" ? t("已收回，只有自己看得到") : t("家人现在能看到这项做了没有")); break; }
+
+      /* 专注计时 */
+      case "focus": fz.openFocus(d.pid || null); break;
+      case "fz-start": fz.start(); break;
+      case "fz-pause": fz.pause(); break;
+      case "fz-resume": fz.resume(); break;
+      case "fz-stop": await fz.stop(); break;
+      case "fz-skip": fz.skip(); break;
+      case "fz-reset": fz.reset(); break;
+      case "fz-cfg": await fz.setCfg({ [d.k]: d.v === "true" ? true : d.v === "false" ? false : +d.v }); fz.openFocus(); break;
+      case "fz-notify": await fz.askNotify(); break;
 
       /* 日历订阅 */
       case "calendar": openCalendar(); break;

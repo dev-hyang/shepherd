@@ -83,6 +83,7 @@ function practiceFields(){
     { k: "per", label: "目标按", type: "seg", opts: [["day", "每天"], ["week", "每周"]], when: is("exercise", "custom") },
     { k: "count", label: "每周几次", type: "num", ph: "3", when: d => d.per === "week" && ["exercise", "custom"].includes(d.kind) },
     { k: "count", label: "每天几次", type: "num", ph: "1", when: is("prayer") },
+    { k: "count", label: "每天几段（专注计时器自动记录，这里只是目标）", type: "num", ph: "4", when: is("focus") },
     { k: "minutes", label: "每次多少分钟（可空）", type: "num", ph: "30", when: is("exercise", "custom") },
     { k: "max", label: "每天最多多少分钟", type: "num", ph: "120", when: is("screen") },
     { k: "min", label: "希望每晚睡几小时", type: "num", ph: "7", step: 0.5, when: is("sleep") },
@@ -125,7 +126,7 @@ function openHabits(filter){
   const all = S.wb.practices, f = S.habitsFilter;
   const list = all.filter(p => f === "meds" ? ["med", "supplement"].includes(p.kind) : f === "archived" ? p.archived : !p.archived);
   const row = p => { const k = kindOf(p), tg = p.target || {}, sc = p.schedule || {}, m = p.meta || {};
-    const goal = modeOf(p) === "minutes" ? (tg.per === "week" ? t("每周 {n} 次 · 每次 {m} 分钟", { n: tg.count || 1, m: tg.minutes || "–" }) : t("每天 {m} 分钟", { m: tg.minutes || "–" }))
+    const goal = p.kind === "focus" ? t("每天 {n} 段", { n: tg.count || "–" }) : modeOf(p) === "minutes" ? (tg.per === "week" ? t("每周 {n} 次 · 每次 {m} 分钟", { n: tg.count || 1, m: tg.minutes || "–" }) : t("每天 {m} 分钟", { m: tg.minutes || "–" }))
       : p.kind === "screen" ? t("每天不超过 {m} 分钟", { m: tg.max || "–" }) : p.kind === "sleep" ? t("每晚 {h} 小时", { h: tg.min || "–" }) : p.kind === "prayer" ? t("每天 {n} 次", { n: tg.count || 1 })
       : ["med", "supplement"].includes(p.kind) ? `${esc(m.dose || "")}${m.stock != null && m.stock !== "" ? ` · ${t("剩 {n}", { n: m.stock })}` : ""}` : "";
     const days = (sc.days || ALL_DAYS).length === 7 ? t("每天") : (sc.days || []).map(d => t(WEEKDAY[d])).join("");

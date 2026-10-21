@@ -103,7 +103,7 @@ function statusOf(p, day = today(), logs = logsFor(p.id, day)){
   const mode = modeOf(p), tg = p.target || {};
   switch (mode) {
     case "count": return { mode, done: logs.length >= (tg.count || 1), count: logs.length };
-    case "minutes": { const minutes = logs.reduce((s, l) => s + (+l.data.minutes || 0), 0); return { mode, minutes, sessions: logs.length, done: tg.per === "week" ? logs.length > 0 : minutes >= (tg.minutes || 1) }; }
+    case "minutes": { const minutes = logs.reduce((s, l) => s + (+l.data.minutes || 0), 0); return { mode, minutes, sessions: logs.length, done: tg.per === "week" ? logs.length > 0 : (tg.count && !tg.minutes) ? logs.length >= tg.count : minutes >= (tg.minutes || 1) }; }
     case "rating": { const l = logs[0]; return { mode, done: !!l, rating: l ? +l.data.rating : null, log: l || null }; }
     case "value": { const l = logs[0]; const v = l ? +l.data.value : null; return { mode, done: !!l, value: v, log: l || null, over: v != null && tg.max != null && v > tg.max, under: v != null && tg.min != null && v < tg.min }; }
     case "slots": { const times = (p.schedule && p.schedule.times && p.schedule.times.length) ? p.schedule.times : ["--:--"];
