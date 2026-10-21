@@ -4,11 +4,11 @@
 const SUPABASE_URL = "https://gbhvqlraimmignhoczww.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdiaHZxbHJhaW1taWduaG9jend3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3ODY5MzAsImV4cCI6MjEwNzM2MjkzMH0.Y9ZzQKGChGqnLj-69Bnljgb8BVgXbOEuHbbKt6Z5bBE";
 const SUPABASE_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";
-// 日历订阅：Supabase Edge Function（源码在 baby-log 本机 supabase/functions/ics/index.ts，部署步骤见文件头）
+// 日历订阅：Supabase Edge Function（源码在本仓库 supabase/functions/ics/index.ts，部署步骤见文件头）
 const ICS_FUNCTION = SUPABASE_URL + "/functions/v1/ics";
 
 const LS_PREFIX = "shepherd.v1";              // 本设备偏好的 localStorage 前缀
-const APP_VERSION = "2026-10-22.1";
+const APP_VERSION = "2026-10-22.2";
 const BABY_LOG_URL = "https://dev-hyang.github.io/baby-log/";
 // 四个姊妹站点同一个账号同一个家庭；标题旁的左右箭头在它们之间切换（按这里的顺序环绕）
 const SISTER_APPS = [

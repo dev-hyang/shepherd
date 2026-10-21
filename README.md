@@ -41,11 +41,13 @@
 
 ## 日历订阅
 
-Edge Function 源码在 baby-log 本机 `supabase/functions/ics/index.ts`，部署：
+Edge Function 源码在本仓库 `supabase/functions/ics/index.ts`（不含密钥，可公开）。事件标题跟随网页里选的界面语言（简 / 繁 / 英）。部署（在仓库根目录，装好并登录 Supabase CLI 后）：
 
 ```
 supabase functions deploy ics --project-ref <项目 ref> --no-verify-jwt
 ```
+
+本机的 CLI 装在同级目录 `supabase-cli/node_modules/.bin/supabase.cmd`（npm 包）；换电脑时重新 `npm install supabase --save-dev --registry https://registry.npmjs.org/` 并 `supabase login` 即可。
 
 网页 → 我的 → 日历订阅提醒 里拿链接，手机日历订阅即可；钥匙可随时换。
 

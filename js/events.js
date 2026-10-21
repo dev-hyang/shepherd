@@ -22,7 +22,7 @@ document.addEventListener("click", async ev => {
   if (d.tab) { close(); S.tab = d.tab; render(); window.scrollTo(0, 0); return; }
   if (d.copy) { try { await navigator.clipboard.writeText(d.copy); toast(t("已复制")); } catch (e) { toast(t("请手动复制：") + d.copy); } return; }
   if (d.themeSet !== undefined) { if (d.themeSet) document.documentElement.dataset.theme = d.themeSet; else delete document.documentElement.dataset.theme; try { localStorage.setItem(LS_PREFIX + ".theme", d.themeSet); } catch (e) {} openSettings(); return; }
-  if (d.localeSet !== undefined) { setLocale(d.localeSet); render(); openSettings(); return; }
+  if (d.localeSet !== undefined) { setLocale(d.localeSet); render(); openSettings(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: d.localeSet }).catch(() => {}); return; }
   // generic form controls
   if (d.seg) { readForm(); getForm().draft[d.seg] = d.v; drawForm(); return; }
   if (d.multi) { readForm(); const f = getForm().draft, cur = (f[d.multi] || []).map(String); f[d.multi] = cur.includes(d.v) ? cur.filter(x => x !== d.v) : [...cur, d.v]; drawForm(); return; }

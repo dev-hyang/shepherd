@@ -1,5 +1,5 @@
 import { SB, memberName } from "./core/auth.js";
-import { t } from "./core/i18n.js";
+import { locale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { D, dayKey, newId, toast } from "./core/util.js";
 import { fetchChapter } from "./data/bible.js";
@@ -29,17 +29,18 @@ const weekStartOf = day => dayAdd(day, -((weekday(day) + 6) % 7));
 async function loadAll(){
   S.wb.loaded = false; S.wb.error = null;
   let tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+  const lang = locale(); // 日历订阅按这个语言生成事件标题
   const famId = S.family ? S.family.id : null;
   let r = await SB.client.from("wb_profile").select("*").eq("user_id", me()).maybeSingle();
   if (r.error) { console.error(r.error); S.wb.error = missingTable(r.error) ? "missing" : "error"; return; }
   let prof = r.data;
   if (!prof) {
-    r = await SB.client.from("wb_profile").insert({ user_id: me(), family_id: famId, settings: { tz } }).select().single();
+    r = await SB.client.from("wb_profile").insert({ user_id: me(), family_id: famId, settings: { tz, lang } }).select().single();
     if (r.error) { console.error(r.error); S.wb.error = "error"; return; }
     prof = r.data;
-  } else if (prof.family_id !== famId || (tz && prof.settings.tz !== tz)) {
-    // 家庭变了（加入 / 离开）或换了时区：日历订阅按这里的时区和家庭算
-    r = await SB.client.from("wb_profile").update({ family_id: famId, settings: { ...prof.settings, tz: tz || prof.settings.tz } }).eq("user_id", me()).select().single();
+  } else if (prof.family_id !== famId || (tz && prof.settings.tz !== tz) || prof.settings.lang !== lang) {
+    // 家庭变了（加入 / 离开）、换了时区或界面语言：日历订阅按这里的设置生成
+    r = await SB.client.from("wb_profile").update({ family_id: famId, settings: { ...prof.settings, tz: tz || prof.settings.tz, lang } }).eq("user_id", me()).select().single();
     if (!r.error) prof = r.data;
   }
   const from = dayAdd(today(), -HISTORY_DAYS);
