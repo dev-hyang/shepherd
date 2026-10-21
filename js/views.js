@@ -1,6 +1,6 @@
 import { myName } from "./core/auth.js";
 import { SISTER_APPS, THIS_APP } from "./core/config.js";
-import { t } from "./core/i18n.js";
+import { locale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { $, esc } from "./core/util.js";
 import { WEEKDAY } from "./data/kinds.js";
@@ -13,6 +13,19 @@ import { viewToday } from "./today.js";
 /* ============ 渲染 ============ */
 const TAB_LABELS = { today: "今天", prayer: "祷告", review: "回顾", me: "我的" };
 const VIEWS = { today: viewToday, prayer: viewPrayer, review: viewReview, me: viewMe };
+// 应用切换（四个姊妹站点共用）：右上角九宫格按钮，宽屏浮层、手机底部抽屉。
+// 组件放在 home-pantry/shared；首次离线加载不到时，先用原来的 ‹ 上一个 / 下一个 › 胶囊，切换不受影响。
+const SWITCHER_URL = "https://dev-hyang.github.io/home-pantry/shared/app-switcher.js";
+let switcherMod = null, switcherTried = false;
+function renderAppSwitch(){
+  const host = $("#apps");
+  if (switcherMod) { switcherMod.mountAppSwitcher({ host, current: THIS_APP, lang: locale() }); return; }
+  const i = SISTER_APPS.findIndex(a => a.id === THIS_APP), n = SISTER_APPS.length, prev = SISTER_APPS[(i - 1 + n) % n], next = SISTER_APPS[(i + 1) % n];
+  const badge = (a, label) => `<a class="badge" href="${a.url}" title="${esc(t("切到{name}", { name: t(a.name) }))}" aria-label="${esc(t("切到{name}", { name: t(a.name) }))}">${label}</a>`;
+  host.setAttribute("aria-label", t("切换姊妹应用"));
+  host.innerHTML = badge(prev, `‹ ${esc(t(prev.short))}`) + badge(next, `${esc(t(next.short))} ›`);
+  if (!switcherTried) { switcherTried = true; import(SWITCHER_URL).then(m => { switcherMod = m; renderAppSwitch(); }).catch(() => {}); }
+}
 function renderStatus(){
   const st = { loading: ["", t("连接中")], offline: ["", t("云端不可用")], signedout: ["", t("未登录")], anon: ["", t("请绑定邮箱")],
     ready: ["ok", S.family ? t("家庭 · {n} 人", { n: Object.keys(S.members).length || 1 }) : t("个人")] }[S.cloud];
@@ -20,10 +33,7 @@ function renderStatus(){
   $("#bname").textContent = t("牧羊人");
   const d = new Date();
   $("#bsub").textContent = S.cloud === "ready" ? `${esc(myName())} · ${S.day.slice(5).replace("-", "/")} ${t("周{d}", { d: t(WEEKDAY[d.getDay()]) })}` : t("身心灵记录");
-  const i = SISTER_APPS.findIndex(a => a.id === THIS_APP), n = SISTER_APPS.length, prev = SISTER_APPS[(i - 1 + n) % n], next = SISTER_APPS[(i + 1) % n];
-  const badge = (a, label) => `<a class="badge" href="${a.url}" title="${esc(t("切到{name}", { name: t(a.name) }))}" aria-label="${esc(t("切到{name}", { name: t(a.name) }))}">${label}</a>`;
-  $("#apps").setAttribute("aria-label", t("切换姊妹应用"));
-  $("#apps").innerHTML = badge(prev, `‹ ${esc(t(prev.short))}`) + badge(next, `${esc(t(next.short))} ›`);
+  renderAppSwitch();
   document.querySelectorAll("nav.tabs button").forEach(b => { const k = TAB_LABELS[b.dataset.tab]; if (!k) return; const txt = [...b.childNodes].find(x => x.nodeType === 3); if (txt) txt.nodeValue = t(k); else b.append(t(k)); });
 }
 function render(){
