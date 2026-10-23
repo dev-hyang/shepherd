@@ -219,3 +219,6 @@ svg text{font-family:var(--f-num);font-size:11px;fill:var(--muted)}
 .eye-sub{opacity:.9;font-size:15px}
 .eye-time{font-size:72px;font-weight:600;line-height:1.1;margin:16px 0}
 .eye .btn{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff}
+/* app version next to the sync status (the same line in all four sister apps), so an update can be checked without scrolling to the About page */
+.hdr-line{display:inline-flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:2px 8px}
+.appver{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
