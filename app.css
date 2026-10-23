@@ -222,3 +222,6 @@ svg text{font-family:var(--f-num);font-size:11px;fill:var(--muted)}
 /* app version next to the sync status (the same line in all four sister apps), so an update can be checked without scrolling to the About page */
 .hdr-line{display:inline-flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:2px 8px}
 .appver{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* version vs sync status: stacked on a phone (status on top, version under it), side by side once there is room */
+.hdr-line{flex-direction:column;align-items:flex-end;gap:0}
+@media (min-width:600px){.hdr-line{flex-direction:row;align-items:center;gap:0 8px}}
