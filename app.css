@@ -225,3 +225,67 @@ svg text{font-family:var(--f-num);font-size:11px;fill:var(--muted)}
 /* version vs sync status: stacked on a phone (status on top, version under it), side by side once there is room */
 .hdr-line{flex-direction:column;align-items:flex-end;gap:0}
 @media (min-width:600px){.hdr-line{flex-direction:row;align-items:center;gap:0 8px}}
+
+/* ── 任务：行、催办条、快速添加、计划（日 / 周 / 月）、分类清单 ── */
+nav.tabs button{position:relative}
+.tabbadge{position:absolute;top:4px;left:calc(50% + 8px);min-width:18px;height:18px;border-radius:9px;background:var(--rose);color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center;padding:0 4px}
+.tabbadge[hidden]{display:none}
+.tk-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tk-h{font-size:14px;margin:10px 4px 2px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.late-txt{color:var(--rose)}
+.tkrow{position:relative;border-left:4px solid transparent;padding-left:8px;margin-left:-8px}
+.tkrow.late1{border-left-color:var(--honey)}
+.tkrow.late2{border-left-color:#E08A3C;background:linear-gradient(90deg,var(--honey-soft),transparent 60%)}
+.tkrow.late3{border-left-color:var(--rose);background:linear-gradient(90deg,var(--rose-soft),transparent 70%)}
+.tkrow.virtual{opacity:.6}
+.tkrow .prio{font-family:var(--f-num);font-weight:700;color:var(--rose);margin-right:6px}
+.tkrow .prio.p1{color:var(--sky)}.tkrow .prio.p2{color:var(--honey)}
+.tkrow .subs{grid-column:2 / -1;display:flex;flex-direction:column;gap:2px;padding:2px 0 4px}
+.tkrow .sub{all:unset;cursor:pointer;font-size:13.5px;color:var(--ink);padding:2px 0}
+.tkrow .sub.on{color:var(--muted);text-decoration:line-through}
+.tkrow .sub:focus-visible{outline:3px solid var(--slate);border-radius:4px}
+.tkrow .stuck{grid-column:2 / -1;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;padding:4px 0}
+.tkrow .stuck > span{flex:1 0 100%;color:var(--rose)}
+.nudge{border:1px solid var(--line);border-left-width:5px;border-radius:var(--radius);background:var(--surface);padding:10px 12px;margin:12px 0 0;display:flex;flex-direction:column;gap:6px;font-size:14.5px}
+.nudge > div{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.nudge.soon{border-left-color:var(--sky)}
+.nudge.late1{border-left-color:var(--honey);background:var(--honey-soft)}
+.nudge.late2{border-left-color:#E08A3C;background:var(--honey-soft)}
+.nudge.late3{border-left-color:var(--rose);background:var(--rose-soft)}
+.nudge.evening{border-left-color:var(--slate);background:var(--slate-soft)}
+.nudge .iconbtn{min-width:40px;height:36px}
+.quickadd{display:flex;gap:8px;margin:0 0 6px}
+.quickadd input{flex:1;min-width:0;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:var(--radius-sm);padding:10px 12px;min-height:44px}
+.tk-done summary{cursor:pointer;padding:8px 2px}
+.tk-filters{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:0 0 10px}
+.tk-filters label{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.tk-filters select,.tk-filters input[type=search]{border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:var(--radius-sm);padding:7px 10px;min-height:40px}
+.tk-filters input[type=search]{flex:1 1 140px;min-width:0}
+.daynav{display:flex;align-items:center;gap:8px;margin:4px 0 10px;flex-wrap:wrap}
+.daynav b{flex:1;text-align:center;font-family:var(--f-head)}
+.linkbtn{all:unset;cursor:pointer;text-decoration:underline;text-underline-offset:3px;color:var(--ink);font-weight:600}
+.linkbtn:focus-visible{outline:3px solid var(--slate);border-radius:4px}
+.timeline .hour{display:grid;grid-template-columns:44px 1fr;gap:8px;border-top:1px solid var(--line);min-height:44px}
+.timeline .hour:first-child{border-top:0}
+.timeline .hl{font-family:var(--f-num);font-size:12px;color:var(--muted);padding-top:8px}
+.timeline .hb{position:relative;padding:2px 36px 2px 0;min-width:0}
+.timeline .addhere{all:unset;cursor:pointer;position:absolute;right:0;top:4px;width:30px;height:30px;text-align:center;line-height:30px;color:var(--muted);border-radius:50%}
+.timeline .addhere:hover,.timeline .addhere:focus-visible{background:var(--slate-soft);color:var(--slate);outline:none}
+.hhabit{font-size:12.5px;color:var(--muted);padding:3px 8px;margin:2px 0;border:1px dashed var(--line);border-radius:var(--radius-sm)}
+.wkday.today{border-color:var(--slate)}
+.month{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.month .wd{text-align:center;font-size:12px;color:var(--muted)}
+.month .cell{all:unset;box-sizing:border-box;cursor:pointer;min-height:52px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:4px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--surface)}
+.month .cell.pad{border:0;background:none;cursor:default}
+.month .cell.today{border-color:var(--slate)}
+.month .cell.sel{background:var(--slate-soft);border-color:var(--slate)}
+.month .cell .d{font-size:13px;font-weight:600}
+.month .cell .dots{display:flex;gap:2px}.month .cell .dots i{width:7px;height:7px;border-radius:50%}
+.month .cell .n{font-size:11px;color:var(--muted);font-family:var(--f-num)}
+.month .cell:focus-visible{outline:3px solid var(--slate);outline-offset:1px}
+.lib-group{margin-top:10px}
+.lib-group > summary{cursor:pointer;padding:8px 2px;list-style:none;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;border-bottom:1px solid var(--line)}
+.lib-group > summary::-webkit-details-marker{display:none}
+.lib-group > summary::before{content:"▸";color:var(--muted)}
+.lib-group[open] > summary::before{content:"▾"}
+.tk-head .btn{flex:none;min-height:42px;padding:8px 16px}

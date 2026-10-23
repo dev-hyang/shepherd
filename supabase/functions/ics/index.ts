@@ -43,7 +43,43 @@ const ymd = (d: Date) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(
 const stamp = (d: Date) => `${ymd(d)}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
 const uid = (s: string) => `${s}@shepherd.dev-hyang`;
 
-function build(p: Practice[], T: Text): string {
+/* ---- 任务（wb_tasks，迁移 015）：有日期的未完成任务 / 事件进日历 ----
+   只放“某一天”的（period = day）；有开始时间的是定时事件，没有的是全天事件，早上 allDayAt 响一次。
+   重复规则映射成 RRULE；“完成后再算”的（after）只放当前这一次。已完成的单次任务不会出现（订阅每 4 小时刷新，最多晚这么久）。
+   remind 是提前几分钟的数组；nag 的再加两个：到点后 15、60 分钟。 */
+type Task = { id: string; kind: string; title: string; note: string; period: string; due: string | null; start_time: string | null; dur: number | null;
+  recur: { freq?: string; every?: number; days?: number[]; mday?: number; until?: string; after?: boolean } | null; remind: number[]; nag: boolean };
+const RFREQ: Record<string, string> = { day: "DAILY", week: "WEEKLY", month: "MONTHLY", year: "YEARLY" };
+function taskEvents(tasks: Task[], T: Text, now: Date, allDayAt: string): string[] {
+  const out: string[] = [], today = `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())}`;
+  const [ah, am] = /^\d{2}:\d{2}$/.test(allDayAt) ? allDayAt.split(":").map(Number) : [9, 0];
+  for (const tk of tasks) {
+    if (!tk.due || (tk.period ?? "day") !== "day" || !tk.title) continue;
+    const r = tk.recur && !tk.recur.after && tk.recur.freq && RFREQ[tk.recur.freq] ? tk.recur : null;
+    if (!r && tk.due < today) continue;               // 过了期的单次任务：日历里响也没用，网页里催
+    const dd = tk.due.replace(/-/g, ""), timed = !!tk.start_time && /^\d{2}:\d{2}$/.test(tk.start_time);
+    const icon = tk.kind === "event" ? "📅" : "☐", title = `${icon} ${tk.title}`;
+    out.push("BEGIN:VEVENT", `UID:${uid("task-" + tk.id)}`, `DTSTAMP:${stamp(now)}`);
+    if (timed) { const [h, m] = tk.start_time!.split(":"); out.push(`DTSTART:${dd}T${h}${m}00`, `DURATION:PT${Math.max(5, Math.min(600, tk.dur || 30))}M`); }
+    else out.push(`DTSTART;VALUE=DATE:${dd}`);
+    if (r) {
+      const parts = [`FREQ=${RFREQ[r.freq!]}`, `INTERVAL=${Math.max(1, Number(r.every) || 1)}`];
+      if (r.freq === "week" && Array.isArray(r.days) && r.days.length) parts.push(`BYDAY=${r.days.map(d => BYDAY[d]).join(",")}`);
+      if (r.freq === "month" && r.mday) parts.push(`BYMONTHDAY=${Number(r.mday)}`);
+      if (r.until && /^\d{4}-\d{2}-\d{2}$/.test(r.until)) parts.push(`UNTIL=${r.until.replace(/-/g, "")}${timed ? "T235959" : ""}`);
+      out.push(`RRULE:${parts.join(";")}`);
+    }
+    out.push(`SUMMARY:${esc(title)}`, `DESCRIPTION:${esc([tk.note, `${T.from} https://dev-hyang.github.io/shepherd/`].filter(Boolean).join("\n"))}`, `TRANSP:${tk.kind === "event" ? "OPAQUE" : "TRANSPARENT"}`);
+    const alarm = (trigger: string) => out.push("BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${esc(title)}`, `TRIGGER:${trigger}`, "END:VALARM");
+    const offs = Array.isArray(tk.remind) ? tk.remind.map(Number).filter(n => Number.isFinite(n) && n >= 0 && n <= 20160) : [];
+    for (const m of offs) timed ? alarm(m ? `-PT${m}M` : "PT0M") : alarm(`PT${ah}H${am}M`);
+    if (tk.nag && (offs.length || timed)) for (const m of [15, 60]) alarm(timed ? `PT${m}M` : `PT${ah * 60 + am + m}M`);
+    out.push("END:VEVENT");
+  }
+  return out;
+}
+
+function build(p: Practice[], T: Text, tasks: Task[] = [], allDayAt = "09:00"): string {
   const now = new Date(), today = ymd(now), lines: string[] = [];
   lines.push("BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//dev-hyang//shepherd//ZH", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
     `X-WR-CALNAME:${esc(T.cal)}`, `X-WR-CALDESC:${esc(T.desc)}`, "REFRESH-INTERVAL;VALUE=DURATION:PT4H", "X-PUBLISHED-TTL:PT4H");
@@ -74,6 +110,7 @@ function build(p: Practice[], T: Text): string {
       }
     }
   }
+  lines.push(...taskEvents(tasks, T, now, allDayAt));
   lines.push("END:VCALENDAR");
   return lines.map(fold).join("\r\n") + "\r\n";
 }
@@ -85,6 +122,9 @@ Deno.serve(async (req) => {
   if (prof.error || !prof.data) return new Response("not found", { status: 404 });
   const pr = await sb.from("wb_practices").select("id, kind, name, target, schedule, meta").eq("user_id", prof.data.user_id).eq("active", true).eq("archived", false).order("sort");
   if (pr.error) return new Response("error", { status: 500 });
-  const body = build((pr.data ?? []) as Practice[], textFor((prof.data.settings ?? {}).lang));
+  // 任务表（迁移 015）还没建、或查询失败时只是少了任务，习惯照常
+  const tk = await sb.from("wb_tasks").select("id, kind, title, note, period, due, start_time, dur, recur, remind, nag").eq("user_id", prof.data.user_id).eq("status", "open").not("due", "is", null);
+  const st = (prof.data.settings ?? {}) as Record<string, unknown>, nudge = (st.nudge ?? {}) as Record<string, unknown>;
+  const body = build((pr.data ?? []) as Practice[], textFor(st.lang), tk.error ? [] : (tk.data ?? []) as Task[], typeof nudge.allDayAt === "string" ? nudge.allDayAt : "09:00");
   return new Response(body, { status: 200, headers: { "content-type": "text/calendar; charset=utf-8", "content-disposition": 'inline; filename="shepherd.ics"', "cache-control": "private, max-age=600" } });
 });

@@ -10,6 +10,8 @@ import * as fz from "./focus.js";
 import { closeSheet, drawForm, getForm, head, openCalendar, openForm, openHabits, openInfo, openPlan, openPractice, openSettings, readForm, showSheet } from "./sheet.js";
 import { render } from "./views.js";
 import * as wb from "./wb.js";
+import * as tkm from "./tk.js";
+import { editCat, openCats, openMit, openTaskForm, resetCats, shiftPlan, startTidy } from "./tasks.js";
 
 /* ============ 事件分发 ============
    表单的标题、字段名、占位都写简体（画的时候翻译）；toast 用 t()。写进数据库的值不翻译。 */
@@ -24,6 +26,18 @@ const setPick = day => {
 };
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "pick-day" && ev.target.value) setPick(ev.target.value); });
 
+// 任务：快速添加表单、清单的筛选 / 搜索（搜索框每次重画后把光标放回去）
+document.addEventListener("submit", async ev => {
+  if (!ev.target || ev.target.id !== "tkQuickForm") return;
+  ev.preventDefault();
+  const inp = $("#tkQuick"), v = inp && inp.value.trim(); if (!v) return;
+  inp.disabled = true;
+  try { const x = await tkm.quickAdd(v, wb.viewDay()); render(); if (x) toast(x.due ? t("已加到 {d}", { d: x.due }) : t("已放进收件箱")); } catch (e) { inp.disabled = false; }
+  requestAnimationFrame(() => { const i = $("#tkQuick"); if (i) i.focus(); });
+});
+document.addEventListener("change", ev => { if (ev.target && ev.target.id === "tkPrio") { S.tkUi.prio = ev.target.value; render(); } });
+document.addEventListener("input", ev => { if (ev.target && ev.target.id === "tkQ") { S.tkUi.q = ev.target.value; render(); const i = $("#tkQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
+
 document.addEventListener("click", async ev => {
   const btn = ev.target.closest("button"); if (!btn) return;
   const d = btn.dataset;
@@ -32,7 +46,9 @@ document.addEventListener("click", async ev => {
   if (d.themeSet !== undefined) { if (d.themeSet) document.documentElement.dataset.theme = d.themeSet; else delete document.documentElement.dataset.theme; try { localStorage.setItem(LS_PREFIX + ".theme", d.themeSet); } catch (e) {} openSettings(); return; }
   if (d.localeSet !== undefined) { setLocale(d.localeSet); render(); openSettings(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: d.localeSet }).catch(() => {}); return; }
   // generic form controls
-  if (d.seg) { readForm(); getForm().draft[d.seg] = d.v; drawForm(); return; }
+  if (d.seg) { readForm(); const dr = getForm().draft; dr[d.seg] = d.v; if (d.seg === "cat") dr.sub = ""; drawForm(); return; }   // 换大类：小类清空重选
+  if (d.tks) { S.tkUi.seg = d.tks; render(); return; }
+  if (d.tkr) { S.tkUi.range = d.tkr; render(); return; }
   if (d.multi) { readForm(); const f = getForm().draft, cur = (f[d.multi] || []).map(String); f[d.multi] = cur.includes(d.v) ? cur.filter(x => x !== d.v) : [...cur, d.v]; drawForm(); return; }
   // chips with their own data attributes
   if (d.hf) { openHabits(d.hf); return; }
@@ -47,6 +63,36 @@ document.addEventListener("click", async ev => {
   try {
     switch (d.act) {
       case "settings": openSettings(); break;
+      /* 任务 */
+      case "tk-new": openTaskForm(null, { due: d.day || wb.viewDay(), start_time: d.time || "" }); break;
+      case "tk-edit": case "tk-split": { const x = tkm.task(d.tid); if (x) openTaskForm(x); break; }
+      case "tk-done": { const r = await tkm.complete(d.tid, wb.viewDay()); render(); toast(r ? t("做完了，下一次 {d}", { d: r.next }) : t("做完了 ✓")); break; }
+      case "tk-later": { const to = await tkm.postpone(d.tid); render(); if (to) toast(t("顺延到 {d}", { d: to })); break; }
+      case "tk-sub": await tkm.toggleSub(d.tid, +d.i); render(); break;
+      case "tk-drop": if (!confirm(t("放弃这件事？放弃不算失败，重复任务只跳过这一次。"))) break; await tkm.drop(d.tid); render(); break;
+      case "tk-now": fz.openFocus(null); toast(t("先专注 25 分钟，做完回来勾掉它")); break;
+      case "tk-undo-log": await tkm.undoLog(d.lid); render(); break;
+      case "tk-reopen": await tkm.reopen(d.tid); render(); break;
+      case "tk-del": if (confirm(t("删除这条任务？"))) { await tkm.remove(d.tid); render(); } break;
+      case "tk-open-overdue": S.tab = "tasks"; S.tkUi.seg = "today"; render(); window.scrollTo(0, 0); break;
+      case "tk-mit": openMit(); break;
+      case "tk-tidy": startTidy(); break;
+      case "tk-evening": {
+        const list = [...tkm.overdue(), ...tkm.onDay(S.day).filter(x => !x.virtual)];
+        if (d.to === "drop") { if (!confirm(t("把这 {n} 件都放弃？放弃不算失败。", { n: list.length }))) break; for (const x of list) await tkm.drop(x.id); }
+        else { const to = wb.dayAdd(S.day, 1); for (const x of list) await tkm.postpone(x.id, to); }
+        render(); toast(d.to === "drop" ? t("放下了，明天重新开始") : t("都放到明天了，早点休息")); break; }
+      case "tk-prev": shiftPlan(-1); render(); break;
+      case "tk-next": shiftPlan(1); render(); break;
+      case "tk-today": S.tkUi.day = null; render(); break;
+      case "tk-goto": S.tkUi.day = d.day; S.tkUi.range = "day"; render(); window.scrollTo(0, 0); break;
+      case "tk-goto-month": S.tkUi.day = d.day; render(); break;
+      case "tk-cats": openCats(); break;
+      case "cat-add": editCat(null); break;
+      case "cat-edit": editCat(d.cid); break;
+      case "cat-reset": await resetCats(); break;
+      case "nudge-set": { const k = d.k, v = d.v; await tkm.saveNudge({ [k]: k === "eveningAt" ? v : k === "capacityH" ? +v : k === "remind" ? JSON.parse(v) : v === "1" }); openSettings(); break; }
+
       case "about": openAbout(); break;
       case "close": close(); break;
       case "sb-login": await sbAuth("login"); break;
@@ -139,7 +185,7 @@ const prayerFields = () => [
 
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#sheet").open) closeSheet(); });
 document.addEventListener("visibilitychange", async () => {
-  if (document.visibilityState === "visible" && S.cloud === "ready" && S.wb.loaded && !$("#sheet").open) { await wb.loadAll(); render(); }
+  if (document.visibilityState === "visible" && S.cloud === "ready" && S.wb.loaded && !$("#sheet").open) { await wb.loadAll(); try { await tkm.loadTasks(); } catch (e) { console.error(e); } render(); }
 });
 export { showSheet, head, kindOf, RATINGS };
 

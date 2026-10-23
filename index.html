@@ -9,8 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&family=Lora:wght@600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#F4F2EA" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111810" media="(prefers-color-scheme: dark)">
-<meta name="app-version" content="2026-10-24.2">
-<link rel="stylesheet" href="app.css?v=2026-10-24.2">
+<meta name="app-version" content="2026-10-24.3">
+<link rel="stylesheet" href="app.css?v=2026-10-24.3">
 <script>try { var th = localStorage.getItem("shepherd.v1.theme") || localStorage.getItem("homeschool.v1.theme") || localStorage.getItem("xiaoyueliang.v1.theme"); if (th) document.documentElement.dataset.theme = th; } catch (e) {}</script>
 </head>
 <body>
@@ -30,6 +30,7 @@
 
 <nav class="tabs" aria-label="主导航"><div class="in">
   <button data-tab="today"><i aria-hidden="true">☀︎</i>今天</button>
+  <button data-tab="tasks"><i aria-hidden="true">✓</i>任务<b class="tabbadge" id="tkBadge" hidden></b></button>
   <button data-tab="prayer"><i aria-hidden="true">🕊</i>祷告</button>
   <button data-tab="review"><i aria-hidden="true">▤</i>回顾</button>
   <button data-tab="me"><i aria-hidden="true">☰</i>我的</button>
@@ -38,6 +39,6 @@
 <dialog class="sheet" id="sheet" aria-labelledby="sheetTitle"><div class="sheet-in" id="sheetIn"></div></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script type="module" src="js/app.js?v=2026-10-24.2"></script>
+<script type="module" src="js/app.js?v=2026-10-24.3"></script>
 </body>
 </html>

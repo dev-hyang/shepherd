@@ -7,6 +7,7 @@ import { ALL_DAYS, KINDS, WEEKDAY, kindOf, modeOf } from "./data/kinds.js";
 import { PLANS } from "./data/plans.js";
 import { render } from "./views.js";
 import * as wb from "./wb.js";
+import * as tk from "./tk.js";
 
 /* ============ 整页表单（替换内容区，和家庭学堂一样的交互） ============ */
 let sheetScrollY = 0;
@@ -47,8 +48,8 @@ function drawForm(){
     if (f.when && !f.when(draft)) return "";
     const v = draft[f.k], id = "f_" + f.k, label = t(f.label || ""), ph = esc(t(f.ph || ""));
     const hint = f.hint ? `<div class="small muted" style="margin-top:4px">${t(f.hint)}</div>` : "";
-    if (f.type === "seg") return `<div class="field"><div class="lab" id="${id}">${label}</div><div class="seg" role="group" aria-labelledby="${id}">${f.opts.map(([val, lab]) => `<button type="button" data-seg="${f.k}" data-v="${esc(val)}" aria-pressed="${String(v) === String(val)}">${esc(f.raw ? lab : t(lab))}</button>`).join("")}</div>${hint}</div>`;
-    if (f.type === "multi") return `<div class="field"><div class="lab" id="${id}">${label}</div><div class="seg" role="group" aria-labelledby="${id}">${f.opts.map(([val, lab]) => `<button type="button" data-multi="${f.k}" data-v="${esc(val)}" aria-pressed="${(v || []).map(String).includes(String(val))}">${esc(f.raw ? lab : t(lab))}</button>`).join("")}</div>${hint}</div>`;
+    if (f.type === "seg") return `<div class="field"><div class="lab" id="${id}">${label}</div><div class="seg" role="group" aria-labelledby="${id}">${(f.optsFn ? f.optsFn(draft) : f.opts).map(([val, lab]) => `<button type="button" data-seg="${f.k}" data-v="${esc(val)}" aria-pressed="${String(v) === String(val)}">${esc(f.raw ? lab : t(lab))}</button>`).join("")}</div>${hint}</div>`;
+    if (f.type === "multi") return `<div class="field"><div class="lab" id="${id}">${label}</div><div class="seg" role="group" aria-labelledby="${id}">${(f.optsFn ? f.optsFn(draft) : f.opts).map(([val, lab]) => `<button type="button" data-multi="${f.k}" data-v="${esc(val)}" aria-pressed="${(v || []).map(String).includes(String(val))}">${esc(f.raw ? lab : t(lab))}</button>`).join("")}</div>${hint}</div>`;
     if (f.type === "area") return `<div class="field"><label for="${id}">${label}</label><textarea id="${id}" data-f="${f.k}" placeholder="${ph}" ${f.rows ? `style="min-height:${f.rows * 24}px"` : ""}>${esc(v || "")}</textarea>${hint}</div>`;
     if (f.type === "num") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="number" inputmode="decimal" min="0" step="${f.step || 1}" data-f="${f.k}" value="${v ?? ""}" placeholder="${ph}">${hint}</div>`;
     if (f.type === "time") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="time" data-f="${f.k}" value="${esc(v || "")}">${hint}</div>`;
@@ -171,6 +172,7 @@ function openCalendar(){
   const n = wb.activePractices().filter(p => p.schedule && p.schedule.remind !== false && p.schedule.times && p.schedule.times.length).length;
   $("#sheetIn").innerHTML = `${head(t("日历订阅提醒"))}
   <p>${t("手机自带的日历负责响铃：订阅这个链接后，每个开了提醒的习惯都会按时间点出现在日历里，带一个提醒。改了习惯，日历会在几小时内自动更新。")}</p>
+  <p>${t("有日期的任务和事件也会进来（带提醒；重复的按重复规则，完成后自动从日历里消失，最多晚几小时）。")}</p>
   <div class="panel"><p class="small muted" style="margin:0 0 6px">${t("你的订阅链接（相当于钥匙，别转发）")}</p>
     <p class="num" style="word-break:break-all;font-size:13px">${esc(url || t("登录后生成"))}</p>
     <div class="btns" style="margin-top:0">${url ? `<a class="btn primary" href="${esc(webcal)}" style="text-decoration:none;text-align:center">${t("在手机上订阅")}</a><button class="btn" data-copy="${esc(url)}">${t("复制链接")}</button><button class="btn" data-act="ics-reset">${t("换一把钥匙")}</button>` : ""}</div>
@@ -195,6 +197,9 @@ function openSettings(){
   <h2>${t("账号与家庭")}</h2>
   ${familyHTML()}
 
+  <h2>${t("任务提醒与催办")}</h2>
+  <div class="panel">${nudgeSettingsHTML()}</div>
+
   <h2>${t("姊妹应用")}</h2>
   <div class="panel" style="padding:4px 14px">
     ${SISTER_APPS.map(a => `<div class="medrow"><div><b>${a.id === THIS_APP ? esc(t(a.name)) : `<a href="${a.url}">${esc(t(a.name))}</a>`}</b>${a.id === THIS_APP ? ` <span class="small muted">${t("（当前）")}</span>` : ""}<div class="small muted">${tc(esc(a.desc))}</div></div>${a.id === THIS_APP ? "" : `<a class="chip" href="${a.url}" style="text-decoration:none">${t("打开")}</a>`}</div>`).join("")}
@@ -212,3 +217,18 @@ function openSettings(){
 }
 
 export { showSheet, closeSheet, openForm, drawForm, readForm, getForm, openInfo, openSettings, openPractice, openHabits, openPlan, openCalendar, icsUrl, head };
+
+/* ---- 设置里的“任务提醒与催办”：每一项都能关 ---- */
+function nudgeSettingsHTML(){
+  const n = tk.nudge();
+  const b = (k, v, label, on) => `<button data-act="nudge-set" data-k="${k}" data-v="${esc(v)}" aria-pressed="${on}">${esc(label)}</button>`;
+  const onoff = (k, label, hint) => `<div class="field"><div class="lab">${t(label)}</div><div class="seg" role="group" aria-label="${esc(t(label))}">${b(k, "1", t("开"), !!n[k])}${b(k, "0", t("关"), !n[k])}</div>${hint ? `<div class="small muted" style="margin-top:4px">${t(hint)}</div>` : ""}</div>`;
+  return `${onoff("bar", "催办条", "今天页和任务页顶部：逾期几件、下一件几点。")}
+    ${onoff("escalate", "逾期阶梯", "逾期越久颜色越深；同一件顺延 3 次后要你决定：现在做 / 拆小 / 定时间 / 放弃。")}
+    ${onoff("evening", "晚间收尾", "晚上提醒把没做完的放到明天或放弃。")}
+    <div class="field"><div class="lab">${t("收尾提醒时间")}</div><div class="seg">${["20:00", "21:00", "22:00"].map(v => b("eveningAt", v, v, n.eveningAt === v)).join("")}</div></div>
+    <div class="field"><div class="lab">${t("今天的容量（小时）")}</div><div class="seg">${[4, 6, 8, 10].map(v => b("capacityH", String(v), String(v), n.capacityH === v)).join("")}</div><div class="small muted" style="margin-top:4px">${t("今天任务的预估时间加起来超过它，会提示排太满了。")}</div></div>
+    <div class="field"><div class="lab">${t("一句话添加带时间的任务，默认提醒")}</div><div class="seg">${[[[0], "准时"], [[10], "提前 10 分钟"], [[30], "提前 30 分钟"], [[], "不提醒"]].map(([v, l]) => b("remind", JSON.stringify(v), t(l), JSON.stringify(n.remind) === JSON.stringify(v))).join("")}</div></div>
+    <div class="btns" style="margin-top:0"><button class="btn" data-act="tk-cats">${t("管理任务分类")}</button></div>
+    <p class="small muted" style="margin-top:8px">${t("提醒靠手机日历响铃（订阅链接在“我的 → 日历订阅”）。读经、祷告这类灵修习惯不催。")}</p>`;
+}

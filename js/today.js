@@ -4,6 +4,7 @@ import { S } from "./core/state.js";
 import { esc, hm } from "./core/util.js";
 import { KINDS, RATINGS, WEEKDAY, kindOf, modeOf } from "./data/kinds.js";
 import * as wb from "./wb.js";
+import { familyTasks, mitBlock, nudgeBar, tasksBlock } from "./tasks.js";
 
 /* ============ 今天页：读经 → 今日习惯 → 家人 ============ */
 function viewToday(){
@@ -17,9 +18,11 @@ function viewToday(){
     <div class="big">${past ? esc(t("补记 {d}", { d: day.slice(5).replace("-", "/") })) : `${esc(greet)}，${esc(myName())}`}</div>
     <div class="meta">${list.length ? `<span>${past ? t("当天 {a}/{b}", { a: done, b: list.length }) : t("今天 {a}/{b}", { a: done, b: list.length })}</span>` : ""}${sk ? `<span>${t("连续读经 {n} 天", { n: sk })}</span>` : ""}</div></section>
   ${dayBarHTML(day, past)}
+  ${nudgeBar()}${mitBlock()}${tasksBlock()}
   ${readingHTML()}
   ${habitsHTML(day, list)}
-  ${familyHTML(day)}`;
+  ${familyHTML(day)}
+  ${familyTasks(day)}`;
 }
 
 /* 补记：忘了点的话，切到前几天再打卡 / 记读经。‹ › 翻一天，也可以直接选日期（最早 12 周内，不能选未来） */

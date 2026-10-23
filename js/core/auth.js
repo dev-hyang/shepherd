@@ -3,6 +3,7 @@ import { t } from "./i18n.js";
 import { S } from "./state.js";
 import { $, esc, toast } from "./util.js";
 import { attachRealtime, loadAll } from "../wb.js";
+import { attachRealtime as attachTaskRealtime, loadTasks } from "../tk.js";
 import { refreshSettingsIfOpen, render } from "../views.js";
 
 /* ============ 登录与家庭（与小月亮共用同一套表） ============
@@ -53,6 +54,7 @@ async function afterAuth(){
   S.cloud = "ready";
   render();
   await loadAll();
+  try { await loadTasks(); } catch (e) { console.error(e); }   // 任务表（迁移 015）没建时只影响任务页签
   setupRealtime();
   render(); refreshSettingsIfOpen();
 }
@@ -67,6 +69,7 @@ function setupRealtime(){
   SB.channel = SB.client.channel("shepherd-" + S.user.id);
   if (S.family) SB.channel.on("postgres_changes", { event: "*", schema: "public", table: "family_members", filter: "family_id=eq." + S.family.id }, async () => { await loadMembers(); if (!S.family) return; if (!$("#sheet").open) render(); else refreshSettingsIfOpen(); });
   attachRealtime(SB.channel, () => { if (!$("#sheet").open) render(); });
+  if (S.tk.loaded) attachTaskRealtime(SB.channel, () => { if (!$("#sheet").open) render(); });   // 任务表没建（迁移 015）时不订阅，免得整个频道订阅失败
   SB.channel.subscribe();
 }
 function teardownRealtime(){ if (SB.channel && SB.client) { SB.client.removeChannel(SB.channel); SB.channel = null; } }

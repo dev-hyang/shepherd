@@ -9,10 +9,12 @@ import { viewPrayer } from "./prayer.js";
 import { viewReview } from "./review.js";
 import { openSettings } from "./sheet.js";
 import { viewToday } from "./today.js";
+import { viewTasks } from "./tasks.js";
+import { pendingCount } from "./tk.js";
 
 /* ============ 渲染 ============ */
-const TAB_LABELS = { today: "今天", prayer: "祷告", review: "回顾", me: "我的" };
-const VIEWS = { today: viewToday, prayer: viewPrayer, review: viewReview, me: viewMe };
+const TAB_LABELS = { today: "今天", tasks: "任务", prayer: "祷告", review: "回顾", me: "我的" };
+const VIEWS = { today: viewToday, tasks: viewTasks, prayer: viewPrayer, review: viewReview, me: viewMe };
 // 应用切换（四个姊妹站点共用）：右上角九宫格按钮，宽屏浮层、手机底部抽屉。
 // 组件放在 home-pantry/shared；首次离线加载不到时，先用原来的 ‹ 上一个 / 下一个 › 胶囊，切换不受影响。
 const SWITCHER_URL = "https://dev-hyang.github.io/home-pantry/shared/app-switcher.js";
@@ -49,6 +51,7 @@ function renderStatus(){
   renderAppSwitch();
   renderLangSwitch();
   document.querySelectorAll("nav.tabs button").forEach(b => { const k = TAB_LABELS[b.dataset.tab]; if (!k) return; const txt = [...b.childNodes].find(x => x.nodeType === 3); if (txt) txt.nodeValue = t(k); else b.append(t(k)); });
+  { const b = $("#tkBadge"); if (b) { const n = S.tk && S.tk.loaded ? pendingCount() : 0; b.textContent = n > 9 ? "9+" : String(n || ""); b.hidden = !n; } }   // 任务页签角标：逾期 + 今天到期
 }
 function render(){
   renderStatus();
