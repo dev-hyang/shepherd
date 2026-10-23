@@ -1,0 +1,6 @@
+# Supabase SQL scripts stay local, not in git (other supabase/ files are committed)
+supabase/**/*.sql
+supabase/.temp/
+
+# Local cross-repo context for Claude Code: not committed
+.code-context
