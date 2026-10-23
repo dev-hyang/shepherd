@@ -16,11 +16,18 @@ import * as wb from "./wb.js";
 const close = () => closeSheet();
 const back = fn => { close(); fn && fn(); };
 const pidOf = d => wb.practice(d.pid);
+// 补记选的那天：不能晚于今天，最早到历史数据范围（和回顾页一样 12 周）；选回今天就清掉
+const setPick = day => {
+  if (!day || day > S.day) return;
+  if (day < wb.dayAdd(S.day, -wb.HISTORY_DAYS)) { toast(t("最多补记 {n} 天内的", { n: wb.HISTORY_DAYS })); return; }
+  S.pick = day === S.day ? null : day; S.showText = false; render();
+};
+document.addEventListener("change", ev => { if (ev.target && ev.target.id === "pick-day" && ev.target.value) setPick(ev.target.value); });
 
 document.addEventListener("click", async ev => {
   const btn = ev.target.closest("button"); if (!btn) return;
   const d = btn.dataset;
-  if (d.tab) { close(); S.tab = d.tab; render(); window.scrollTo(0, 0); return; }
+  if (d.tab) { close(); S.tab = d.tab; S.pick = null; render(); window.scrollTo(0, 0); return; }
   if (d.copy) { try { await navigator.clipboard.writeText(d.copy); toast(t("已复制")); } catch (e) { toast(t("请手动复制：") + d.copy); } return; }
   if (d.themeSet !== undefined) { if (d.themeSet) document.documentElement.dataset.theme = d.themeSet; else delete document.documentElement.dataset.theme; try { localStorage.setItem(LS_PREFIX + ".theme", d.themeSet); } catch (e) {} openSettings(); return; }
   if (d.localeSet !== undefined) { setLocale(d.localeSet); render(); openSettings(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: d.localeSet }).catch(() => {}); return; }
@@ -63,14 +70,19 @@ document.addEventListener("click", async ev => {
       case "plan-import": openForm("导入读经计划", [{ k: "name", label: "计划名称", type: "text", ph: "教会 2027 年读经表" }, { k: "text", label: "每行一段：出处，备注（可选）", type: "area", rows: 10, ph: "创世记 1-3，神创造天地\n诗篇 1-5; 箴言 1" }], { name: "", text: "" },
         async f => { const items = parsePlan(f.text); if (!items.length) { toast(t("没有读到任何段落")); return; } await wb.importPlan(f.name, items); toast(t("已导入 {n} 段并切换到该计划", { n: items.length })); openPlan(); }); break;
 
+      /* 补记：切到过去某一天，打卡 / 读经都记到那天；回到今天恢复 */
+      case "day-prev": setPick(wb.dayAdd(wb.viewDay(), -1)); break;
+      case "day-next": setPick(wb.dayAdd(wb.viewDay(), 1)); break;
+      case "day-today": setPick(S.day); break;
+
       /* 习惯打卡 */
       case "check": { const p = pidOf(d); if (!p) break; const on = await wb.toggleCheck(p); render(); if (on) toast(t("做到了 ✓")); break; }
       case "count-add": { const p = pidOf(d); if (!p) break; await wb.addLog(p.kind, p.id, p.kind === "prayer" ? { count: S.wb.prayers.filter(x => x.status !== "answered").length } : {}); render(); break; }
-      case "count-undo": { const p = pidOf(d); if (!p) break; const ls = wb.logsFor(p.id, S.day); if (ls.length) await wb.deleteLog(ls[ls.length - 1].id); render(); break; }
+      case "count-undo": { const p = pidOf(d); if (!p) break; const ls = wb.logsFor(p.id, wb.viewDay()); if (ls.length) await wb.deleteLog(ls[ls.length - 1].id); render(); break; }
       case "min-add": { const p = pidOf(d); if (!p) break; const tg = p.target || {};
         openForm("记一次", [{ k: "minutes", label: "多少分钟", type: "num", ph: String(tg.minutes || 30) }, ...(p.kind === "exercise" ? [{ k: "type", label: "类型", type: "seg", opts: EXERCISE_TYPES.map(x => [x, x]) }] : []), { k: "note", label: "备注（可空）", type: "text" }],
           { minutes: null, type: "走路", note: "" }, async f => { if (!f.minutes) { toast(t("请填分钟数")); return; } await wb.addLog(p.kind, p.id, { minutes: f.minutes, type: p.kind === "exercise" ? f.type : undefined, note: f.note }); back(); }); break; }
-      case "min-list": { const p = pidOf(d); if (!p) break; const ls = wb.logsFor(p.id, S.day);
+      case "min-list": { const p = pidOf(d); if (!p) break; const ls = wb.logsFor(p.id, wb.viewDay());
         openInfo("今天的记录", `<div class="panel" style="padding:4px 14px">${ls.map(l => `<div class="medrow"><span>${hm(l.ts)} · <b>${l.data.minutes} ${t("分钟")}</b>${l.data.type ? ` · ${t(l.data.type)}` : ""}${l.data.note ? ` · ${esc(l.data.note)}` : ""}</span><button class="chip" data-act="log-del" data-lid="${esc(l.id)}">${t("删")}</button></div>`).join("")}</div>`); break; }
       case "rate": { const p = pidOf(d); if (!p) break; const st = wb.statusOf(p);
         if (st.rating === +d.v) { openForm("今天的饮食", [{ k: "note", label: "备注（吃了什么、为什么失控……）", type: "area" }], { note: (st.log && st.log.data.note) || "" }, async f => { await wb.setDaily(p, { note: f.note }); back(); }); break; }
@@ -108,7 +120,7 @@ document.addEventListener("click", async ev => {
 
       /* 祷告 */
       case "pray-today": { const p = wb.firstOfKind("prayer"); await wb.addLog("prayer", p ? p.id : null, { count: S.wb.prayers.filter(x => x.status !== "answered").length }); render(); break; }
-      case "pray-today-undo": { const p = wb.firstOfKind("prayer"); const ls = p ? wb.logsFor(p.id, S.day) : wb.logsOfKind("prayer", S.day); if (ls.length) await wb.deleteLog(ls[ls.length - 1].id); render(); break; }
+      case "pray-today-undo": { const p = wb.firstOfKind("prayer"); const ls = p ? wb.logsFor(p.id, wb.viewDay()) : wb.logsOfKind("prayer", wb.viewDay()); if (ls.length) await wb.deleteLog(ls[ls.length - 1].id); render(); break; }
       case "prayer-add": openForm("代祷事项", prayerFields(), { text: "", category: "family" }, async f => { if (!f.text) { toast(t("请填内容")); return; } await wb.upsertPrayer(f); back(); }); break;
       case "prayer-edit": { const p = wb.prayerOf(d.id); if (!p) break; openForm("代祷事项", [...prayerFields(), ...(p.status === "answered" ? [{ k: "answer", label: "怎么应允的", type: "area" }] : [])], p, async f => { await wb.upsertPrayer({ ...p, ...f }); back(); }, async () => { if (confirm(t("删除这条代祷事项？"))) { await wb.deletePrayer(p.id); back(); } }); break; }
       case "prayer-prayed": await wb.prayed(d.id); render(); break;

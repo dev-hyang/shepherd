@@ -7,23 +7,34 @@ import * as wb from "./wb.js";
 
 /* ============ 今天页：读经 → 今日习惯 → 家人 ============ */
 function viewToday(){
-  const day = S.day, now = new Date(), h = now.getHours();
+  const day = wb.viewDay(), past = day !== S.day, now = new Date(), h = now.getHours(), dt = new Date(day + "T12:00:00");
   const greet = h < 5 ? t("夜深了") : h < 11 ? t("早安") : h < 14 ? t("午安") : h < 18 ? t("下午好") : t("晚上好");
   const list = wb.forDay(day), done = list.filter(p => wb.statusOf(p, day).done).length;
   const sp = wb.firstOfKind("scripture"), sk = sp ? wb.streak(sp) : 0;
   return `
   <section class="hero"><div class="moon"></div>
-    <div class="lbl">${day} · ${t("周{d}", { d: t(WEEKDAY[now.getDay()]) })}</div>
-    <div class="big">${esc(greet)}，${esc(myName())}</div>
-    <div class="meta">${list.length ? `<span>${t("今天 {a}/{b}", { a: done, b: list.length })}</span>` : ""}${sk ? `<span>${t("连续读经 {n} 天", { n: sk })}</span>` : ""}</div></section>
+    <div class="lbl">${day} · ${t("周{d}", { d: t(WEEKDAY[dt.getDay()]) })}</div>
+    <div class="big">${past ? esc(t("补记 {d}", { d: day.slice(5).replace("-", "/") })) : `${esc(greet)}，${esc(myName())}`}</div>
+    <div class="meta">${list.length ? `<span>${past ? t("当天 {a}/{b}", { a: done, b: list.length }) : t("今天 {a}/{b}", { a: done, b: list.length })}</span>` : ""}${sk ? `<span>${t("连续读经 {n} 天", { n: sk })}</span>` : ""}</div></section>
+  ${dayBarHTML(day, past)}
   ${readingHTML()}
   ${habitsHTML(day, list)}
   ${familyHTML(day)}`;
 }
 
+/* 补记：忘了点的话，切到前几天再打卡 / 记读经。‹ › 翻一天，也可以直接选日期（最早 12 周内，不能选未来） */
+function dayBarHTML(day, past){
+  return `<div class="daybar">
+    <button class="chip" data-act="day-prev" aria-label="${t("前一天")}">‹</button>
+    <input type="date" id="pick-day" value="${esc(day)}" min="${wb.dayAdd(S.day, -wb.HISTORY_DAYS)}" max="${S.day}" aria-label="${t("选择补记的日期")}">
+    <button class="chip" data-act="day-next" aria-label="${t("后一天")}" ${past ? "" : "disabled"}>›</button>
+    ${past ? `<button class="chip" data-act="day-today">${t("回到今天")}</button><span class="small" style="color:var(--rose)">${t("正在补记，打卡会记到这一天")}</span>`
+           : `<span class="small muted">${t("忘了打卡？点 ‹ 选前几天补记")}</span>`}</div>`;
+}
+
 /* 读经：计划里今天这一段。读完打勾进一格；也可以记一段计划外的 */
 function readingHTML(){
-  const tp = wb.todayPassage(), rl = wb.readingLog(), extra = wb.logsOfKind("scripture", S.day).filter(l => l !== rl);
+  const tp = wb.todayPassage(), rl = wb.readingLog(), extra = wb.logsOfKind("scripture", wb.viewDay()).filter(l => l !== rl);
   const s = wb.settings(), zh = s.versionZh || "和合本", en = s.versionEn == null ? "BSB" : s.versionEn;
   let body;
   if (!tp) body = `<p class="muted">${t("还没选读经计划。选一个，每天这里就会列出当天的段落。")}</p><div class="btns" style="margin-top:0"><button class="btn primary" data-act="plan">${t("选读经计划")}</button><button class="btn" data-act="read-other">${t("记一段读过的")}</button></div>`;

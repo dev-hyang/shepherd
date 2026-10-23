@@ -16,6 +16,8 @@ S.wb = { loaded: false, error: null, profile: null, practices: [], logs: [], pra
 const HISTORY_DAYS = 84;          // 回顾页最多看 12 周
 const me = () => S.user.id;
 const today = () => S.day;
+// 今天页正在看 / 记录的那天：平时就是今天；点“补记”选了过去某天时是那天（打卡、读经都记到那天）。其余地方（连续天数、祷告）仍按真正的今天
+const viewDay = () => S.pick || S.day;
 const nowIso = () => new Date().toISOString();
 const missingTable = err => err && (err.code === "42P01" || err.code === "PGRST205" || /schema cache|does not exist/i.test(err.message || ""));
 async function run(p, msg){ const { data, error } = await p; if (error) { console.error(error); toast(t(msg || "云端保存失败") + (error.message ? "：" + String(error.message).slice(0, 80) : "")); throw error; } return data; }
@@ -93,13 +95,13 @@ const scheduledOn = (p, day) => {
   const days = (p.schedule && Array.isArray(p.schedule.days) && p.schedule.days.length) ? p.schedule.days : ALL_DAYS;
   return (p.target && p.target.per === "week") || days.includes(weekday(day));
 };
-const forDay = (day = today()) => activePractices().filter(p => scheduledOn(p, day));
+const forDay = (day = viewDay()) => activePractices().filter(p => scheduledOn(p, day));
 const logsFor = (pid, day) => S.wb.logs.filter(l => l.practice_id === pid && l.day === day);
 const logsOfKind = (kind, day) => S.wb.logs.filter(l => l.kind === kind && l.day === day);
 const firstOfKind = kind => activePractices().find(p => p.kind === kind) || null;
 
 // 今天（或某天）这项做到什么程度；logs 可传入（看家人的记录时用）
-function statusOf(p, day = today(), logs = logsFor(p.id, day)){
+function statusOf(p, day = viewDay(), logs = logsFor(p.id, day)){
   const mode = modeOf(p), tg = p.target || {};
   switch (mode) {
     case "count": return { mode, done: logs.length >= (tg.count || 1), count: logs.length };
@@ -156,9 +158,9 @@ async function applyTemplate(){
 }
 
 /* ---- 打卡记录 ---- */
-async function addLog(kind, pid, data = {}, day = today()){
+async function addLog(kind, pid, data = {}, day = viewDay()){
   const p = pid ? practice(pid) : null;
-  const row = { user_id: me(), id: newId(), practice_id: p ? p.id : null, kind, day, ts: Date.now(), data, updated_at: nowIso(), ...(p ? stamp(p) : { family_id: null, share: "private" }) };
+  const row = { user_id: me(), id: newId(), practice_id: p ? p.id : null, kind, day, ts: day === S.day ? Date.now() : new Date(day + "T12:00:00").getTime(), data, updated_at: nowIso(), ...(p ? stamp(p) : { family_id: null, share: "private" }) };
   const d = await run(SB.client.from("wb_logs").insert(row).select().single()); S.wb.logs.push(d); return d;
 }
 async function updateLog(id, data){
@@ -168,9 +170,9 @@ async function updateLog(id, data){
 }
 async function deleteLog(id){ await run(SB.client.from("wb_logs").delete().eq("user_id", me()).eq("id", id)); S.wb.logs = S.wb.logs.filter(x => x.id !== id); }
 // 一天一个数（屏幕、睡眠、饮食评价）：有就改，没有就加
-async function setDaily(p, data, day = today()){ const l = logsFor(p.id, day)[0]; return l ? updateLog(l.id, data) : addLog(p.kind, p.id, data, day); }
-async function toggleCheck(p, day = today()){ const l = logsFor(p.id, day)[0]; if (l) { await deleteLog(l.id); return false; } await addLog(p.kind, p.id, {}, day); return true; }
-async function setSlot(p, slot, taken, day = today()){
+async function setDaily(p, data, day = viewDay()){ const l = logsFor(p.id, day)[0]; return l ? updateLog(l.id, data) : addLog(p.kind, p.id, data, day); }
+async function toggleCheck(p, day = viewDay()){ const l = logsFor(p.id, day)[0]; if (l) { await deleteLog(l.id); return false; } await addLog(p.kind, p.id, {}, day); return true; }
+async function setSlot(p, slot, taken, day = viewDay()){
   const l = logsFor(p.id, day).find(x => x.data.slot === slot) || null;
   if (taken == null) { if (l) await deleteLog(l.id); } else if (l) await updateLog(l.id, { taken }); else await addLog(p.kind, p.id, { slot, taken }, day);
   // 库存：服了减一，撤销加回；跳过不动
@@ -219,10 +221,10 @@ async function movePlan(delta){ const plan = currentPlan(); if (!plan) return; c
 async function setPlanIndex(i){ const plan = currentPlan(); if (!plan) return; const st = planState(); await saveSettings({ plan: { ...st, progress: { ...st.progress, [plan.id]: Math.max(0, Math.min(plan.items.length - 1, i)) } } }); }
 async function importPlan(name, items){ await saveSettings({ plan: { ...planState(), id: "custom", custom: { name, items } } }); }
 // 今天的读经记录：按计划读完 → 记一条并前进一格；撤销 → 删记录并退一格
-const readingLog = (day = today()) => logsOfKind("scripture", day).find(l => l.data && l.data.plan != null) || null;
+const readingLog = (day = viewDay()) => logsOfKind("scripture", day).find(l => l.data && l.data.plan != null) || null;
 async function markRead(tp){
   const p = firstOfKind("scripture");
-  await addLog("scripture", p ? p.id : null, { ref: tp.item.label, plan: tp.plan.id, index: tp.index }, today());
+  await addLog("scripture", p ? p.id : null, { ref: tp.item.label, plan: tp.plan.id, index: tp.index }, viewDay());
   await movePlan(1);
 }
 async function unmarkRead(){
@@ -231,7 +233,7 @@ async function unmarkRead(){
   await deleteLog(l.id);
   if (plan && l.data.plan === plan.id) await movePlan(-1);
 }
-async function logReading(ref, note){ const p = firstOfKind("scripture"); await addLog("scripture", p ? p.id : null, { ref, note: note || "" }, today()); }
+async function logReading(ref, note){ const p = firstOfKind("scripture"); await addLog("scripture", p ? p.id : null, { ref, note: note || "" }, viewDay()); }
 
 // 段落正文：按章抓取，缓存在内存里。返回 [{ title, verses: [{v, text}] }]，失败的章带 error
 async function passageText(item, version){
@@ -256,7 +258,7 @@ function familyToday(day = today()){
   return Object.entries(by).map(([uid, items]) => ({ uid, name: memberName(uid), items }));
 }
 
-export { HISTORY_DAYS, today, dayAdd, weekday, weekStartOf, loadAll, attachRealtime, settings, saveSettings, resetIcsToken,
+export { HISTORY_DAYS, today, viewDay, dayAdd, weekday, weekStartOf, loadAll, attachRealtime, settings, saveSettings, resetIcsToken,
   practice, activePractices, scheduledOn, forDay, logsFor, logsOfKind, firstOfKind, statusOf, weekOf, streak, upsertPractice, deletePractice, applyTemplate,
   addLog, updateLog, deleteLog, setDaily, toggleCheck, setSlot,
   prayerOf, upsertPrayer, prayed, answerPrayer, reopenPrayer, deletePrayer,

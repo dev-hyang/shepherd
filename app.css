@@ -80,6 +80,9 @@ a{color:var(--slate)}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer;min-height:36px}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.daybar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 0}
+.daybar input[type=date]{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px;min-height:36px}
+.daybar .chip:disabled{opacity:.4;cursor:default}
 ul.plain{margin:6px 0 0;padding-left:18px}
 ul.plain li{margin:4px 0}
 .scroll-x{overflow-x:auto}

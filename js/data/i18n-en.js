@@ -4,6 +4,7 @@
 const EN = {
   // ---- 框架 ----
   "牧羊人": "Shepherd", "身心灵记录": "Body, mind & spirit", "今天": "Today", "祷告": "Prayer", "回顾": "Review", "我的": "Me", "我": "Me", "家人": "Family", "个人": "Personal",
+  "补记 {d}": "Catching up: {d}", "当天 {a}/{b}": "That day {a}/{b}", "前一天": "Previous day", "后一天": "Next day", "选择补记的日期": "Pick a day to catch up on", "回到今天": "Back to today", "正在补记，打卡会记到这一天": "Catching up: check-ins are saved to this day", "忘了打卡？点 ‹ 选前几天补记": "Forgot to check in? Tap ‹ to go back a day", "最多补记 {n} 天内的": "You can go back up to {n} days",
   "周{d}": "{d}", "日": "Sun", "一": "Mon", "二": "Tue", "三": "Wed", "四": "Thu", "五": "Fri", "六": "Sat",
   "连接中": "Connecting", "云端不可用": "Cloud unavailable", "未登录": "Signed out", "请绑定邮箱": "Link an email", "还没登录": "Not signed in", "家庭 · {n} 人": "Family · {n}",
   "切到{name}": "Go to {name}", "切换姊妹应用": "Switch app", "小月亮": "Little Moon", "家庭学堂": "Family Homeschool", "爱家小助手": "Home Helper",

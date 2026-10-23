@@ -9,7 +9,8 @@ const S = {
   tab: "today",
   cloud: "loading",        // loading | offline | signedout | anon | ready（ready 时 family 可能为 null：还没加入家庭，照样能用）
   user: null, family: null, members: {},
-  day: dayKey(Date.now()),
+  day: dayKey(Date.now()),   // 真正的今天
+  pick: null,              // 今天页“补记”选的过去某一天（null = 今天）；见 wb.viewDay()
   review: { range: "4w", metric: "scripture" },
   prayerFilter: { status: "open", cat: "all" },
   showText: false          // 今天页是否展开经文正文

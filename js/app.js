@@ -25,5 +25,5 @@ if (!(await healStaleModules())) {
   render();          // 先画出"连接中"的壳
   initSupabase();    // 加载 supabase-js，登录状态回调里再渲染一次
   // 页面开着过了午夜：换到新的一天
-  setInterval(() => { const d = dayKey(Date.now()); if (d !== S.day) { S.day = d; if (!document.querySelector("#sheet").open) render(); } }, 60e3);
+  setInterval(() => { const d = dayKey(Date.now()); if (d !== S.day) { S.day = d; if (S.pick === d) S.pick = null; if (!document.querySelector("#sheet").open) render(); } }, 60e3);
 }

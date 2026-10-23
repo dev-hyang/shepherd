@@ -81,7 +81,7 @@ async function logSession(minutes){
     let p = (T.practiceId && wb.practice(T.practiceId)) || wb.firstOfKind("focus");
     if (!p) p = await wb.upsertPractice({ kind: "focus", name: "", schedule: { days: [1, 2, 3, 4, 5], times: [], remind: false }, target: { per: "day", count: 4 } });
     T.practiceId = p.id; save();
-    await wb.addLog("focus", p.id, { minutes, task: T.task || "", eyes: T.eyes || 0 });
+    await wb.addLog("focus", p.id, { minutes, task: T.task || "", eyes: T.eyes || 0 }, S.day);   // 专注计时永远记到真正的今天，不跟“补记”选的日子走
   } catch (e) { /* run() already toasted */ }
 }
 function tick(){
