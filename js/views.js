@@ -1,3 +1,4 @@
+import { updateMiniBar } from "./minibar.js";
 import { myName } from "./core/auth.js";
 import { SISTER_APPS, THIS_APP } from "./core/config.js";
 import { LOCALES, locale, t } from "./core/i18n.js";
@@ -58,6 +59,7 @@ function render(){
   document.querySelectorAll("nav.tabs button").forEach(b => { if (b.dataset.tab === S.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   const v = VIEWS[S.tab] || viewToday;
   $("#main").innerHTML = S.tab === "me" ? v() : (gateHTML() || v());
+  updateMiniBar($("#bname").textContent, "", t("回到顶部"));
 }
 function refreshSettingsIfOpen(){ if ($("#sheet").open && $("#sheetTitle") && $("#sheetTitle").textContent === t("设置")) openSettings(); }
 

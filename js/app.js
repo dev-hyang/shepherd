@@ -10,7 +10,7 @@ import { render } from "./views.js";
 
 /* 发布后的头几分钟，浏览器可能把新的 index.html 和缓存里的旧模块混在一起（内部 import 没有版本号）。
    index.html 里的 meta 版本与 config.js 不一致时，强制重新抓取所有模块并刷新一次。 */
-const MODULES = ["app", "events", "views", "sheet", "today", "prayer", "review", "me", "about", "wb", "focus", "tk", "tasks", "recur", "data/taskcats",
+const MODULES = ["app", "events", "views", "minibar", "sheet", "today", "prayer", "review", "me", "about", "wb", "focus", "tk", "tasks", "recur", "data/taskcats",
   "core/config", "core/util", "core/state", "core/auth", "core/i18n", "data/s2t", "data/i18n-en", "data/bible", "data/plans", "data/kinds", "data/about"].map(m => `js/${m}.js`);
 async function healStaleModules(){
   const want = (document.querySelector('meta[name="app-version"]') || {}).content;

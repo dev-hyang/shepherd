@@ -289,3 +289,13 @@ nav.tabs button{position:relative}
 .lib-group > summary::before{content:"▸";color:var(--muted)}
 .lib-group[open] > summary::before{content:"▾"}
 .tk-head .btn{flex:none;min-height:42px;padding:8px 16px}
+/* the narrow bar that holds the title and the way back once the header has scrolled away (js/minibar.js) */
+.minibar{position:fixed;top:0;left:0;right:0;z-index:12;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);transform:translateY(-100%);visibility:hidden;transition:transform .18s ease,visibility 0s linear .18s}
+.minibar.show{transform:none;visibility:visible;transition:transform .18s ease}
+.minibar .in{max-width:720px;margin:0 auto;padding:0 16px;min-height:44px;display:flex;align-items:center;gap:10px}
+.minibar .chip{flex:none}
+.mb-title{all:unset;box-sizing:border-box;flex:1;min-width:0;min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb-title:focus-visible{outline:2px solid var(--slate);outline-offset:-2px;border-radius:6px}
+body.sheet-open .minibar,body.printview .minibar{display:none}
+@media (prefers-reduced-motion:reduce){.minibar,.minibar.show{transition:none}}
+@media print{.minibar{display:none}}
