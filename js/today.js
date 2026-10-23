@@ -50,7 +50,7 @@ function readingHTML(){
     ${S.showText ? `<div id="passage" class="passage"><p class="muted small">${t("正在抓取经文…")}</p></div>` : ""}` : ""}
     <div class="btns">${rl ? `<button class="btn" data-act="read-undo">${t("今天读完了 ✓ · 点击撤销")}</button>` : `<button class="btn primary" data-act="read-done">${t("读完了")}</button>`}<button class="btn" data-act="read-other">${t("另记一段")}</button></div>`;
   }
-  const extraRows = extra.map(l => `<div class="small muted" style="margin-top:6px">${t("另读了")} <b>${esc(l.data.ref || "")}</b>${l.data.note ? ` · ${esc(l.data.note)}` : ""} <button class="chip" data-act="log-del" data-lid="${esc(l.id)}">${t("删")}</button></div>`).join("");
+  const extraRows = extra.map(l => `<div class="small muted" style="margin-top:6px" data-swipe>${t("另读了")} <b>${esc(l.data.ref || "")}</b>${l.data.note ? ` · ${esc(l.data.note)}` : ""} <button class="chip swipe-src" data-act="log-del" data-lid="${esc(l.id)}">${t("删")}</button></div>`).join("");
   if (S.showText && tp && tp.item.parts && tp.item.parts.length) loadPassage(tp.item, zh, en);
   return `<h2>${t("读经")}</h2><div class="panel ${rl ? "done" : ""}">${body}${extraRows}</div>`;
 }
