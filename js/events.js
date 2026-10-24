@@ -42,6 +42,7 @@ document.addEventListener("change", ev => { if (ev.target && ev.target.id === "t
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "f_reflection") nts.growText(); });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "prayQ") { S.prayerFilter.q = ev.target.value; render(); const i = $("#prayQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
 document.addEventListener("click", ev => { if (S.fpop && !ev.target.closest(".fbar-wrap")) closePop(); });
+document.addEventListener("input", ev => { if (ev.target && ev.target.id === "habQ") { S.habitsQ = ev.target.value; openHabits(); const i = $("#habQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "ntQ") nts.onSearch(ev.target.value); });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntMonth") nts.setFilter("month", ev.target.value); });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntPhoto") { const fs = [...ev.target.files]; ev.target.value = ""; nts.onPhotos(fs); } });

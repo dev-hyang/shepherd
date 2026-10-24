@@ -6,6 +6,7 @@ import { S } from "./core/state.js";
 import { $, esc } from "./core/util.js";
 import { ALL_DAYS, KINDS, WEEKDAY, kindOf, modeOf } from "./data/kinds.js";
 import { PLANS } from "./data/plans.js";
+import { fbar } from "./ui.js";
 import { render } from "./views.js";
 import * as wb from "./wb.js";
 import * as tk from "./tk.js";
@@ -78,11 +79,14 @@ function openInfo(title, html){ $("#sheetIn").innerHTML = `${head(esc(t(title)))
 /* ---- 习惯表单：表里的 target / schedule / meta 展平成一张表，保存时再折回去 ---- */
 const weekdayOpts = () => [1, 2, 3, 4, 5, 6, 0].map(d => [d, t("周{d}", { d: t(WEEKDAY[d]) })]);
 const kindOpts = () => Object.entries(KINDS).map(([k, v]) => [k, `${v.icon} ${v.label}`]);
+const fh = title => `<div class="fh">${t(title)}</div>`;   // 表单里的分段小标题
 function practiceFields(){
   const is = (...ks) => d => ks.includes(d.kind);
   return [
+    { k: "h_basic", type: "html", html: () => fh("基本信息") },
     { k: "kind", label: "种类", type: "seg", opts: kindOpts(), when: d => !d.id },
     { k: "name", label: "名称", type: "text", ph: "读经 / 晨跑 / 维生素 D" },
+    { k: "h_goal", type: "html", html: () => fh("目标"), when: is("exercise", "custom", "prayer", "focus", "screen", "sleep") },
     { k: "per", label: "目标按", type: "seg", opts: [["day", "每天"], ["week", "每周"]], when: is("exercise", "custom") },
     { k: "count", label: "每周几次", type: "num", ph: "3", when: d => d.per === "week" && ["exercise", "custom"].includes(d.kind) },
     { k: "count", label: "每天几次", type: "num", ph: "1", when: is("prayer") },
@@ -90,12 +94,15 @@ function practiceFields(){
     { k: "minutes", label: "每次多少分钟（可空）", type: "num", ph: "30", when: is("exercise", "custom") },
     { k: "max", label: "每天最多多少分钟", type: "num", ph: "120", when: is("screen") },
     { k: "min", label: "希望每晚睡几小时", type: "num", ph: "7", step: 0.5, when: is("sleep") },
+    { k: "h_dose", type: "html", html: () => fh("剂量与库存"), when: is("med", "supplement") },
     { k: "dose", label: "剂量", type: "text", ph: "1 片 / 2 粒", when: is("med", "supplement") },
     { k: "stock", label: "现在还剩多少（可空；每次“服了”自动减一）", type: "num", ph: "30", when: is("med", "supplement") },
     { k: "refillAt", label: "剩几天的量时提醒补货", type: "num", ph: "7", when: is("med", "supplement") },
+    { k: "h_time", type: "html", html: () => fh("日子与提醒") },
     { k: "days", label: "哪几天", type: "multi", raw: true, opts: weekdayOpts(), hint: "按周算目标的习惯，哪天做都算；这里的日子只决定提醒。" },
     { k: "times", label: "时间点（提醒用，多个用逗号隔开；用药按时间点分别打卡）", type: "text", ph: "07:00, 21:30" },
     { k: "remind", label: "进日历订阅提醒", type: "check" },
+    { k: "h_share", type: "html", html: () => fh("分享与状态") },
     { k: "share", label: "完成情况开给家人看", type: "seg", opts: [["private", "仅自己"], ["family", "家人可见"]], hint: "家人只看到这项做了没有、分钟数和备注。祷告清单的内容永远只有你自己看得到。" },
     { k: "active", label: "进行中", type: "check" }
   ];
@@ -128,29 +135,33 @@ const isMed = p => ["med", "supplement"].includes(p.kind);
 function lowStock(p){ const m = p.meta || {}; if (!isMed(p) || m.stock == null || m.stock === "" || m.refillAt == null || m.refillAt === "") return false; return Math.floor(m.stock / Math.max(1, ((p.schedule || {}).times || []).length)) <= m.refillAt; }
 function openHabits(filter){
   S.habitsFilter = filter && ["all", "habits", "meds", "archived"].includes(filter) ? filter : (S.habitsFilter || "all");
-  const all = S.wb.practices, f = S.habitsFilter;
+  const all = S.wb.practices, f = S.habitsFilter, q = (S.habitsQ || "").trim().toLowerCase();
+  const match = p => !q || `${p.name || t(kindOf(p).label)} ${t(kindOf(p).label)} ${(p.meta || {}).dose || ""}`.toLowerCase().includes(q);
   const live = all.filter(p => !p.archived);
   const groups = { all: live, habits: live.filter(p => !isMed(p)), meds: live.filter(isMed), archived: all.filter(p => p.archived) };
-  const list = groups[f];
+  const list = groups[f].filter(match);
+  const daysLeft = p => { const m = p.meta || {}, n = Math.max(1, ((p.schedule || {}).times || []).length); return Math.floor(m.stock / n); };
+  /* 每行：图标 | 名字（暂停 / 补货提示）+ 目标一行 + 小标签（日子、时间点）| 家人可见开关 */
   const row = p => { const k = kindOf(p), tg = p.target || {}, sc = p.schedule || {}, m = p.meta || {};
     const goal = p.kind === "focus" ? t("每天 {n} 段", { n: tg.count || "–" }) : modeOf(p) === "minutes" ? (tg.per === "week" ? t("每周 {n} 次 · 每次 {m} 分钟", { n: tg.count || 1, m: tg.minutes || "–" }) : t("每天 {m} 分钟", { m: tg.minutes || "–" }))
       : p.kind === "screen" ? t("每天不超过 {m} 分钟", { m: tg.max || "–" }) : p.kind === "sleep" ? t("每晚 {h} 小时", { h: tg.min || "–" }) : p.kind === "prayer" ? t("每天 {n} 次", { n: tg.count || 1 })
-      : isMed(p) ? `${esc(m.dose || "")}${m.stock != null && m.stock !== "" ? ` · ${t("剩 {n}", { n: m.stock })}` : ""}` : "";
+      : isMed(p) ? esc(m.dose || "") : "";
+    const stock = isMed(p) && m.stock != null && m.stock !== "" ? `${t("剩 {n}", { n: m.stock })}${(sc.times || []).length ? ` · ${t("约 {d} 天", { d: daysLeft(p) })}` : ""}` : "";
     const days = (sc.days || ALL_DAYS).length === 7 ? t("每天") : (sc.days || []).map(d => t(WEEKDAY[d])).join("");
-    const meta = [goal, days, sc.times && sc.times.length ? sc.times.join(" ") + (sc.remind === false ? "" : " ⏰") : ""].filter(Boolean).join(" · ");
-    return `<div class="habit"><span class="hi" style="background:${k.color}22;color:${k.color}">${k.icon}</span>
-      <button class="main" data-act="habit-edit" data-pid="${esc(p.id)}"><span class="title">${esc(p.name || t(k.label))}${p.active === false && !p.archived ? ` <span class="small muted">${t("（暂停）")}</span>` : ""}${!p.archived && lowStock(p) ? ` <span class="warn">${t("该补货了")}</span>` : ""}</span><span class="meta">${meta}</span></button>
-      <span class="acts">${p.archived ? `<button class="chip" data-act="habit-restore" data-pid="${esc(p.id)}">${t("恢复")}</button>` : `<button class="chip" data-act="habit-share" data-pid="${esc(p.id)}" aria-pressed="${p.share === "family"}" title="${t("完成情况开给家人看")}">${p.share === "family" ? t("家人可见") : t("仅自己")}</button>`}</span></div>`; };
+    const tags = [days, sc.times && sc.times.length ? sc.times.join(" ") + (sc.remind === false ? "" : " ⏰") : ""].filter(Boolean).map(x => `<span class="tag">${esc(x)}</span>`).join("");
+    return `<div class="habit hrow ${p.active === false && !p.archived ? "paused" : ""}"><span class="hi" style="background:${k.color}22;color:${k.color}">${k.icon}</span>
+      <button class="main" data-act="habit-edit" data-pid="${esc(p.id)}"><span class="title">${esc(p.name || t(k.label))}${p.active === false && !p.archived ? ` <span class="pill">${t("暂停")}</span>` : ""}${!p.archived && lowStock(p) ? ` <span class="warn">${t("该补货了")}</span>` : ""}</span>
+        ${goal || stock ? `<span class="meta">${[goal, stock].filter(Boolean).join(" · ")}</span>` : ""}${tags ? `<span class="tags">${tags}</span>` : ""}</button>
+      <span class="acts">${p.archived ? `<button class="chip" data-act="habit-restore" data-pid="${esc(p.id)}">${t("恢复")}</button>` : `<button class="chip share" data-act="habit-share" data-pid="${esc(p.id)}" aria-pressed="${p.share === "family"}" title="${t("完成情况开给家人看")}">${p.share === "family" ? `👪 ${t("家人可见")}` : t("仅自己")}</button>`}</span></div>`; };
   // “全部”里习惯和用药各一组，用小标题分开；只有一组时不加
-  const body = list.length ? (f === "all" && groups.habits.length && groups.meds.length
-      ? [[t("习惯与提醒"), groups.habits], [t("用药与保健品"), groups.meds]].map(([l, g]) => `<div class="glabel">${l}</div>${g.map(row).join("")}`).join("")
-      : list.map(row).join(""))
-    : `<div class="empty">${f === "archived" ? t("没有归档的习惯。") : f === "meds" ? t("还没有用药或保健品。") : t("还没有习惯。")}${f !== "archived" && !all.length ? `<br><button class="btn" data-act="template-apply">${t("一键起步")}</button>` : ""}</div>`;
+  const secs = f === "all" && groups.habits.filter(match).length && groups.meds.filter(match).length ? [[t("习惯与提醒"), groups.habits.filter(match)], [t("用药与保健品"), groups.meds.filter(match)]] : null;
+  const body = list.length ? (secs ? secs.map(([l, g]) => `<div class="glabel">${l} <span class="cnt">${g.length}</span></div>${g.map(row).join("")}`).join("") : list.map(row).join(""))
+    : `<div class="empty">${q ? t("没有符合的条目。") : f === "archived" ? t("没有归档的习惯。") : f === "meds" ? t("还没有用药或保健品。") : t("还没有习惯。")}${!q && f !== "archived" && !all.length ? `<br><button class="btn" data-act="template-apply">${t("一键起步")}</button>` : ""}</div>`;
+  const tabs = [["all", "全部"], ["habits", "习惯"], ["meds", "用药"], ["archived", "归档"]];
   const addAttr = f === "meds" ? 'data-act="habit-add-kind" data-kind="med"' : 'data-act="habit-add"';
-  const filters = [["all", "全部"], ["habits", "习惯与提醒"], ["meds", "用药与保健品"], ["archived", "已归档"]];
   $("#sheetIn").innerHTML = `${head(t("习惯与用药"))}
-  <div class="toolbar"><div class="chips" role="group" aria-label="${t("筛选")}">${filters.map(([k, l]) => `<button class="chip" data-hf="${k}" aria-pressed="${f === k}">${t(l)} <span class="cnt">${groups[k].length}</span></button>`).join("")}</div>
-    <button class="btn primary" ${addAttr}>＋ ${t("新增")}</button></div>
+  <div class="seg eq" role="group" aria-label="${t("分类")}">${tabs.map(([k, l]) => `<button data-hf="${k}" aria-pressed="${f === k}">${t(l)} <span class="cnt">${groups[k].length}</span></button>`).join("")}</div>
+  ${fbar({ id: "hb", q: all.length > 5 ? { id: "habQ", value: S.habitsQ || "", ph: "搜索习惯、药名" } : null, add: { attrs: addAttr, label: f === "meds" ? "用药" : "新增" } })}
   <div class="panel" style="padding:4px 10px">${body}</div>
   <p class="small muted">${t("点一项编辑目标、日子、时间点和提醒。“家人可见”只分享做了没有；删除先归档，归档后再删才会连记录一起删。")}${!S.family ? " " + t("加入家庭后才能开给家人看。") : ""}</p>`;
   showSheet();

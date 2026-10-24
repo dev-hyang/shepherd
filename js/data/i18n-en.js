@@ -467,5 +467,16 @@ const EN = {
   "读书、读经、祷告时的心得、疑问或感动，随手记在这里。": "Jot down insights, questions and promptings from reading and praying here.",
   /* Markdown 心得 */
   "笔记": "Note",
+  /* Markdown 心得 */
+  "约 {d} 天": "about {d} days",
+  "没有符合的条目。": "Nothing matches.",
+  "搜索习惯、药名": "Search habits, medicines",
+  "习惯": "Habits",
+  "归档": "Archived",
+  "基本信息": "Basics",
+  "目标": "Goal",
+  "剂量与库存": "Dose & stock",
+  "日子与提醒": "Days & reminders",
+  "分享与状态": "Sharing & status",
 };
 export { EN };
