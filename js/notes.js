@@ -7,6 +7,8 @@ import { memberName } from "./core/auth.js";
 import { PROVIDERS, aiReady, aiSettings, askText, providerOf, saveAiSettings, testAi } from "./ai.js";
 import { NOTE_KINDS, monthsOf, onThisDay, OCR_SYSTEM, OCR_USER, PURPOSES, byNewest, compilePrompt, filterNotes, groupNotes, joinQuote, meta, noteHeading, parseOcr, parseTags, tagCounts, toMarkdown } from "./notes-lib.js";
 import * as nt from "./nt.js";
+import { chipBtn, fbar } from "./ui.js";
+import { render } from "./views.js";
 import { closeSheet, drawForm, getForm, head, openForm, openInfo, readForm, showSheet } from "./sheet.js";
 import * as wb from "./wb.js";
 
@@ -71,25 +73,30 @@ function listHTML(){
   const any = current().length;
   return `<div class="empty">${any ? t("这个筛选下没有笔记。") : S.ntUi.scope === "shared" ? t("家人还没有分享笔记给你。") : t("读书、读经、祷告时有心得、疑问或感动，随手记在这里，日积月累就是自己的参考。")}</div>`;
 }
-function openNotes(){
-  if (S.nt.error === "missing") { openInfo("灵修笔记", `<div class="empty">${t("数据库还没有笔记表。")}<br>${t("请在 Supabase 执行")} <code>docs/016_shepherd_notes.sql</code>${t("，然后刷新。")}</div>`); return; }
-  if (S.nt.error || !S.nt.loaded) { openInfo("灵修笔记", `<div class="empty">${S.nt.error ? t("读取笔记失败，请刷新重试。") : t("正在读取…")}</div>`); return; }
-  const ui = S.ntUi, base = current();
-  const tags = tagCounts(base), kinds = ["all", ...Object.keys(NOTE_KINDS)];
+/** 笔记子页（在祷告页里）：筛选面板 + 搜索 + 新增，下面是历史上的今天、月份翻页、列表 */
+function viewNotes(){
+  if (S.nt.error === "missing") return `<div class="empty">${t("数据库还没有笔记表。")}<br>${t("请在 Supabase 执行")} <code>docs/016_shepherd_notes.sql</code>${t("，然后刷新。")}</div>`;
+  if (S.nt.error || !S.nt.loaded) return `<div class="empty">${S.nt.error ? t("读取笔记失败，请刷新重试。") : t("正在读取…")}</div>`;
+  const ui = S.ntUi, base = current(), tags = tagCounts(base);
+  const opt = (k, v, label, count) => ({ label, attrs: `data-ntf="${k}" data-v="${esc(v)}"`, on: ui[k] === v, count });
   const cnt = k => (k === "all" ? base : base.filter(n => n.kind === k)).length;
-  $("#sheetIn").innerHTML = `${head(t("灵修笔记"))}
-  ${S.nt.shared.length ? `<div class="seg mini" role="group" aria-label="${t("来源")}" style="margin:8px 0">${[["mine", t("我的")], ["shared", t("家人分享给我")]].map(([k, l]) => `<button data-ntf="scope" data-v="${k}" aria-pressed="${ui.scope === k}">${esc(l)} ${k === "mine" ? S.nt.mine.length : S.nt.shared.length}</button>`).join("")}</div>` : ""}
-  <div class="toolbar"><div class="chips" role="group" aria-label="${t("类型")}">${kinds.map(k => `<button class="chip" data-ntf="kind" data-v="${k}" aria-pressed="${ui.kind === k}">${k === "all" ? t("全部") : `${kindIcon(k)} ${esc(kindLabel(k))}`} <span class="cnt">${cnt(k)}</span></button>`).join("")}</div>
-    ${ui.scope === "mine" ? `<button class="btn primary" data-act="note-add">＋ ${t("记一条")}</button>` : ""}</div>
-  <div class="field" style="margin:6px 0"><input id="ntQ" type="search" value="${esc(ui.q)}" placeholder="${esc(t("搜索：出处、书名、摘录、心得、标签"))}" aria-label="${esc(t("搜索笔记"))}" enterkeyhint="search" autocomplete="off"></div>
-  ${tags.length ? `<div class="chips" role="group" aria-label="${t("标签")}" style="margin-top:0"><button class="chip" data-ntf="tag" data-v="all" aria-pressed="${ui.tag === "all"}">${t("全部标签")}</button>${tags.slice(0, 30).map(([x, c]) => `<button class="chip" data-ntf="tag" data-v="${esc(x)}" aria-pressed="${ui.tag === x}">#${esc(x)} <span class="cnt">${c}</span></button>`).join("")}</div>` : ""}
+  const groups = [
+    ...(S.nt.shared.length ? [{ label: "来源", opts: [opt("scope", "mine", t("我的"), S.nt.mine.length), opt("scope", "shared", t("家人分享给我"), S.nt.shared.length)] }] : []),
+    { label: "类型", opts: ["all", ...Object.keys(NOTE_KINDS)].map(k => opt("kind", k, k === "all" ? t("全部") : `${kindIcon(k)} ${esc(kindLabel(k))}`, cnt(k))) },
+    ...(tags.length ? [{ label: "标签", opts: [opt("tag", "all", t("全部标签")), ...tags.slice(0, 30).map(([x, c]) => opt("tag", x, `#${esc(x)}`, c))] }] : [])];
+  return `<div class="sec-acts-row">${ui.scope === "mine" && S.nt.mine.length ? chipBtn(t("导出 / 打印 / 整理"), 'data-act="note-export"') : ""}${chipBtn(t("AI 设置"), 'data-act="ai-settings"')}</div>
+  ${fbar({ id: "nt", groups, q: { id: "ntQ", value: ui.q, ph: "搜索笔记" }, add: ui.scope === "mine" ? { attrs: 'data-act="note-add"', label: "笔记" } : null })}
   <div id="ntBody">${bodyHTML()}</div>
-  <div class="btns">${ui.scope === "mine" && S.nt.mine.length ? `<button class="btn" data-act="note-export">${t("导出 / 打印 / 整理")}</button>` : ""}<button class="btn" data-act="ai-settings">${t("AI 设置")}</button></div>
-  <p class="small muted">${t("默认只有你自己看得到；每一条可以单独分享给指定的家人（对方只读）。拍照识字的照片不会被保存。")}</p>`;
-  showSheet();
+  <p class="small muted" style="margin-top:8px">${t("默认只有你自己看得到；每一条可以单独分享给指定的家人（对方只读）。拍照识字的照片不会被保存。")}</p>`;
+}
+/** 切到祷告页的“灵修笔记”子页（今天页、我的页、保存后的跳转都用这个） */
+function openNotes(){
+  S.tab = "prayer"; S.prayerView = "notes"; S.pick = null; S.fpop = null;
+  closeSheet();   // 有表单开着就先关掉（会重画）；没开就直接重画
+  window.scrollTo(0, 0); setTimeout(() => window.scrollTo(0, 0), 60);
 }
 /** 点筛选：scope / kind / tag */
-function setFilter(k, v){ if (k === "month" && !v) return; S.ntUi[k] = v; S.ntUi.limit = PAGE; if (k === "scope") { S.ntUi.kind = "all"; S.ntUi.tag = "all"; S.ntUi.month = null; } openNotes(); }
+function setFilter(k, v){ if (k === "month" && !v) return; S.ntUi[k] = v; S.ntUi.limit = PAGE; if (k === "scope") { S.ntUi.kind = "all"; S.ntUi.tag = "all"; S.ntUi.month = null; } render(); }
 function moreNotes(){ S.ntUi.limit += PAGE; const b = $("#ntBody"); if (b) b.innerHTML = bodyHTML(); }
 /** 搜索框每次输入只重画列表（不然光标会丢） */
 function onSearch(v){ S.ntUi.q = v; S.ntUi.limit = PAGE; const box = $("#ntBody"); if (box) box.innerHTML = bodyHTML(); }
@@ -144,8 +151,8 @@ function openNoteForm(n, prefill = {}, { photo = false } = {}){
     const d = await nt.saveNote({ ...f, ai_used: used || (!f.ocr && !!f.ai_used), tags: parseTags(f.tags), day: f.day || S.day });
     S.ntUi.month = String(d.day).slice(0, 7); S.ntUi.limit = PAGE;   // 回到列表时落在这条所在的月份
     toast(t("记下了"));
-    openNotes();
-  }, isNew ? null : async () => { if (confirm(t("删除这条笔记？"))) { await nt.deleteNote(n.id); openNotes(); } });
+    closeSheet();
+  }, isNew ? null : async () => { if (confirm(t("删除这条笔记？"))) { await nt.deleteNote(n.id); closeSheet(); } });
   if (photo) { const el = $("#ntPhoto"); if (el && !el.disabled) el.click(); else if (!aiReady()) toast(t("先在 设置 → AI 助手 填 key，或直接粘贴文字")); }
 }
 /* ---------- 心得：Markdown 编辑区（工具栏 + 编辑 / 预览 + 全屏写作）---------- */
@@ -315,5 +322,5 @@ async function runAiTest(){
   try { await testAi(); toast(t("连接成功 ✓")); } catch (e) { toast(String(e.message || e).slice(0, 160)); }
 }
 
-export { otdHTML, moreNotes, toggleExMonth, mdInsert, mdPreview, mdFull, exitFull, growText, openNotes, openNote, openNoteForm, setFilter, onSearch, onPhotos, pickPara, pickAll, addTag, openExport, toggleExport, openPreview, exportMd, exportJson, copyMd, copyText, resultText, compileWithAi, openResult,
+export { viewNotes, otdHTML, moreNotes, toggleExMonth, mdInsert, mdPreview, mdFull, exitFull, growText, openNotes, openNote, openNoteForm, setFilter, onSearch, onPhotos, pickPara, pickAll, addTag, openExport, toggleExport, openPreview, exportMd, exportJson, copyMd, copyText, resultText, compileWithAi, openResult,
   openAiSettings, runAiTest, kindLabel };

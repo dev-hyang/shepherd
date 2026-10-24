@@ -13,6 +13,7 @@ import * as wb from "./wb.js";
 import * as tkm from "./tk.js";
 import * as nt from "./nt.js";
 import * as nts from "./notes.js";
+import { closePop, togglePop } from "./ui.js";
 import { editCat, openCats, openMit, openTaskForm, resetCats, shiftPlan, startTidy } from "./tasks.js";
 
 /* ============ 事件分发 ============
@@ -39,6 +40,8 @@ document.addEventListener("submit", async ev => {
 });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "tkPrio") { S.tkUi.prio = ev.target.value; render(); } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "f_reflection") nts.growText(); });
+document.addEventListener("input", ev => { if (ev.target && ev.target.id === "prayQ") { S.prayerFilter.q = ev.target.value; render(); const i = $("#prayQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
+document.addEventListener("click", ev => { if (S.fpop && !ev.target.closest(".fbar-wrap")) closePop(); });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "ntQ") nts.onSearch(ev.target.value); });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntMonth") nts.setFilter("month", ev.target.value); });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntPhoto") { const fs = [...ev.target.files]; ev.target.value = ""; nts.onPhotos(fs); } });
@@ -47,7 +50,10 @@ document.addEventListener("input", ev => { if (ev.target && ev.target.id === "tk
 document.addEventListener("click", async ev => {
   const btn = ev.target.closest("button"); if (!btn) return;
   const d = btn.dataset;
-  if (d.tab) { close(); S.tab = d.tab; S.pick = null; render(); window.scrollTo(0, 0); return; }
+  if (d.fpop) { togglePop(d.fpop); return; }
+  if (d.pview) { S.prayerView = d.pview; S.fpop = null; render(); return; }
+  if (d.tkf) { S.tkUi[d.tkf] = d.v; render(); return; }
+  if (d.tab) { close(); S.fpop = null; S.tab = d.tab; S.pick = null; render(); window.scrollTo(0, 0); return; }
   if (d.copy) { try { await navigator.clipboard.writeText(d.copy); toast(t("已复制")); } catch (e) { toast(t("请手动复制：") + d.copy); } return; }
   if (d.themeSet !== undefined) { if (d.themeSet) document.documentElement.dataset.theme = d.themeSet; else delete document.documentElement.dataset.theme; try { localStorage.setItem(LS_PREFIX + ".theme", d.themeSet); } catch (e) {} openSettings(); return; }
   if (d.localeSet !== undefined) { setLocale(d.localeSet); render(); openSettings(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: d.localeSet }).catch(() => {}); return; }
@@ -98,6 +104,7 @@ document.addEventListener("click", async ev => {
       case "cat-add": editCat(null); break;
       case "cat-edit": editCat(d.cid); break;
       case "cat-reset": await resetCats(); break;
+      case "tk-open-list": S.tab = "tasks"; S.tkUi.seg = "list"; S.fpop = null; render(); window.scrollTo(0, 0); break;
       case "nudge-set": { const k = d.k, v = d.v; await tkm.saveNudge({ [k]: k === "eveningAt" ? v : k === "capacityH" ? +v : k === "remind" ? JSON.parse(v) : v === "1" }); openSettings(); break; }
 
       case "about": openAbout(); break;
@@ -216,7 +223,7 @@ const prayerFields = () => [
   { k: "text", label: "为谁、为什么祷告", type: "area", rows: 3, ph: "妈妈的膝盖手术顺利" },
   { k: "category", label: "分类", type: "seg", opts: Object.entries(PRAYER_CATS) }];
 
-document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#sheet").open && !nts.exitFull()) closeSheet(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (S.fpop) closePop(); else if ($("#sheet").open && !nts.exitFull()) closeSheet(); } });
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible" && S.cloud === "ready" && S.wb.loaded && !$("#sheet").open) { await wb.loadAll(); try { await tkm.loadTasks(); } catch (e) { console.error(e); } try { await nt.loadNotes(); } catch (e) { console.error(e); } render(); }
 });

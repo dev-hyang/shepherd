@@ -154,7 +154,7 @@ body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 .slots{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
 .slot{display:inline-flex;gap:4px;align-items:center}
 .slot .chip{padding:4px 10px;min-height:32px;font-size:13px}
-@media (max-width:420px){.habit{grid-template-columns:36px 1fr;}.habit .acts{grid-column:2;justify-content:flex-start}.slots{align-items:flex-start}}
+
 
 /* 经文正文 */
 .passage{margin-top:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--field);max-height:60vh;overflow:auto;font-size:16px;line-height:1.8}
@@ -388,3 +388,67 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .monthnav .chip:disabled{opacity:.35;cursor:default}
 .otd{border-color:var(--honey);background:var(--honey-soft)}
 .otd .nrow:hover{background:transparent}
+
+/* ===== 共用版式：区块标题、页面标题、筛选栏 ===== */
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:24px 0 10px;min-height:36px}
+.sec-head h2{margin:0}
+.sec-sub{font-family:var(--f-num);font-size:13px;font-weight:600;color:var(--muted);background:var(--slate-soft);border-radius:999px;padding:1px 9px;vertical-align:2px}
+.sec-acts{display:inline-flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.sec-acts-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:18px 0 10px;min-height:44px}
+.page-head h1{font-family:var(--f-head);font-size:23px;margin:0}
+.btn.sm{min-height:40px;padding:6px 16px;font-size:14px;flex:none}
+.seg.eq{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;margin-bottom:10px}
+.seg.eq button{padding:9px 6px}
+.seg.eq .cnt{opacity:.7;font-size:12px;margin-left:2px}
+.fbar-wrap{margin:10px 0}
+.fbar{position:relative;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fbtn{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:0 14px;min-height:44px;cursor:pointer;font-size:15px;display:inline-flex;gap:6px;align-items:center}
+.fbtn.on{border-color:var(--slate);color:var(--slate);font-weight:600}
+.fbtn[aria-expanded="true"]{background:var(--slate-soft)}
+.fbtn .fn{background:var(--slate);color:#fff;border-radius:999px;min-width:20px;height:20px;font-size:12px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px}
+:root[data-theme="dark"] .fbtn .fn{color:#131921}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .fbtn .fn{color:#131921}}
+.fq{flex:1 1 130px;min-width:0;border:1px solid var(--line);background:var(--field);border-radius:999px;padding:0 14px;min-height:44px;font-size:16px;-webkit-appearance:none;appearance:none}
+.fadd{flex:none !important;min-height:44px;padding:0 16px;white-space:nowrap}
+.fpop{position:absolute;left:0;top:calc(100% + 6px);z-index:8;width:min(460px,100%);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.14);max-height:70vh;overflow:auto}
+.fpop[hidden]{display:none}
+@media (max-width:560px){.fpop{right:0;width:auto}}
+.fgroup + .fgroup{margin-top:14px}
+.flab{font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.fpop-foot{display:flex;gap:6px;margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
+.fsum{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fchip{border:1px solid var(--slate);background:var(--slate-soft);color:var(--slate);border-radius:999px;padding:3px 10px;font-size:13px;cursor:pointer;min-height:32px}
+
+/* ===== 今天页：日期在大卡片里；宽屏两栏 ===== */
+.hero-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;position:relative;z-index:1}
+.hero-date{display:inline-flex;align-items:center;gap:6px}
+.hbtn{border:1px solid rgba(255,255,255,.42);background:rgba(255,255,255,.16);color:#fff;border-radius:999px;min-width:40px;min-height:40px;padding:0 12px;cursor:pointer;font-size:17px;line-height:1}
+.hbtn.txt{font-size:13px}
+.hbtn:disabled{opacity:.4;cursor:default}
+.hbtn:focus-visible,.hdate:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.hdate{border:1px solid rgba(255,255,255,.42);background:rgba(255,255,255,.16);color:#fff;border-radius:999px;min-height:40px;padding:0 12px;font-size:15px;color-scheme:dark;min-width:0}
+.hero-note{margin-top:8px;font-size:13px;background:rgba(255,255,255,.18);border-radius:var(--radius-sm);padding:4px 10px;display:inline-block}
+.tgrid{column-count:1}
+.tsec{break-inside:avoid;padding-top:1px}
+@media (min-width:900px){
+  .wrap{max-width:1040px}
+  main.narrow{max-width:720px;margin:0 auto}
+  .tgrid{column-count:2;column-gap:28px}
+  .tsec .sec-head:first-child{margin-top:20px}
+}
+
+/* ===== 习惯行：简单的（打卡 / 记一次 / 分钟 / 填数）按钮靠右，多按钮的（饮食三档、用药时间点）整行放在下面 ===== */
+.habit{grid-template-columns:36px minmax(0,1fr) auto}
+.habit .title{overflow-wrap:anywhere}
+.habit .acts .iconbtn{min-width:44px;height:44px}
+.habit.stack .acts{grid-column:2 / -1;justify-content:flex-start}
+.habit.stack .slots{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.habit.stack .seg.mini{flex-wrap:nowrap}
+@media (max-width:420px){.habit{grid-template-columns:36px minmax(0,1fr) auto}.habit .acts{gap:4px}}
+
+/* 祷告统计：手机上四个数字一行，少占高度 */
+.stats.compact{grid-template-columns:repeat(4,1fr)}
+.stats.compact .stat{padding:10px 8px}
+.stats.compact .stat .v{font-size:22px}
+.stats.compact .stat .k{font-size:12px;line-height:1.3}

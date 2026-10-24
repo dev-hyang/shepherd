@@ -4,7 +4,9 @@ import { S } from "./core/state.js";
 import { esc, hm } from "./core/util.js";
 import { KINDS, RATINGS, WEEKDAY, kindOf, modeOf } from "./data/kinds.js";
 import * as wb from "./wb.js";
-import { otdHTML } from "./notes.js";
+import { kindLabel, otdHTML } from "./notes.js";
+import { noteHeading } from "./notes-lib.js";
+import { chipBtn, secHead } from "./ui.js";
 import { familyTasks, mitBlock, nudgeBar, tasksBlock } from "./tasks.js";
 
 /* ============ 今天页：读经 → 今日习惯 → 家人 ============ */
@@ -13,35 +15,25 @@ function viewToday(){
   const greet = h < 5 ? t("夜深了") : h < 11 ? t("早安") : h < 14 ? t("午安") : h < 18 ? t("下午好") : t("晚上好");
   const list = wb.forDay(day), done = list.filter(p => wb.statusOf(p, day).done).length;
   const sp = wb.firstOfKind("scripture"), sk = sp ? wb.streak(sp) : 0;
-  return `
-  <section class="hero"><div class="moon"></div>
-    <div class="lbl">${day} · ${t("周{d}", { d: t(WEEKDAY[dt.getDay()]) })}</div>
+  /* 日期选择放在大卡片里：‹ 日期 ›（补记时多一个“回到今天”），不再单独占一行 */
+  const hero = `<section class="hero"><div class="moon"></div>
+    <div class="hero-top"><span class="lbl">${t("周{d}", { d: t(WEEKDAY[dt.getDay()]) })}${past ? ` · ${t("补记")}` : ""}</span>
+      <span class="hero-date"><button class="hbtn" data-act="day-prev" aria-label="${t("前一天")}">‹</button><input type="date" id="pick-day" class="hdate" value="${esc(day)}" min="${wb.dayAdd(S.day, -wb.HISTORY_DAYS)}" max="${S.day}" aria-label="${t("选择日期（可补记前几天）")}"><button class="hbtn" data-act="day-next" aria-label="${t("后一天")}" ${past ? "" : "disabled"}>›</button>${past ? `<button class="hbtn txt" data-act="day-today">${t("回到今天")}</button>` : ""}</span></div>
     <div class="big">${past ? esc(t("补记 {d}", { d: day.slice(5).replace("-", "/") })) : `${esc(greet)}，${esc(myName())}`}</div>
-    <div class="meta">${list.length ? `<span>${past ? t("当天 {a}/{b}", { a: done, b: list.length }) : t("今天 {a}/{b}", { a: done, b: list.length })}</span>` : ""}${sk ? `<span>${t("连续读经 {n} 天", { n: sk })}</span>` : ""}</div></section>
-  ${dayBarHTML(day, past)}
-  ${nudgeBar()}${mitBlock()}${tasksBlock()}
-  ${readingHTML()}
-  ${notesHTML()}
-  ${habitsHTML(day, list)}
-  ${familyHTML(day)}
-  ${familyTasks(day)}`;
+    <div class="meta">${list.length ? `<span>${past ? t("当天 {a}/{b}", { a: done, b: list.length }) : t("今天 {a}/{b}", { a: done, b: list.length })}</span>` : ""}${sk ? `<span>${t("连续读经 {n} 天", { n: sk })}</span>` : ""}</div>
+    ${past ? `<div class="hero-note">${t("正在补记，打卡会记到这一天")}</div>` : ""}</section>`;
+  // 各区块版式统一（标题 + 右侧小按钮 + 白色卡片）；宽屏分两栏，手机一栏，顺序不变
+  const secs = [nudgeBar(), mitBlock(), tasksBlock(), readingHTML(), notesHTML(), habitsHTML(day, list), familyHTML(day), familyTasks(day)].filter(Boolean);
+  return `${hero}<div class="tgrid">${secs.map(s => `<section class="tsec">${s}</section>`).join("")}</div>`;
 }
 
-/* 补记：忘了点的话，切到前几天再打卡 / 记读经。‹ › 翻一天，也可以直接选日期（最早 12 周内，不能选未来） */
-function dayBarHTML(day, past){
-  return `<div class="daybar">
-    <button class="chip" data-act="day-prev" aria-label="${t("前一天")}">‹</button>
-    <input type="date" id="pick-day" value="${esc(day)}" min="${wb.dayAdd(S.day, -wb.HISTORY_DAYS)}" max="${S.day}" aria-label="${t("选择补记的日期")}">
-    <button class="chip" data-act="day-next" aria-label="${t("后一天")}" ${past ? "" : "disabled"}>›</button>
-    ${past ? `<button class="chip" data-act="day-today">${t("回到今天")}</button><span class="small" style="color:var(--rose)">${t("正在补记，打卡会记到这一天")}</span>`
-           : `<span class="small muted">${t("忘了打卡？点 ‹ 选前几天补记")}</span>`}</div>`;
-}
-
-/* 随手记：读书、读经的心得 / 疑问 / 感动，可拍照识字；今天读的那段出处自动带上 */
+/* 灵修笔记：和“读经”同样的版式——标题 + 右上角入口，卡片里一行摘要和两个主按钮；往年今天写过的显示在下面 */
 function notesHTML(){
   const tp = wb.todayPassage(), rl = wb.readingLog(), ref = rl ? (rl.data.ref || "") : tp ? tp.item.label : "";
-  const n = S.nt && S.nt.loaded ? S.nt.mine.length : 0;
-  return `<h2>${t("灵修笔记")}</h2><div class="panel"><div class="btns" style="margin-top:0"><button class="btn" data-act="note-add" data-kind="reading" data-photo="1">📷 ${t("拍照摘录")}</button><button class="btn" data-act="note-add" data-kind="scripture" data-ref="${esc(ref)}">✎ ${t("记心得")}</button><button class="btn" data-act="notes">${t("全部笔记")}${n ? ` · ${n}` : ""}</button></div></div>${S.nt && S.nt.loaded ? otdHTML(2) : ""}`;
+  const loaded = !!(S.nt && S.nt.loaded), n = loaded ? S.nt.mine.length : 0, last = loaded ? S.nt.mine[0] : null;
+  const sum = last ? `${t("最近：{h}", { h: esc(noteHeading(last, kindLabel)) })} · ${esc(last.day)}` : t("读书、读经、祷告时的心得、疑问或感动，随手记在这里。");
+  return `${secHead(t("灵修笔记"), chipBtn(t("全部") + (n ? ` ${n}` : ""), 'data-act="notes"'))}<div class="panel"><div class="small muted">${sum}</div>
+    <div class="btns"><button class="btn primary" data-act="note-add" data-kind="reading" data-photo="1">📷 ${t("拍照摘录")}</button><button class="btn" data-act="note-add" data-kind="scripture" data-ref="${esc(ref)}">✎ ${t("记心得")}</button></div></div>${loaded ? otdHTML(2) : ""}`;
 }
 
 /* 读经：计划里今天这一段。读完打勾进一格；也可以记一段计划外的 */
@@ -61,7 +53,7 @@ function readingHTML(){
   }
   const extraRows = extra.map(l => `<div class="small muted" style="margin-top:6px" data-swipe-del="extra-read">${t("另读了")} <b>${esc(l.data.ref || "")}</b>${l.data.note ? ` · ${esc(l.data.note)}` : ""} <button class="chip swipe-src" data-act="log-del" data-lid="${esc(l.id)}">${t("删")}</button></div>`).join("");
   if (S.showText && tp && tp.item.parts && tp.item.parts.length) loadPassage(tp.item, zh, en);
-  return `<h2>${t("读经")}</h2><div class="panel ${rl ? "done" : ""}">${body}${extraRows}</div>`;
+  return `${secHead(t("读经"), chipBtn(t("计划"), 'data-act="plan"'))}<div class="panel ${rl ? "done" : ""}">${body}${extraRows}</div>`;
 }
 async function loadPassage(item, zh, en){
   // 渲染时被调用，这时 #passage 还没插进页面：等一拍再找容器
@@ -77,7 +69,7 @@ async function loadPassage(item, zh, en){
 /* 今日习惯：每种打卡方式一行 */
 function habitsHTML(day, list){
   const rows = list.filter(p => p.kind !== "scripture");
-  if (!S.wb.practices.length) return `<h2>${t("今日习惯")}</h2><div class="panel"><div class="empty">${t("还没有习惯。")}<br>${t("一键起步会建立：读经、祷告、锻炼（每周 3 次）、屏幕时长、健康饮食、专注，之后随时改。")}<br><button class="btn primary" data-act="template-apply">${t("一键起步")}</button> <button class="btn" data-act="habit-add">${t("自己添加")}</button></div></div>`;
+  if (!S.wb.practices.length) return `${secHead(t("今日习惯"))}<div class="panel"><div class="empty">${t("还没有习惯。")}<br>${t("一键起步会建立：读经、祷告、锻炼（每周 3 次）、屏幕时长、健康饮食、专注，之后随时改。")}<br><button class="btn primary" data-act="template-apply">${t("一键起步")}</button> <button class="btn" data-act="habit-add">${t("自己添加")}</button></div></div>`;
   const row = p => { const k = kindOf(p), st = wb.statusOf(p, day), tg = p.target || {}, sc = p.schedule || {};
     const times = sc.times && sc.times.length ? sc.times.join(" ") : "";
     let meta = "", acts = "";
@@ -99,24 +91,24 @@ function habitsHTML(day, list){
       case "slots": meta = `${esc((p.meta || {}).dose || "")}${p.meta && p.meta.stock != null && p.meta.stock !== "" ? ` · ${t("剩 {n}", { n: p.meta.stock })}${+p.meta.stock <= (+p.meta.refillAt || 7) * st.expected ? ` <span style="color:var(--rose)">${t("该补货了")}</span>` : ""}` : ""}`;
         acts = `<span class="slots">${st.slots.map(s => `<span class="slot"><span class="small muted">${esc(s.time)}</span>${s.log ? `<button class="chip" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(s.time)}" data-v="undo" aria-pressed="true">${s.taken ? t("服了 ✓") : t("跳过")}</button>` : `<button class="chip" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(s.time)}" data-v="taken">${t("服了")}</button><button class="chip" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(s.time)}" data-v="skip">${t("跳过")}</button>`}</span>`).join("")}</span>`; break;
     }
-    return `<div class="habit ${st.done ? "done" : ""}"><span class="hi" style="background:${k.color}22;color:${k.color}">${k.icon}</span>
+    return `<div class="habit ${st.done ? "done" : ""} ${["rating", "slots"].includes(st.mode) ? "stack" : ""}"><span class="hi" style="background:${k.color}22;color:${k.color}">${k.icon}</span>
       <button class="main" data-act="habit-edit" data-pid="${esc(p.id)}"><span class="title">${esc(p.name || t(k.label))}</span><span class="meta">${meta}</span></button>
       <span class="acts">${acts}</span></div>`; };
   const done = rows.filter(p => wb.statusOf(p, day).done).length;
-  return `<h2>${t("今日习惯")} <button class="chip" data-act="habits" style="font-family:var(--f-body);font-weight:400;vertical-align:middle">${t("管理")}</button></h2>
+  return `${secHead(t("今日习惯"), chipBtn(t("管理"), 'data-act="habits"'), rows.length ? `${done}/${rows.length}` : "")}
   <div class="panel" style="padding:4px 10px">${rows.length ? rows.map(row).join("") : `<div class="empty">${t("今天没有安排的习惯。")}</div>`}</div>
-  ${rows.length ? `<p class="small muted" style="margin-top:8px">${t("完成 {a}/{b}", { a: done, b: rows.length })}。${t("按周算的（如每周 3 次锻炼）哪天做都算。")}</p>` : ""}`;
+  ${rows.length ? `<p class="small muted" style="margin-top:8px">${t("按周算的（如每周 3 次锻炼）哪天做都算。")}</p>` : ""}`;
 }
 
 /* 家人开给我看的：只读 */
 function familyHTML(day){
   if (!S.family) return "";
   const fam = wb.familyToday(day);
-  if (!fam.length) return S.wb.fam.practices.length ? "" : `<h2>${t("家人")}</h2><div class="panel"><p class="small muted">${t("家人还没有开给你看的习惯。每一项习惯都可以在“管理”里单独设为“家人可见”，互相看到做了没有，彼此提醒。")}</p></div>`;
+  if (!fam.length) return S.wb.fam.practices.length ? "" : `${secHead(t("家人"))}<div class="panel"><p class="small muted">${t("家人还没有开给你看的习惯。每一项习惯都可以在“管理”里单独设为“家人可见”，互相看到做了没有，彼此提醒。")}</p></div>`;
   const item = ({ p, st, week }) => { const k = kindOf(p);
     const txt = week ? t("本周 {a}/{b} 次", { a: week.sessions, b: week.count || "–" }) : st.mode === "minutes" ? t("{m} 分钟", { m: st.minutes }) : st.mode === "value" && st.done ? `${st.value} ${t(k.unit || "")}` : st.mode === "rating" && st.done ? t(RATINGS[st.rating] || "") : st.mode === "slots" ? `${st.taken}/${st.expected}` : st.mode === "count" && st.count ? t("{n} 次", { n: st.count }) : "";
     return `<span class="fam-item ${st.done ? "done" : ""}">${k.icon} ${esc(p.name || t(k.label))}${txt ? ` <span class="small muted">${txt}</span>` : ""} ${st.done ? "✓" : "○"}</span>`; };
-  return `<h2>${t("家人")}</h2><div class="panel">${fam.map(m => `<div class="fam"><b>${esc(m.name)}</b><div class="fam-items">${m.items.map(item).join("")}</div></div>`).join("")}
+  return `${secHead(t("家人"))}<div class="panel">${fam.map(m => `<div class="fam"><b>${esc(m.name)}</b><div class="fam-items">${m.items.map(item).join("")}</div></div>`).join("")}
   <p class="small muted" style="margin-top:8px">${t("只显示对方设为“家人可见”的习惯；祷告清单的内容谁也看不到。")}</p></div>`;
 }
 

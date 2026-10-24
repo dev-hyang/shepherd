@@ -5,12 +5,13 @@ import { WEEKDAY, kindOf } from "./data/kinds.js";
 import { addDays, addMonths, diffDays, periodEnd, recurText, weekStart, wdOf } from "./recur.js";
 import { closeSheet, openForm, openInfo } from "./sheet.js";
 import * as tk from "./tk.js";
+import { chipBtn, fbar, pageHead, secHead } from "./ui.js";
 import * as wb from "./wb.js";
 
 /* ============ 任务页 + 今天页的任务块 ============
    任务页四段：今天 / 计划（日 周 月）/ 清单（大类 → 小类）/ 已完成。今天页只放“现在该做的”（催办条、三件大事、今日任务）。
    设计见 docs/design-tasks.md。 */
-S.tkUi = S.tkUi || { seg: "today", range: "day", day: null, st: "open", prio: "all", q: "" };
+S.tkUi = S.tkUi || { seg: "today", range: "day", day: null, st: "open", prio: "all", cat: "all", q: "" };
 const ui = () => S.tkUi;
 const planDay = () => ui().day || S.day;
 
@@ -68,7 +69,7 @@ function mitBlock(){
   const ids = tk.mitIds(), list = ids.map(tk.task).filter(Boolean), cand = tk.mitCandidates();
   if (!list.length && !cand.length) return "";
   const done = list.filter(x => x.status !== "open").length, all = list.length && done === list.length;
-  return `<h2>${t("今日三件大事")} <button class="chip" data-act="tk-mit" style="font-family:var(--f-body);font-weight:400;vertical-align:middle">${list.length ? t("改") : t("选")}</button></h2>
+  return `${secHead(t("今日三件大事"), chipBtn(list.length ? t("改") : t("选"), 'data-act="tk-mit"'))}
   <div class="panel ${all ? "done" : ""}" style="padding:4px 10px">${list.length ? rows(list.filter(x => x.status === "open")) + list.filter(x => x.status !== "open").map(x => `<div class="habit done"><span class="hi" style="background:var(--sage-soft);color:var(--sage)">✓</span><span class="main"><span class="title">${esc(x.title)}</span></span><span></span></div>`).join("")
     : `<p class="muted" style="margin:10px 4px">${t("早上挑出最重要的 {n} 件，先做它们。", { n: tk.MIT_MAX })}</p>`}
     ${all ? `<p class="small" style="margin:8px 4px;color:var(--sage)">${t("三件大事都做完了，今天已经很踏实。")}</p>` : ""}</div>`;
@@ -103,7 +104,7 @@ function tasksBlock({ full = false } = {}){
     + (today.length ? `${od.length ? `<h3 class="tk-h">${past ? t("当天") : t("今天")}</h3>` : ""}${rows(today)}` : "")
     + (week.length ? `<h3 class="tk-h">${t("本周要做")}</h3>${rows(week)}` : "") + (month.length ? `<h3 class="tk-h">${t("本月要做")}</h3>${rows(month)}` : "")
     + (inb.length ? `<h3 class="tk-h">${t("收件箱")} ${inb.length} <button class="chip" data-act="tk-tidy">${t("整理")}</button></h3>${rows(inb, { showDue: false })}` : "");
-  return `<h2>${past ? t("当天的任务") : t("今日任务")} <button class="chip" data-act="tk-new" style="font-family:var(--f-body);font-weight:400;vertical-align:middle">＋ ${t("任务")}</button>${full ? "" : ` <button class="chip" data-tab="tasks" style="font-family:var(--f-body);font-weight:400;vertical-align:middle">${t("全部")}</button>`}</h2>
+  return `${secHead(past ? t("当天的任务") : t("今日任务"), chipBtn(`＋ ${t("任务")}`, 'data-act="tk-new"') + (full ? "" : chipBtn(t("全部"), 'data-act="tk-open-list"')))}
   ${full ? quickForm() : ""}
   <div class="panel" style="padding:4px 10px">${body || `<div class="empty">${past ? t("这天没有排任务。") : t("今天没有排任务。")}</div>`}</div>
   ${capacityLine(left)}${evening(left)}${doneToday(day)}`;
@@ -161,19 +162,23 @@ function planView(){
 /* ---- 清单：大类 → 小类 ---- */
 function listView(){
   const f = ui(), q = f.q.trim().toLowerCase();
-  const ok = x => (f.prio === "all" || (f.prio === "hi" ? x.prio === 3 : x.prio >= 1)) && (!q || `${x.title}${x.note}`.toLowerCase().includes(q));
-  const mine = tk.open().filter(ok), cats = tk.cats();
+  const ok = x => (f.prio === "all" || (f.prio === "hi" ? x.prio === 3 : x.prio >= 1)) && (f.cat === "all" || x.cat === f.cat) && (!q || `${x.title}${x.note}`.toLowerCase().includes(q));
+  const all = tk.open(), mine = all.filter(ok), cats = tk.cats();
   const groups = cats.map(c => {
     const own = mine.filter(x => x.cat === c.id); if (!own.length) return "";
     const subs = (c.subs || []).map(s => ({ s, list: own.filter(x => x.sub === s.id) })).filter(g => g.list.length), loose = own.filter(x => !x.sub || !(c.subs || []).some(s => s.id === x.sub));
     const sorted = list => [...list].sort((a, b) => ((a.due || "9999") < (b.due || "9999") ? -1 : 1) || b.prio - a.prio);
-    return `<details class="lib-group" ${c.id === "inbox" || q ? "open" : "open"}><summary><span style="color:${c.color}">${c.icon}</span> <b>${esc(tk.catName(c))}</b> <span class="small muted">${t("{n} 件", { n: own.length })}</span></summary>
+    return `<details class="lib-group" open><summary><span style="color:${c.color}">${c.icon}</span> <b>${esc(tk.catName(c))}</b> <span class="small muted">${t("{n} 件", { n: own.length })}</span></summary>
       ${loose.length ? `<div class="panel" style="padding:4px 10px">${rows(sorted(loose), { showDue: true })}</div>` : ""}
       ${subs.map(g => `<h3 class="tk-h" style="margin:8px 4px 2px">${esc(tk.subName(c, g.s))} <span class="muted small">${g.list.length}</span></h3><div class="panel" style="padding:4px 10px">${rows(sorted(g.list), { showDue: true })}</div>`).join("")}</details>`;
   }).join("");
-  return `<div class="lib-filters tk-filters"><label>${t("优先级")} <select id="tkPrio">${[["all", "全部"], ["any", "有优先级"], ["hi", "只看高"]].map(([v, l]) => `<option value="${v}" ${f.prio === v ? "selected" : ""}>${t(l)}</option>`).join("")}</select></label>
-    <input type="search" id="tkQ" value="${esc(f.q)}" placeholder="${t("搜索任务")}" aria-label="${t("搜索任务")}"><button class="chip" data-act="tk-cats">${t("管理分类")}</button></div>
-  ${groups || `<div class="empty">${t("没有未完成的任务。")}</div>`}`;
+  const opt = (key, v, label, on, count) => ({ label, attrs: `data-tkf="${key}" data-v="${esc(v)}"`, on, count });
+  const bar = fbar({ id: "tk", q: { id: "tkQ", value: f.q, ph: "搜索任务" }, add: { attrs: 'data-act="tk-new"', label: "任务" },
+    groups: [
+      { label: "优先级", opts: [["all", "全部"], ["any", "有优先级"], ["hi", "只看高"]].map(([v, l]) => opt("prio", v, t(l), f.prio === v)) },
+      { label: "分类", opts: [opt("cat", "all", t("全部"), f.cat === "all", all.length), ...cats.filter(c => all.some(x => x.cat === c.id)).map(c => opt("cat", c.id, `${c.icon} ${esc(tk.catName(c))}`, f.cat === c.id, all.filter(x => x.cat === c.id).length))] }],
+    extra: chipBtn(t("管理分类"), 'data-act="tk-cats"') });
+  return `${bar}${groups || `<div class="empty">${t("没有符合条件的任务。")}</div>`}`;
 }
 
 /* ---- 已完成 ---- */
@@ -186,10 +191,10 @@ function doneView(){
 
 /* ---- 任务页 ---- */
 function viewTasks(){
-  const g = gate(); if (g) return `<h2>${t("任务")}</h2>${g}`;
+  const g = gate(); if (g) return `${pageHead(t("任务"))}${g}`;
   const seg = ui().seg;
-  return `<div class="tk-head"><h2 style="margin:20px 0 8px">${t("任务")}</h2><button class="btn primary" data-act="tk-new">＋ ${t("新任务")}</button></div>
-  <div class="seg" role="group" aria-label="${t("任务视图")}" style="margin-bottom:10px">${[["today", "今天"], ["plan", "计划"], ["list", "清单"], ["done", "已完成"]].map(([k, l]) => `<button data-tks="${k}" aria-pressed="${seg === k}">${t(l)}</button>`).join("")}</div>
+  return `${pageHead(t("任务"), seg === "list" ? "" : `<button class="btn primary sm" data-act="tk-new">＋ ${t("新任务")}</button>`)}
+  <div class="seg eq" role="group" aria-label="${t("任务视图")}">${[["today", "今天"], ["plan", "计划"], ["list", "清单"], ["done", "已完成"]].map(([k, l]) => `<button data-tks="${k}" aria-pressed="${seg === k}">${t(l)}</button>`).join("")}</div>
   ${seg === "today" ? `${nudgeBar()}${mitBlock()}${tasksBlock({ full: true })}` : seg === "plan" ? planView() : seg === "list" ? listView() : doneView()}`;
 }
 
@@ -313,7 +318,7 @@ import { memberName } from "./core/auth.js";
 function familyTasks(day){
   const list = S.tk.fam.filter(x => (x.period || "day") === "day" && x.due === day).sort(tk.byTime);
   if (!list.length) return "";
-  return `<h2>${t("家人的安排")}</h2><div class="panel">${list.map(x => `<div class="fam"><b>${esc(memberName(x.user_id) || t("家人"))}</b> <span class="small">${x.start_time ? x.start_time + " " : ""}${x.share_mode === "busy" ? t("忙碌") : esc(x.title)}</span></div>`).join("")}
+  return `${secHead(t("家人的安排"))}<div class="panel">${list.map(x => `<div class="fam"><b>${esc(memberName(x.user_id) || t("家人"))}</b> <span class="small">${x.start_time ? x.start_time + " " : ""}${x.share_mode === "busy" ? t("忙碌") : esc(x.title)}</span></div>`).join("")}
   <p class="small muted" style="margin-top:8px">${t("只显示对方设为“家人可见”的任务和事件。")}</p></div>`;
 }
 export { familyTasks };

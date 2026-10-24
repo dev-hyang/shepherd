@@ -58,6 +58,7 @@ function render(){
   renderStatus();
   document.querySelectorAll("nav.tabs button").forEach(b => { if (b.dataset.tab === S.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   const v = VIEWS[S.tab] || viewToday;
+  $("#main").className = S.tab === "today" ? "wide" : "narrow";
   $("#main").innerHTML = S.tab === "me" ? v() : (gateHTML() || v());
   updateMiniBar($("#bname").textContent, "", t("回到顶部"));
 }

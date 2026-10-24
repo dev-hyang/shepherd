@@ -455,5 +455,17 @@ const EN = {
   "显示更多（还有 {n} 条）": "Show more ({n} left)",
   "只导出 {m}": "Export only {m}",
   "范围 = 笔记页当前的筛选结果（类型、标签、搜索）；没有筛选就是全部笔记。下面可以逐条取消。已选 {a} / {b} 条。": "Scope = the notes page's current filter (type, tag, search); with no filter, all notes. Untick any below. {a} of {b} selected.",
+  /* Markdown 心得 */
+  "祷告与灵修": "Prayer & devotion",
+  "代祷": "Intercession",
+  "清除": "Clear",
+  "搜索代祷事项": "Search prayers",
+  "没有符合条件的任务。": "No tasks match.",
+  "补记": "Back-fill",
+  "选择日期（可补记前几天）": "Choose a date (you can back-fill)",
+  "最近：{h}": "Latest: {h}",
+  "读书、读经、祷告时的心得、疑问或感动，随手记在这里。": "Jot down insights, questions and promptings from reading and praying here.",
+  /* Markdown 心得 */
+  "笔记": "Note",
 };
 export { EN };

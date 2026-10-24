@@ -32,6 +32,7 @@
 | `js/events.js` | 事件分发 |
 | `js/focus.js` | 专注计时：番茄工作法 + 20-20-20 护眼浮层，完成的段自动记为 focus 打卡 |
 | `js/tk.js` `js/tasks.js` `js/recur.js` `js/data/taskcats.js` | 任务：数据层（wb_tasks、完成记进 wb_logs）、任务页（今天 / 计划 日周月 / 清单 / 已完成）、重复与一句话解析、默认分类；设计见 `docs/design-tasks.md` |
+| `js/ui.js` | 共用版式：区块标题 secHead、页面标题 pageHead、筛选栏 fbar（“筛选 ▾”按钮 + 搜索 + 新增，下拉面板里是各组选项，已选的显示成可点掉的小标签） |
 | `js/nt.js` `js/notes.js` `js/notes-lib.js` `js/markdown.js` `js/ai.js` | 灵修笔记：数据层（wb_notes，自己的 + 家人分享给我的）、界面（记 / 拍照识字点选 / 筛选搜索 / 导出打印 / AI 整理 / AI 设置）、纯逻辑（筛选、分组、导出 Markdown、OCR 解析、提示词）、轻量 Markdown 渲染（心得栏：先转义再加标签，不支持原始 HTML；`tests/` 里有单测）、AI 调用层（自带 key、浏览器直连，和爱家小助手同一套思路） |
 | `js/data/kinds.js` | 习惯种类、打卡方式、起步模板 |
 | `js/data/plans.js` | 内置读经计划（按章自动生成）与导入解析 |
