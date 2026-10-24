@@ -38,6 +38,7 @@ document.addEventListener("submit", async ev => {
   requestAnimationFrame(() => { const i = $("#tkQuick"); if (i) i.focus(); });
 });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "tkPrio") { S.tkUi.prio = ev.target.value; render(); } });
+document.addEventListener("input", ev => { if (ev.target && ev.target.id === "f_reflection") nts.growText(); });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "ntQ") nts.onSearch(ev.target.value); });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntPhoto") { const fs = [...ev.target.files]; ev.target.value = ""; nts.onPhotos(fs); } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "tkQ") { S.tkUi.q = ev.target.value; render(); const i = $("#tkQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
@@ -196,6 +197,9 @@ document.addEventListener("click", async ev => {
       case "nt-ai": await nts.compileWithAi(d.p); break;
       case "nt-copy-result": await nts.copyText(nts.resultText()); break;
       case "nt-dl-result": { const a = document.createElement("a"), u = URL.createObjectURL(new Blob([nts.resultText()], { type: "text/plain;charset=utf-8" })); a.href = u; a.download = `${d.title || "notes"}-${new Date().toISOString().slice(0, 10)}.txt`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 5000); break; }
+      case "md": nts.mdInsert(d.m); break;
+      case "md-preview": nts.mdPreview(); break;
+      case "md-full": nts.mdFull(); break;
       case "ai-settings": nts.openAiSettings(); break;
       case "ai-test": await nts.runAiTest(); break;
 
@@ -209,7 +213,7 @@ const prayerFields = () => [
   { k: "text", label: "为谁、为什么祷告", type: "area", rows: 3, ph: "妈妈的膝盖手术顺利" },
   { k: "category", label: "分类", type: "seg", opts: Object.entries(PRAYER_CATS) }];
 
-document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#sheet").open) closeSheet(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#sheet").open && !nts.exitFull()) closeSheet(); });
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible" && S.cloud === "ready" && S.wb.loaded && !$("#sheet").open) { await wb.loadAll(); try { await tkm.loadTasks(); } catch (e) { console.error(e); } try { await nt.loadNotes(); } catch (e) { console.error(e); } render(); }
 });

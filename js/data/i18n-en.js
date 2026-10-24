@@ -428,5 +428,21 @@ const EN = {
   "已设置：": "Set: ",
   "还没设置。": "Not set up yet.",
   "设置 AI": "Set up AI",
+  /* Markdown 心得 */
+  "格式": "Formatting",
+  "编辑": "Edit",
+  "全屏": "Full screen",
+  "退出全屏": "Exit full screen",
+  "还没写内容": "Nothing written yet",
+  "Markdown 写法": "Markdown syntax",
+  "不会写也没关系，直接写文字就行；单个换行会保留。": "No need to know it: plain text works, and single line breaks are kept.",
+  "文字": "text",
+  "出处": "reference",
+  "粗体": "Bold",
+  "标题": "Heading",
+  "列表": "Bullet list",
+  "编号": "Numbered list",
+  "引用": "Quote",
+  "插入出处": "Insert reference",
 };
 export { EN };

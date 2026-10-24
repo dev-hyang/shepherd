@@ -2,6 +2,7 @@ import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { $, esc, toast } from "./core/util.js";
 import { LS_PREFIX } from "./core/config.js";
+import { mdToHtml, mdToText } from "./markdown.js";
 import { memberName } from "./core/auth.js";
 import { PROVIDERS, aiReady, aiSettings, askText, providerOf, saveAiSettings, testAi } from "./ai.js";
 import { NOTE_KINDS, OCR_SYSTEM, OCR_USER, PURPOSES, byNewest, compilePrompt, filterNotes, groupNotes, joinQuote, meta, noteHeading, parseOcr, parseTags, tagCounts, toMarkdown } from "./notes-lib.js";
@@ -26,7 +27,7 @@ const current = () => (S.ntUi.scope === "shared" ? S.nt.shared : S.nt.mine);
 const shown = () => filterNotes(current(), S.ntUi).sort(byNewest);
 function rowHTML(n){
   const mine = nt.isMine(n), n_sh = (n.shared_with || []).length;
-  const body = n.reflection || n.quote || "";
+  const body = mdToText(n.reflection || n.quote || "");
   return `<button class="nrow" data-act="note-open" data-id="${esc(n.id)}"><span class="ni" aria-hidden="true">${kindIcon(n.kind)}</span><span class="nt"><b>${esc(noteHeading(n, kindLabel))}</b>
     <small>${esc(n.day)} · ${esc(kindLabel(n.kind))}${mine ? "" : ` · ${esc(nameOf(n))}`}${mine && n_sh ? ` · 👥 ${t("{n} 人可见", { n: n_sh })}` : ""}</small>
     ${body ? `<span class="nsnip">${esc(body)}</span>` : ""}${(n.tags || []).length ? `<span class="ntags">${n.tags.map(x => `<span class="pill cat">#${esc(x)}</span>`).join(" ")}</span>` : ""}</span></button>`;
@@ -62,7 +63,7 @@ function onSearch(v){ S.ntUi.q = v; const box = $("#ntList"); if (box) box.inner
 /* ---------- 看（只读，家人分享给我的）---------- */
 function viewNote(n){
   openInfo("灵修笔记", `<div class="panel"><b>${esc(noteHeading(n, kindLabel))}</b><div class="small muted">${esc(meta(n, kindLabel))} · ${esc(nameOf(n) || "")}</div>
-    ${n.quote ? `<blockquote class="nq">${esc(n.quote).replace(/\n/g, "<br>")}</blockquote>` : ""}${n.reflection ? `<p style="white-space:pre-wrap">${esc(n.reflection)}</p>` : ""}</div>
+    ${n.quote ? `<blockquote class="nq">${esc(n.quote).replace(/\n/g, "<br>")}</blockquote>` : ""}${n.reflection ? `<div class="md">${mdToHtml(n.reflection)}</div>` : ""}</div>
     <p class="small muted">${t("这是家人分享给你的，只读。")}</p>`);
 }
 
@@ -89,7 +90,7 @@ function noteFields(){
     { k: "ref", label: "经文出处（可空）", type: "text", ph: "罗马书 8:26" },
     { k: "source", label: "书名 / 作者 / 页码（可空）", type: "text", ph: "《荣耀的中心》p.12" },
     { k: "quote", label: "摘录的原文（可空）", type: "area", rows: 4 },
-    { k: "reflection", label: "我的心得、问题或感动", type: "area", rows: 5, ph: "今天这段话让我想到……" },
+    { k: "reflection", type: "html", html: mdEditorHTML },
     { k: "tags", label: "标签（逗号分隔，可空）", type: "text", ph: "信心, 祷告, 管教孩子" },
     { k: "tagsug", type: "html", html: () => { const tg = tagCounts(S.nt.mine).slice(0, 12); return tg.length ? `<div class="chips" style="margin:0">${tg.map(([x]) => `<button type="button" class="chip" data-act="nt-tag" data-tag="${esc(x)}">#${esc(x)}</button>`).join("")}</div>` : ""; } },
     { k: "day", label: "日期", type: "date" },
@@ -112,6 +113,44 @@ function openNoteForm(n, prefill = {}, { photo = false } = {}){
   }, isNew ? null : async () => { if (confirm(t("删除这条笔记？"))) { await nt.deleteNote(n.id); openNotes(); } });
   if (photo) { const el = $("#ntPhoto"); if (el && !el.disabled) el.click(); else if (!aiReady()) toast(t("先在 设置 → AI 助手 填 key，或直接粘贴文字")); }
 }
+/* ---------- 心得：Markdown 编辑区（工具栏 + 编辑 / 预览 + 全屏写作）---------- */
+const MD_BTNS = [["bold", "B", "粗体"], ["h", "H", "标题"], ["ul", "•", "列表"], ["ol", "1.", "编号"], ["quote", "❝", "引用"], ["ref", "✝", "插入出处"]];
+function mdEditorHTML(d){
+  const prev = !!d.mdPreview, label = t("我的心得、问题或感动");
+  requestAnimationFrame(growText);
+  return `<div class="mdbox" id="mdbox"><div class="mdhead"><label for="f_reflection" class="lab" style="margin:0">${label}</label>
+    <span class="mdtools" role="toolbar" aria-label="${esc(t("格式"))}">${prev ? "" : MD_BTNS.map(([m, ic, l]) => `<button type="button" class="mdb" data-act="md" data-m="${m}" aria-label="${esc(t(l))}" title="${esc(t(l))}">${ic}</button>`).join("")}
+      <button type="button" class="mdb wide" data-act="md-preview" aria-pressed="${prev}">${prev ? t("编辑") : t("预览")}</button><button type="button" class="mdb wide" data-act="md-full">${t("全屏")}</button></span></div>
+    <textarea id="f_reflection" data-f="reflection" ${prev ? "hidden" : ""} placeholder="${esc(t("今天这段话让我想到……"))}">${esc(d.reflection || "")}</textarea>
+    ${prev ? `<div class="md mdprev">${d.reflection ? mdToHtml(d.reflection) : `<span class="muted">${t("还没写内容")}</span>`}</div>` : ""}
+    <details class="small muted" style="margin-top:6px"><summary>${t("Markdown 写法")}</summary><div style="padding:4px 0;line-height:1.7"><code># 标题</code> · <code>**粗体**</code> · <code>*斜体*</code> · <code>- 列表</code> · <code>1. 编号</code> · <code>&gt; 引用</code> · <code>---</code> · <code>[文字](https://…)</code><br>${t("不会写也没关系，直接写文字就行；单个换行会保留。")}</div></details></div>`;
+}
+const growText = () => { const el = $("#f_reflection"); if (el && !el.hidden) { el.style.height = "auto"; el.style.height = Math.min(Math.max(el.scrollHeight + 4, 140), Math.round(window.innerHeight * 0.7)) + "px"; } };
+/** 工具栏：对选中的整行加前缀（再点一次取消）/ 给选中文字加粗 / 在光标处插入出处 */
+function mdInsert(m){
+  const el = $("#f_reflection"); if (!el || el.hidden) return;
+  const a = el.selectionStart, b = el.selectionEnd, v = el.value;
+  const setSel = (from, to) => { el.focus(); el.setSelectionRange(from, to); growText(); };
+  if (m === "bold") { const sel = v.slice(a, b) || t("文字"); el.setRangeText("**" + sel + "**", a, b, "end"); setSel(a + 2, a + 2 + sel.length); return; }
+  if (m === "ref") { const ref = ($('[data-f="ref"]') || {}).value || t("出处"), txt = "（" + ref + "）"; el.setRangeText(txt, a, b, "end"); setSel(a + txt.length, a + txt.length); return; }
+  const lineStart = v.lastIndexOf("\n", a - 1) + 1, nl = v.indexOf("\n", b), lineEnd = nl < 0 ? v.length : nl;
+  const block = v.slice(lineStart, lineEnd).split("\n"), pre = { h: "## ", ul: "- ", ol: "", quote: "> " }[m];
+  const has = l => (m === "ol" ? /^\d+[.)]\s/.test(l) : l.startsWith(pre));
+  const strip = l => (m === "ol" ? l.replace(/^\d+[.)]\s/, "") : l.slice(pre.length));
+  const allOn = block.every(l => !l.trim() || has(l));
+  const out = block.map((l, i) => (!l.trim() ? l : allOn ? strip(l) : (m === "ol" ? (i + 1) + ". " : pre) + l)).join("\n");
+  el.setRangeText(out, lineStart, lineEnd, "end"); setSel(lineStart, lineStart + out.length);
+}
+function mdPreview(){ readForm(); const d = getForm().draft; d.mdPreview = !d.mdPreview; drawForm(); }
+function mdFull(){
+  const box = $("#mdbox"); if (!box) return; const on = box.classList.toggle("md-full");
+  const b = box.querySelector('[data-act="md-full"]'); if (b) b.textContent = on ? t("退出全屏") : t("全屏");
+  if (on) { const el = $("#f_reflection"); if (el && !el.hidden) el.focus(); }
+  growText();
+}
+/** Esc：先退出全屏写作，而不是直接关掉整个表单 */
+function exitFull(){ const box = document.querySelector("#mdbox.md-full"); if (!box) return false; mdFull(); return true; }
+
 /** 缩小照片再发：长边 1600、JPEG 0.82，识字足够，也省流量和额度 */
 async function shrink(file, max = 1600){
   const url = URL.createObjectURL(file);
@@ -187,7 +226,7 @@ const copyMd = () => copyText(toMarkdown(picked(), mdOpts()));
 /** 预览页：和打印出来的一样；顶栏和按钮打印时自动隐藏 */
 function docHTML(notes){
   return groupNotes(notes, S.ntUi.group, kindLabel).map(g => `${g.title ? `<h2>${esc(g.title)}</h2>` : ""}${g.notes.map(n => `<section class="pn"><h3>${esc(noteHeading(n, kindLabel))}</h3><div class="pm">${esc(meta(n, kindLabel))}</div>
-    ${n.quote ? `<blockquote class="nq">${esc(n.quote).replace(/\n/g, "<br>")}${n.ai_used ? `<div class="pm">${t("（摘录经 AI 识字，请核对原文）")}</div>` : ""}</blockquote>` : ""}${n.reflection ? `<p>${esc(n.reflection).replace(/\n/g, "<br>")}</p>` : ""}</section>`).join("")}`).join("");
+    ${n.quote ? `<blockquote class="nq">${esc(n.quote).replace(/\n/g, "<br>")}${n.ai_used ? `<div class="pm">${t("（摘录经 AI 识字，请核对原文）")}</div>` : ""}</blockquote>` : ""}${n.reflection ? `<div class="md">${mdToHtml(n.reflection)}</div>` : ""}</section>`).join("")}`).join("");
 }
 function openPreview(){
   const sel = picked();
@@ -207,14 +246,16 @@ async function compileWithAi(purpose){
   openResult(t(PURPOSES[purpose].label), text);
 }
 const aiLang = () => (document.documentElement.lang === "en" ? "en" : "zh");
+let lastResult = "";   // AI 草稿的原文（复制 / 下载用原文，不用渲染后的文字）
 function openResult(title, text){
+  lastResult = text;
   $("#sheetIn").innerHTML = `${head(esc(title))}
   <p class="small muted noprint">${t("AI 写的草稿，请逐句核对后再用；笔记原文没有的内容不要照搬。")}</p>
-  <div class="notedoc"><h1>${esc(title)}</h1><div class="pm">${fileStamp()}</div><div style="white-space:pre-wrap" id="ntResult">${esc(text)}</div></div>
+  <div class="notedoc"><h1>${esc(title)}</h1><div class="pm">${fileStamp()}</div><div class="md" id="ntResult">${mdToHtml(text)}</div></div>
   <div class="btns noprint"><button class="btn primary" data-act="nt-print">${t("打印 / 存成 PDF")}</button><button class="btn" data-act="nt-copy-result">${t("复制")}</button><button class="btn" data-act="nt-dl-result" data-title="${esc(title)}">${t("下载文本")}</button><button class="btn" data-act="note-export">${t("返回")}</button></div>`;
   showSheet();
 }
-const resultText = () => (document.querySelector("#ntResult") || {}).textContent || "";
+const resultText = () => lastResult;
 
 /* ---------- AI 设置 ---------- */
 function openAiSettings(){
@@ -234,5 +275,5 @@ async function runAiTest(){
   try { await testAi(); toast(t("连接成功 ✓")); } catch (e) { toast(String(e.message || e).slice(0, 160)); }
 }
 
-export { openNotes, openNote, openNoteForm, setFilter, onSearch, onPhotos, pickPara, pickAll, addTag, openExport, toggleExport, openPreview, exportMd, exportJson, copyMd, copyText, resultText, compileWithAi, openResult,
+export { mdInsert, mdPreview, mdFull, exitFull, growText, openNotes, openNote, openNoteForm, setFilter, onSearch, onPhotos, pickPara, pickAll, addTag, openExport, toggleExport, openPreview, exportMd, exportJson, copyMd, copyText, resultText, compileWithAi, openResult,
   openAiSettings, runAiTest, kindLabel };
