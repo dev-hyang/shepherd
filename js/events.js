@@ -11,6 +11,8 @@ import { closeSheet, drawForm, getForm, head, openCalendar, openForm, openHabits
 import { render } from "./views.js";
 import * as wb from "./wb.js";
 import * as tkm from "./tk.js";
+import * as nt from "./nt.js";
+import * as nts from "./notes.js";
 import { editCat, openCats, openMit, openTaskForm, resetCats, shiftPlan, startTidy } from "./tasks.js";
 
 /* ============ 事件分发 ============
@@ -36,6 +38,8 @@ document.addEventListener("submit", async ev => {
   requestAnimationFrame(() => { const i = $("#tkQuick"); if (i) i.focus(); });
 });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "tkPrio") { S.tkUi.prio = ev.target.value; render(); } });
+document.addEventListener("input", ev => { if (ev.target && ev.target.id === "ntQ") nts.onSearch(ev.target.value); });
+document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntPhoto") { const fs = [...ev.target.files]; ev.target.value = ""; nts.onPhotos(fs); } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "tkQ") { S.tkUi.q = ev.target.value; render(); const i = $("#tkQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
 
 document.addEventListener("click", async ev => {
@@ -52,6 +56,7 @@ document.addEventListener("click", async ev => {
   if (d.multi) { readForm(); const f = getForm().draft, cur = (f[d.multi] || []).map(String); f[d.multi] = cur.includes(d.v) ? cur.filter(x => x !== d.v) : [...cur, d.v]; drawForm(); return; }
   // chips with their own data attributes
   if (d.hf) { openHabits(d.hf); return; }
+  if (d.ntf) { if (d.export) { S.ntUi.group = d.v; nts.openExport(); } else nts.setFilter(d.ntf, d.v); return; }
   if (d.plan) { await wb.choosePlan(d.plan); openPlan(); toast(t("已切换读经计划")); return; }
   if (d.verZh !== undefined) { await wb.saveSettings({ versionZh: d.verZh }); openPlan(); return; }
   if (d.verEn !== undefined) { await wb.saveSettings({ versionEn: d.verEn }); openPlan(); return; }
@@ -173,6 +178,27 @@ document.addEventListener("click", async ev => {
       case "prayer-answered": { const p = wb.prayerOf(d.id); if (!p) break; openForm("感谢主", [{ k: "html", type: "html", html: `<p><b>${esc(p.text)}</b></p>` }, { k: "answer", label: "怎么应允的（可空）", type: "area", rows: 4 }], { answer: "" }, async f => { await wb.answerPrayer(p.id, f.answer); back(); toast(t("已记为应允")); }); break; }
       case "prayer-reopen": await wb.reopenPrayer(d.id); render(); break;
 
+      /* 灵修笔记 */
+      case "notes": nts.openNotes(); break;
+      case "note-add": nts.openNoteForm(null, { kind: d.kind, ref: d.ref }, { photo: d.photo === "1" }); break;
+      case "note-open": nts.openNote(d.id); break;
+      case "nt-pick": nts.pickPara(+d.i); break;
+      case "nt-pick-all": nts.pickAll(true); break;
+      case "nt-pick-none": nts.pickAll(false); break;
+      case "nt-tag": nts.addTag(d.tag); break;
+      case "note-export": nts.openExport(); break;
+      case "nt-x": nts.toggleExport(d.id); break;
+      case "nt-preview": nts.openPreview(); break;
+      case "nt-print": window.print(); break;
+      case "nt-md": nts.exportMd(); break;
+      case "nt-json": nts.exportJson(); break;
+      case "nt-copy": await nts.copyMd(); break;
+      case "nt-ai": await nts.compileWithAi(d.p); break;
+      case "nt-copy-result": await nts.copyText(nts.resultText()); break;
+      case "nt-dl-result": { const a = document.createElement("a"), u = URL.createObjectURL(new Blob([nts.resultText()], { type: "text/plain;charset=utf-8" })); a.href = u; a.download = `${d.title || "notes"}-${new Date().toISOString().slice(0, 10)}.txt`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 5000); break; }
+      case "ai-settings": nts.openAiSettings(); break;
+      case "ai-test": await nts.runAiTest(); break;
+
       /* 表单 */
       case "form-save": { readForm(); const f = getForm(); await f.onSave(f.draft); break; }
       case "form-delete": { const f = getForm(); if (f.onDelete) await f.onDelete(); break; }
@@ -185,7 +211,7 @@ const prayerFields = () => [
 
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#sheet").open) closeSheet(); });
 document.addEventListener("visibilitychange", async () => {
-  if (document.visibilityState === "visible" && S.cloud === "ready" && S.wb.loaded && !$("#sheet").open) { await wb.loadAll(); try { await tkm.loadTasks(); } catch (e) { console.error(e); } render(); }
+  if (document.visibilityState === "visible" && S.cloud === "ready" && S.wb.loaded && !$("#sheet").open) { await wb.loadAll(); try { await tkm.loadTasks(); } catch (e) { console.error(e); } try { await nt.loadNotes(); } catch (e) { console.error(e); } render(); }
 });
 export { showSheet, head, kindOf, RATINGS };
 

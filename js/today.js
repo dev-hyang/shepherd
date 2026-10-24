@@ -20,6 +20,7 @@ function viewToday(){
   ${dayBarHTML(day, past)}
   ${nudgeBar()}${mitBlock()}${tasksBlock()}
   ${readingHTML()}
+  ${notesHTML()}
   ${habitsHTML(day, list)}
   ${familyHTML(day)}
   ${familyTasks(day)}`;
@@ -33,6 +34,13 @@ function dayBarHTML(day, past){
     <button class="chip" data-act="day-next" aria-label="${t("后一天")}" ${past ? "" : "disabled"}>›</button>
     ${past ? `<button class="chip" data-act="day-today">${t("回到今天")}</button><span class="small" style="color:var(--rose)">${t("正在补记，打卡会记到这一天")}</span>`
            : `<span class="small muted">${t("忘了打卡？点 ‹ 选前几天补记")}</span>`}</div>`;
+}
+
+/* 随手记：读书、读经的心得 / 疑问 / 感动，可拍照识字；今天读的那段出处自动带上 */
+function notesHTML(){
+  const tp = wb.todayPassage(), rl = wb.readingLog(), ref = rl ? (rl.data.ref || "") : tp ? tp.item.label : "";
+  const n = S.nt && S.nt.loaded ? S.nt.mine.length : 0;
+  return `<h2>${t("灵修笔记")}</h2><div class="panel"><div class="btns" style="margin-top:0"><button class="btn" data-act="note-add" data-kind="reading" data-photo="1">📷 ${t("拍照摘录")}</button><button class="btn" data-act="note-add" data-kind="scripture" data-ref="${esc(ref)}">✎ ${t("记心得")}</button><button class="btn" data-act="notes">${t("全部笔记")}${n ? ` · ${n}` : ""}</button></div></div>`;
 }
 
 /* 读经：计划里今天这一段。读完打勾进一格；也可以记一段计划外的 */

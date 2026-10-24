@@ -32,6 +32,7 @@
 | `js/events.js` | 事件分发 |
 | `js/focus.js` | 专注计时：番茄工作法 + 20-20-20 护眼浮层，完成的段自动记为 focus 打卡 |
 | `js/tk.js` `js/tasks.js` `js/recur.js` `js/data/taskcats.js` | 任务：数据层（wb_tasks、完成记进 wb_logs）、任务页（今天 / 计划 日周月 / 清单 / 已完成）、重复与一句话解析、默认分类；设计见 `docs/design-tasks.md` |
+| `js/nt.js` `js/notes.js` `js/notes-lib.js` `js/ai.js` | 灵修笔记：数据层（wb_notes，自己的 + 家人分享给我的）、界面（记 / 拍照识字点选 / 筛选搜索 / 导出打印 / AI 整理 / AI 设置）、纯逻辑（筛选、分组、Markdown、OCR 解析、提示词，`tests/` 里有单测）、AI 调用层（自带 key、浏览器直连，和爱家小助手同一套思路） |
 | `js/data/kinds.js` | 习惯种类、打卡方式、起步模板 |
 | `js/data/plans.js` | 内置读经计划（按章自动生成）与导入解析 |
 | `js/data/bible.js` | 书卷表、出处解析、经文抓取（和学堂同源，加了整章抓取） |
@@ -41,6 +42,9 @@
 
 表 `wb_profile` `wb_practices` `wb_logs` `wb_prayers`，建表脚本在 baby-log 仓库本机的 `supabase/migrations/013_shepherd.sql`（不进 git），在 Supabase SQL Editor 里执行一次。
 任务表 `wb_tasks`：脚本在本仓库 `docs/015_shepherd_tasks.sql`，在 Supabase SQL Editor 里执行一次（可重复执行）；没执行时只有“任务”页签提示，其余功能照常。日历订阅要带上任务，需要重新部署一次 `ics` 函数（命令见下）。
+灵修笔记表 `wb_notes`：脚本在本仓库 `docs/016_shepherd_notes.sql`，在 Supabase SQL Editor 里执行一次（可重复执行）；没执行时只有笔记页提示，其余功能照常。每条默认只有本人；可逐条分享给家庭里指定的成员（`shared_with`，对方只读，守卫触发器会丢掉不是同一家庭的 id）。
+AI（拍照识字、整理笔记）：用户自己的 key 存在本机 localStorage，浏览器直连服务商，不经任何服务器；爱家小助手里已填的 key 直接沿用。照片压缩后只在内存里发出去，不保存，数据库里只有用户选定的文字。
+测试：`node --test tests/*.test.mjs`（纯逻辑和 AI 调用层，不需要网络）。
 行级权限：本人读写；`share = 'family'` 的习惯和打卡，家庭成员只读。
 
 ## 日历订阅

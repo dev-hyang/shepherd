@@ -1,4 +1,5 @@
 import { familyHTML } from "./core/auth.js";
+import { aiReady, aiSettings, providerOf } from "./ai.js";
 import { APP_VERSION, ICS_FUNCTION, LS_PREFIX, SISTER_APPS, THIS_APP } from "./core/config.js";
 import { LOCALES, locale, t, tc } from "./core/i18n.js";
 import { S } from "./core/state.js";
@@ -54,6 +55,7 @@ function drawForm(){
     if (f.type === "num") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="number" inputmode="decimal" min="0" step="${f.step || 1}" data-f="${f.k}" value="${v ?? ""}" placeholder="${ph}">${hint}</div>`;
     if (f.type === "time") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="time" data-f="${f.k}" value="${esc(v || "")}">${hint}</div>`;
     if (f.type === "date") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="date" data-f="${f.k}" value="${esc(v || "")}">${hint}</div>`;
+    if (f.type === "password") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="password" data-f="${f.k}" value="${esc(v || "")}" placeholder="${ph}" autocomplete="off" autocapitalize="off" spellcheck="false">${hint}</div>`;
     if (f.type === "check") return `<div class="field"><label class="check"><input type="checkbox" data-f="${f.k}" ${v ? "checked" : ""}>${label}</label>${hint}</div>`;
     if (f.type === "html") return `<div class="field">${typeof f.html === "function" ? f.html(draft) : f.html}</div>`;
     const list = f.list ? `<datalist id="${id}_list">${f.list.map(o => `<option value="${esc(o)}">`).join("")}</datalist>` : "";
@@ -216,6 +218,10 @@ function openSettings(){
     ${SISTER_APPS.map(a => `<div class="medrow"><div><b>${a.id === THIS_APP ? esc(t(a.name)) : `<a href="${a.url}">${esc(t(a.name))}</a>`}</b>${a.id === THIS_APP ? ` <span class="small muted">${t("（当前）")}</span>` : ""}<div class="small muted">${tc(esc(a.desc))}</div></div>${a.id === THIS_APP ? "" : `<a class="chip" href="${a.url}" style="text-decoration:none">${t("打开")}</a>`}</div>`).join("")}
   </div>
   <p class="small muted">${t("同一个账号、同一个家庭，四个站点互通；标题旁的左右箭头也能切换。")}</p>
+
+  <h2>${t("AI 助手")}</h2>
+  <div class="panel"><p class="small" style="margin-top:0">${t("拍照识字、把笔记整理成请教清单 / 书信 / 讲解，需要你自己的 AI key（只存在这台设备的浏览器里）。")} ${aiReady() ? `<b>${t("已设置：")}${esc(t(providerOf(aiSettings().provider).name))}</b>` : t("还没设置。")}</p>
+    <div class="btns" style="margin-top:0"><button class="btn" data-act="ai-settings">${t("设置 AI")}</button></div></div>
 
   <h2>${t("界面语言")}</h2>
   <div class="seg" role="group" aria-label="${t("界面语言")}">${LOCALES.map(([v, l]) => `<button data-locale-set="${v}" aria-pressed="${locale() === v}" lang="${v}">${l}</button>`).join("")}</div>
