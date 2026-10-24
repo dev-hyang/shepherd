@@ -51,6 +51,17 @@ function groupNotes(notes, by, kindLabel = k => k){
   return [{ title: "", notes: list }];
 }
 
+/** 有笔记的月份：[["2026-10", 5], ...]，新的在前 */
+function monthsOf(notes){
+  const m = new Map(); for (const n of notes) { const k = String(n.day || "").slice(0, 7); if (k) m.set(k, (m.get(k) || 0) + 1); }
+  return [...m.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+}
+/** 历史上的今天：往年同月同日写过的笔记（不含今年） */
+function onThisDay(notes, day){
+  const md = String(day).slice(5), y = +String(day).slice(0, 4);
+  return notes.filter(n => n.day && n.day.slice(5) === md && +n.day.slice(0, 4) < y).sort(byNewest);
+}
+
 /** 每条笔记的小标题：出处 / 书名，没有就用类型 */
 const noteHeading = (n, kindLabel = k => k) => n.ref || n.source || kindLabel(n.kind);
 const meta = (n, kindLabel = k => k) => [n.day, kindLabel(n.kind), n.ref && n.source ? n.source : "", ...(n.tags || []).map(x => "#" + x)].filter(Boolean).join(" · ");
@@ -105,5 +116,5 @@ function compilePrompt(purpose, notes, { kindLabel = k => k, lang = "zh" } = {})
   return { system, user: `${p.ask}\n\n笔记：\n${body}` };
 }
 
-export { NOTE_KINDS, kindKeys, parseTags, filterNotes, byNewest, byOldest, tagCounts, groupNotes, noteHeading, meta, toMarkdown,
+export { NOTE_KINDS, kindKeys, parseTags, filterNotes, byNewest, byOldest, tagCounts, monthsOf, onThisDay, groupNotes, noteHeading, meta, toMarkdown,
   OCR_SYSTEM, OCR_USER, parseOcr, joinQuote, PURPOSES, compilePrompt };

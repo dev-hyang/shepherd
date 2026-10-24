@@ -40,6 +40,7 @@ document.addEventListener("submit", async ev => {
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "tkPrio") { S.tkUi.prio = ev.target.value; render(); } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "f_reflection") nts.growText(); });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "ntQ") nts.onSearch(ev.target.value); });
+document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntMonth") nts.setFilter("month", ev.target.value); });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntPhoto") { const fs = [...ev.target.files]; ev.target.value = ""; nts.onPhotos(fs); } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "tkQ") { S.tkUi.q = ev.target.value; render(); const i = $("#tkQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
 
@@ -187,6 +188,8 @@ document.addEventListener("click", async ev => {
       case "nt-pick-all": nts.pickAll(true); break;
       case "nt-pick-none": nts.pickAll(false); break;
       case "nt-tag": nts.addTag(d.tag); break;
+      case "nt-more": nts.moreNotes(); break;
+      case "nt-exmonth": nts.toggleExMonth(); break;
       case "note-export": nts.openExport(); break;
       case "nt-x": nts.toggleExport(d.id); break;
       case "nt-preview": nts.openPreview(); break;

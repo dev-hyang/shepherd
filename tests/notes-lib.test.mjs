@@ -1,7 +1,7 @@
 // node --test tests/notes-lib.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseTags, filterNotes, groupNotes, toMarkdown, parseOcr, joinQuote, tagCounts, compilePrompt } from "../js/notes-lib.js";
+import { parseTags, filterNotes, groupNotes, toMarkdown, parseOcr, joinQuote, tagCounts, compilePrompt, monthsOf, onThisDay } from "../js/notes-lib.js";
 
 const N = [
   { id: "a", kind: "reading", day: "2026-10-01", created_at: "2026-10-01T08:00:00Z", ref: "", source: "荣耀的中心 p.12", quote: "神的荣耀在于\n祂的怜悯", reflection: "今天特别需要提醒", tags: ["信心", "祷告"], ai_used: true },
@@ -64,4 +64,15 @@ test("compilePrompt: 带出笔记内容，未知用途回退到请教清单", ()
   assert.match(p.user, /请教/);
   assert.match(p.user, /摘录：神的荣耀在于/);
   assert.match(p.user, /心得：圣灵为我们祷告/);
+});
+
+test("monthsOf: 有笔记的月份，新的在前，带条数", () => {
+  assert.deepEqual(monthsOf(N), [["2026-11", 1], ["2026-10", 2]]);
+  assert.deepEqual(monthsOf([]), []);
+});
+
+test("onThisDay: 往年同月同日，不含今年", () => {
+  const L = [{ id: "1", day: "2025-10-24", created_at: "a" }, { id: "2", day: "2024-10-24", created_at: "b" }, { id: "3", day: "2026-10-24", created_at: "c" }, { id: "4", day: "2025-10-25", created_at: "d" }];
+  assert.deepEqual(onThisDay(L, "2026-10-24").map(n => n.id), ["1", "2"]);
+  assert.deepEqual(onThisDay(L, "2026-01-01"), []);
 });

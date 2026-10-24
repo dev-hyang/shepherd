@@ -4,6 +4,7 @@ import { S } from "./core/state.js";
 import { esc, hm } from "./core/util.js";
 import { KINDS, RATINGS, WEEKDAY, kindOf, modeOf } from "./data/kinds.js";
 import * as wb from "./wb.js";
+import { otdHTML } from "./notes.js";
 import { familyTasks, mitBlock, nudgeBar, tasksBlock } from "./tasks.js";
 
 /* ============ 今天页：读经 → 今日习惯 → 家人 ============ */
@@ -40,7 +41,7 @@ function dayBarHTML(day, past){
 function notesHTML(){
   const tp = wb.todayPassage(), rl = wb.readingLog(), ref = rl ? (rl.data.ref || "") : tp ? tp.item.label : "";
   const n = S.nt && S.nt.loaded ? S.nt.mine.length : 0;
-  return `<h2>${t("灵修笔记")}</h2><div class="panel"><div class="btns" style="margin-top:0"><button class="btn" data-act="note-add" data-kind="reading" data-photo="1">📷 ${t("拍照摘录")}</button><button class="btn" data-act="note-add" data-kind="scripture" data-ref="${esc(ref)}">✎ ${t("记心得")}</button><button class="btn" data-act="notes">${t("全部笔记")}${n ? ` · ${n}` : ""}</button></div></div>`;
+  return `<h2>${t("灵修笔记")}</h2><div class="panel"><div class="btns" style="margin-top:0"><button class="btn" data-act="note-add" data-kind="reading" data-photo="1">📷 ${t("拍照摘录")}</button><button class="btn" data-act="note-add" data-kind="scripture" data-ref="${esc(ref)}">✎ ${t("记心得")}</button><button class="btn" data-act="notes">${t("全部笔记")}${n ? ` · ${n}` : ""}</button></div></div>${S.nt && S.nt.loaded ? otdHTML(2) : ""}`;
 }
 
 /* 读经：计划里今天这一段。读完打勾进一格；也可以记一段计划外的 */

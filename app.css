@@ -380,3 +380,11 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .md code{font-size:.92em}
 .md a{color:var(--slate);text-decoration:underline}
 @media print{.md a{color:#000}}
+
+/* 笔记：月份翻页、历史上的今天 */
+.monthnav{display:flex;gap:6px;align-items:center;margin:8px 0}
+.monthnav select{flex:1;min-width:0;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:8px 10px;font-size:16px;min-height:42px}
+.monthnav .chip{min-width:42px;min-height:42px;font-size:18px}
+.monthnav .chip:disabled{opacity:.35;cursor:default}
+.otd{border-color:var(--honey);background:var(--honey-soft)}
+.otd .nrow:hover{background:transparent}

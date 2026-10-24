@@ -5,7 +5,7 @@ import { LS_PREFIX } from "./core/config.js";
 import { mdToHtml, mdToText } from "./markdown.js";
 import { memberName } from "./core/auth.js";
 import { PROVIDERS, aiReady, aiSettings, askText, providerOf, saveAiSettings, testAi } from "./ai.js";
-import { NOTE_KINDS, OCR_SYSTEM, OCR_USER, PURPOSES, byNewest, compilePrompt, filterNotes, groupNotes, joinQuote, meta, noteHeading, parseOcr, parseTags, tagCounts, toMarkdown } from "./notes-lib.js";
+import { NOTE_KINDS, monthsOf, onThisDay, OCR_SYSTEM, OCR_USER, PURPOSES, byNewest, compilePrompt, filterNotes, groupNotes, joinQuote, meta, noteHeading, parseOcr, parseTags, tagCounts, toMarkdown } from "./notes-lib.js";
 import * as nt from "./nt.js";
 import { closeSheet, drawForm, getForm, head, openForm, openInfo, readForm, showSheet } from "./sheet.js";
 import * as wb from "./wb.js";
@@ -13,7 +13,8 @@ import * as wb from "./wb.js";
 /* ============ 灵修笔记：随手记 / 拍照识字 / 筛选查找 / 导出打印 / 分享给家人 / AI 整理 ============
    四种：读书心得、读经领受、遇到的问题、圣灵感动。拍照识字的原图只在内存里过一下，识别完就丢，不保存；
    识别出的段落由你点选要留哪几段，再写自己的心得。默认只有自己看得到，可以逐条分享给指定的家人（只读）。 */
-S.ntUi = { q: "", kind: "all", tag: "all", scope: "mine", group: "date", off: new Set() };
+const PAGE = 30;   // 一次最多画多少条，其余点“显示更多”
+S.ntUi = { q: "", kind: "all", tag: "all", scope: "mine", group: "date", off: new Set(), month: null, limit: PAGE, exMonth: false };
 
 const kindLabel = k => t((NOTE_KINDS[k] || NOTE_KINDS.reading).label);
 const kindIcon = k => (NOTE_KINDS[k] || NOTE_KINDS.reading).icon;
@@ -24,13 +25,45 @@ const fileStamp = () => new Date().toISOString().slice(0, 10);
 
 /* ---------- 列表 ---------- */
 const current = () => (S.ntUi.scope === "shared" ? S.nt.shared : S.nt.mine);
-const shown = () => filterNotes(current(), S.ntUi).sort(byNewest);
+/* 翻页规则：没有任何筛选（搜索 / 类型 / 标签）时按月翻页；有筛选就跨全部月份找，结果分页显示 */
+const filtersOn = () => !!(S.ntUi.q.trim() || S.ntUi.kind !== "all" || S.ntUi.tag !== "all");
+/** 当前月份："all" 或 "YYYY-MM"；没选过就是最新有笔记的那个月 */
+function curMonth(){
+  const ms = monthsOf(current()), m = S.ntUi.month;
+  if (m === "all") return "all";
+  if (m && ms.some(x => x[0] === m)) return m;
+  return ms.length ? ms[0][0] : "all";
+}
+const matched = () => { const all = filterNotes(current(), S.ntUi).sort(byNewest), m = curMonth(); return !filtersOn() && m !== "all" ? all.filter(n => String(n.day).slice(0, 7) === m) : all; };
+const shown = () => matched().slice(0, S.ntUi.limit);
+const monthLabel = ym => t("{y} 年 {m} 月", { y: ym.slice(0, 4), m: +ym.slice(5, 7) });
 function rowHTML(n){
   const mine = nt.isMine(n), n_sh = (n.shared_with || []).length;
   const body = mdToText(n.reflection || n.quote || "");
   return `<button class="nrow" data-act="note-open" data-id="${esc(n.id)}"><span class="ni" aria-hidden="true">${kindIcon(n.kind)}</span><span class="nt"><b>${esc(noteHeading(n, kindLabel))}</b>
     <small>${esc(n.day)} · ${esc(kindLabel(n.kind))}${mine ? "" : ` · ${esc(nameOf(n))}`}${mine && n_sh ? ` · 👥 ${t("{n} 人可见", { n: n_sh })}` : ""}</small>
     ${body ? `<span class="nsnip">${esc(body)}</span>` : ""}${(n.tags || []).length ? `<span class="ntags">${n.tags.map(x => `<span class="pill cat">#${esc(x)}</span>`).join(" ")}</span>` : ""}</span></button>`;
+}
+/** 月份导航：‹ 较早 | 选月份 | 较晚 ›；有筛选时换成一行说明 */
+function navHTML(){
+  if (filtersOn()) return `<p class="small muted" style="margin:6px 2px">${t("筛选中：在全部月份里找，共 {n} 条", { n: matched().length })}</p>`;
+  const ms = monthsOf(current()); if (ms.length < 2 && curMonth() !== "all") return ms.length ? `<p class="small muted" style="margin:6px 2px">${esc(monthLabel(ms[0][0]))}</p>` : "";
+  const cur = curMonth(), i = ms.findIndex(x => x[0] === cur), older = i >= 0 ? ms[i + 1] : null, newer = i > 0 ? ms[i - 1] : null;
+  const years = [...new Set(ms.map(x => x[0].slice(0, 4)))];
+  const opts = `<option value="all" ${cur === "all" ? "selected" : ""}>${esc(t("全部月份"))}（${current().length}）</option>` + years.map(y => `<optgroup label="${y}">${ms.filter(x => x[0].startsWith(y)).map(([ym, c]) => `<option value="${ym}" ${ym === cur ? "selected" : ""}>${esc(monthLabel(ym))}（${c}）</option>`).join("")}</optgroup>`).join("");
+  return `<div class="monthnav"><button class="chip" data-ntf="month" data-v="${older ? older[0] : ""}" aria-label="${esc(t("较早的月份"))}" ${older ? "" : "disabled"}>‹</button>
+    <select id="ntMonth" aria-label="${esc(t("选择月份"))}">${opts}</select>
+    <button class="chip" data-ntf="month" data-v="${newer ? newer[0] : ""}" aria-label="${esc(t("较晚的月份"))}" ${newer ? "" : "disabled"}>›</button></div>`;
+}
+/** 历史上的今天：往年同一天写过的（只在我的、没有筛选时显示） */
+function otdHTML(max = 3){
+  if (filtersOn() || S.ntUi.scope !== "mine") return "";
+  const list = onThisDay(S.nt.mine, S.day); if (!list.length) return "";
+  return `<div class="panel otd" style="padding:4px 10px;margin-bottom:10px"><div class="glabel">🗓 ${t("历史上的今天")}</div>${list.slice(0, max).map(rowHTML).join("")}${list.length > max ? `<div class="small muted" style="padding:4px 6px">${t("还有 {n} 条", { n: list.length - max })}</div>` : ""}</div>`;
+}
+function bodyHTML(){
+  const total = matched().length, more = total - shown().length;
+  return `${otdHTML()}${navHTML()}<div class="panel" id="ntList" style="padding:4px 10px">${listHTML()}</div>${more > 0 ? `<div class="btns" style="margin-top:8px"><button class="btn" data-act="nt-more">${t("显示更多（还有 {n} 条）", { n: more })}</button></div>` : ""}`;
 }
 function listHTML(){
   const list = shown();
@@ -50,15 +83,16 @@ function openNotes(){
     ${ui.scope === "mine" ? `<button class="btn primary" data-act="note-add">＋ ${t("记一条")}</button>` : ""}</div>
   <div class="field" style="margin:6px 0"><input id="ntQ" type="search" value="${esc(ui.q)}" placeholder="${esc(t("搜索：出处、书名、摘录、心得、标签"))}" aria-label="${esc(t("搜索笔记"))}" enterkeyhint="search" autocomplete="off"></div>
   ${tags.length ? `<div class="chips" role="group" aria-label="${t("标签")}" style="margin-top:0"><button class="chip" data-ntf="tag" data-v="all" aria-pressed="${ui.tag === "all"}">${t("全部标签")}</button>${tags.slice(0, 30).map(([x, c]) => `<button class="chip" data-ntf="tag" data-v="${esc(x)}" aria-pressed="${ui.tag === x}">#${esc(x)} <span class="cnt">${c}</span></button>`).join("")}</div>` : ""}
-  <div class="panel" id="ntList" style="padding:4px 10px">${listHTML()}</div>
+  <div id="ntBody">${bodyHTML()}</div>
   <div class="btns">${ui.scope === "mine" && S.nt.mine.length ? `<button class="btn" data-act="note-export">${t("导出 / 打印 / 整理")}</button>` : ""}<button class="btn" data-act="ai-settings">${t("AI 设置")}</button></div>
   <p class="small muted">${t("默认只有你自己看得到；每一条可以单独分享给指定的家人（对方只读）。拍照识字的照片不会被保存。")}</p>`;
   showSheet();
 }
 /** 点筛选：scope / kind / tag */
-function setFilter(k, v){ S.ntUi[k] = v; if (k === "scope") { S.ntUi.kind = "all"; S.ntUi.tag = "all"; } openNotes(); }
+function setFilter(k, v){ if (k === "month" && !v) return; S.ntUi[k] = v; S.ntUi.limit = PAGE; if (k === "scope") { S.ntUi.kind = "all"; S.ntUi.tag = "all"; S.ntUi.month = null; } openNotes(); }
+function moreNotes(){ S.ntUi.limit += PAGE; const b = $("#ntBody"); if (b) b.innerHTML = bodyHTML(); }
 /** 搜索框每次输入只重画列表（不然光标会丢） */
-function onSearch(v){ S.ntUi.q = v; const box = $("#ntList"); if (box) box.innerHTML = listHTML(); }
+function onSearch(v){ S.ntUi.q = v; S.ntUi.limit = PAGE; const box = $("#ntBody"); if (box) box.innerHTML = bodyHTML(); }
 
 /* ---------- 看（只读，家人分享给我的）---------- */
 function viewNote(n){
@@ -107,7 +141,8 @@ function openNoteForm(n, prefill = {}, { photo = false } = {}){
   openForm(isNew ? "记一条笔记" : "编辑笔记", noteFields(), draft, async f => {
     if (!f.quote && !f.reflection) { toast(t("摘录和心得至少写一样")); return; }
     const used = !!f.ai_used && !!f.ocr && f.ocr.paragraphs.some(p => hasPara(f.quote, p));
-    await nt.saveNote({ ...f, ai_used: used || (!f.ocr && !!f.ai_used), tags: parseTags(f.tags), day: f.day || S.day });
+    const d = await nt.saveNote({ ...f, ai_used: used || (!f.ocr && !!f.ai_used), tags: parseTags(f.tags), day: f.day || S.day });
+    S.ntUi.month = String(d.day).slice(0, 7); S.ntUi.limit = PAGE;   // 回到列表时落在这条所在的月份
     toast(t("记下了"));
     openNotes();
   }, isNew ? null : async () => { if (confirm(t("删除这条笔记？"))) { await nt.deleteNote(n.id); openNotes(); } });
@@ -194,12 +229,16 @@ function addTag(x){ readForm(); const d = getForm().draft, cur = parseTags(d.tag
 function openNote(id){ const n = nt.note(id); if (!n) return; if (nt.isMine(n)) openNoteForm(n); else viewNote(n); }
 
 /* ---------- 导出 / 打印 / AI 整理 ---------- */
-const picked = () => S.nt.mine.length ? shown().filter(n => nt.isMine(n) && !S.ntUi.off.has(n.id)) : [];
+/** 导出范围：有筛选就是筛选结果（跨全部月份），没有就是全部笔记；在月份视图里可以勾“只导出这个月” */
+const monthMode = () => !filtersOn() && curMonth() !== "all";
+const exportList = () => { const all = filterNotes(S.nt.mine, S.ntUi).sort(byNewest); return S.ntUi.exMonth && monthMode() ? all.filter(n => String(n.day).slice(0, 7) === curMonth()) : all; };
+const picked = () => exportList().filter(n => !S.ntUi.off.has(n.id));
 function openExport(){
-  const ui = S.ntUi, list = shown().filter(nt.isMine), sel = picked();
+  const ui = S.ntUi, list = exportList(), sel = picked();
   const groups = [["date", "按月份"], ["kind", "按类型"], ["tag", "按标签"]];
   $("#sheetIn").innerHTML = `${head(t("导出 / 打印 / 整理"))}
-  <p class="small muted">${t("范围 = 笔记页当前的筛选结果（类型、标签、搜索）。下面可以逐条取消。已选 {a} / {b} 条。", { a: sel.length, b: list.length })}</p>
+  <p class="small muted">${t("范围 = 笔记页当前的筛选结果（类型、标签、搜索）；没有筛选就是全部笔记。下面可以逐条取消。已选 {a} / {b} 条。", { a: sel.length, b: list.length })}</p>
+  ${monthMode() ? `<div class="field"><button class="chip" data-act="nt-exmonth" aria-pressed="${ui.exMonth}">${t("只导出 {m}", { m: monthLabel(curMonth()) })}</button></div>` : ""}
   <div class="field"><div class="lab">${t("整理方式")}</div><div class="seg" role="group" aria-label="${t("整理方式")}">${groups.map(([k, l]) => `<button data-ntf="group" data-v="${k}" data-export="1" aria-pressed="${ui.group === k}">${t(l)}</button>`).join("")}</div></div>
   <div class="panel" style="padding:4px 10px;max-height:46vh;overflow:auto">${list.length ? list.map(n => `<button class="nrow xrow" data-act="nt-x" data-id="${esc(n.id)}" aria-pressed="${!ui.off.has(n.id)}"><span class="ni" aria-hidden="true">${ui.off.has(n.id) ? "☐" : "☑"}</span><span class="nt"><b>${esc(noteHeading(n, kindLabel))}</b><small>${esc(n.day)} · ${esc(kindLabel(n.kind))}</small></span></button>`).join("") : `<div class="empty">${t("没有可导出的笔记。")}</div>`}</div>
   <div class="btns"><button class="btn primary" data-act="nt-preview" ${sel.length ? "" : "disabled"}>${t("预览 / 打印")}</button><button class="btn" data-act="nt-md" ${sel.length ? "" : "disabled"}>${t("下载 Markdown")}</button><button class="btn" data-act="nt-json" ${sel.length ? "" : "disabled"}>${t("下载 JSON（备份）")}</button><button class="btn" data-act="nt-copy" ${sel.length ? "" : "disabled"}>${t("复制文字")}</button></div>
@@ -210,6 +249,7 @@ function openExport(){
   <p class="small muted">${t("只导出你自己的笔记；家人分享给你的不在其中。")}</p>`;
   showSheet();
 }
+function toggleExMonth(){ S.ntUi.exMonth = !S.ntUi.exMonth; S.ntUi.off.clear(); openExport(); }
 function toggleExport(id){ const off = S.ntUi.off; if (off.has(id)) off.delete(id); else off.add(id); openExport(); }
 const mdOpts = () => ({ title: t("灵修笔记"), group: S.ntUi.group, kindLabel, labels: { quote: t("摘录"), thought: t("心得"), ai: t("（摘录经 AI 识字，请核对原文）") } });
 const download = (name, text, mime) => {
@@ -275,5 +315,5 @@ async function runAiTest(){
   try { await testAi(); toast(t("连接成功 ✓")); } catch (e) { toast(String(e.message || e).slice(0, 160)); }
 }
 
-export { mdInsert, mdPreview, mdFull, exitFull, growText, openNotes, openNote, openNoteForm, setFilter, onSearch, onPhotos, pickPara, pickAll, addTag, openExport, toggleExport, openPreview, exportMd, exportJson, copyMd, copyText, resultText, compileWithAi, openResult,
+export { otdHTML, moreNotes, toggleExMonth, mdInsert, mdPreview, mdFull, exitFull, growText, openNotes, openNote, openNoteForm, setFilter, onSearch, onPhotos, pickPara, pickAll, addTag, openExport, toggleExport, openPreview, exportMd, exportJson, copyMd, copyText, resultText, compileWithAi, openResult,
   openAiSettings, runAiTest, kindLabel };
