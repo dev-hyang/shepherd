@@ -25,7 +25,7 @@ async function healStaleModules(){
 
 if (!(await healStaleModules())) {
   { const v = document.getElementById("appver"); if (v) v.textContent = "v" + APP_VERSION; } // 顶栏版本号：不用翻到最后一页就能对照有没有更新
-  initSwipeRows({ del: () => t("删除"), release: () => t("松手删除") });   // 行记录左滑删除（js/swipe-rows.js）
+  initSwipeRows({ kinds: ["log", "dropped-task", "extra-read"], del: () => t("删除"), release: () => t("松手删除") });   // 行记录左滑删除（js/swipe-rows.js）
   render();          // 先画出"连接中"的壳
   initSupabase();    // 加载 supabase-js，登录状态回调里再渲染一次
   // 页面开着过了午夜：换到新的一天
