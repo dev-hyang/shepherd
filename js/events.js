@@ -140,7 +140,7 @@ document.addEventListener("click", async ev => {
       case "template-apply": { const n = await wb.applyTemplate(); if ($("#sheet").open) openHabits(); else render(); toast(n ? t("已建立 {n} 项习惯，点一项可以改", { n }) : t("这些习惯都已经有了")); break; }
 
       /* 习惯管理 */
-      case "habits": openHabits("all"); break;
+      case "habits": openHabits("habits"); break;
       case "meds": openHabits("meds"); break;
       case "habit-add": openPractice(null); break;
       case "habit-add-kind": openPractice({ kind: d.kind, schedule: { days: [0, 1, 2, 3, 4, 5, 6], times: ["08:00"], remind: true } }); break;

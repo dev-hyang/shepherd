@@ -123,6 +123,16 @@ body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 .seg.mini{gap:4px}
 .seg.mini button{padding:5px 10px;min-height:34px;font-size:13px;border-radius:999px}
 .btns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+/* 习惯与用药：筛选和“新增”同一行；筛选可换行，新增始终贴右 */
+.toolbar{display:flex;gap:8px;align-items:flex-start;margin:10px 0}
+.toolbar .chips{flex:1;min-width:0;margin:0}
+.toolbar .btn{flex:none;min-height:36px;padding:6px 14px;font-size:14px}
+.chip .cnt{opacity:.65;font-size:12px;margin-left:2px}
+.glabel{font-size:12.5px;color:var(--muted);font-weight:600;padding:10px 0 2px;letter-spacing:.02em}
+.glabel:first-child{padding-top:6px}
+.habit .warn{font-size:12px;font-weight:600;color:var(--rose);background:var(--rose-soft);border-radius:999px;padding:1px 8px;margin-left:4px;white-space:nowrap}
+.msec{font-size:13px;font-weight:600;color:var(--muted);margin:18px 4px 6px;letter-spacing:.03em}
+.mrow .mbadge{flex:none;min-width:24px;padding:1px 8px;border-radius:999px;background:var(--slate-soft);color:var(--slate);font-size:13px;font-weight:600;text-align:center}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:11px 18px;cursor:pointer;font-weight:500;min-height:46px}
 .btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink);flex:1}
 .btn.danger{color:var(--rose);border-color:var(--rose)}

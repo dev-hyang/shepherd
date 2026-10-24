@@ -60,7 +60,7 @@ const EN = {
   "分钟（iPhone：设置 → 屏幕使用时间；Android：数字健康）": "Minutes (iPhone: Settings → Screen Time; Android: Digital Wellbeing)", "或者大概": "Or roughly", "请填一个数": "Enter a number",
   "已建立 {n} 项习惯，点一项可以改": "{n} habits created; tap one to change it", "这些习惯都已经有了": "You already have these habits",
   // ---- 习惯管理 ----
-  "习惯与提醒": "Habits & reminders", "读经、祷告、锻炼、饮食、屏幕……目标、日子、时间点、家人可见": "Bible, prayer, exercise, eating, screen… goals, days, times, family visibility",
+  "习惯与用药": "Habits & medication", "新增": "Add", "还没有用药或保健品。": "No medication or supplements yet.", "该补货了": "Time to refill", "每天要做的": "Daily", "提醒与设置": "Reminders & settings", "习惯与提醒": "Habits & reminders", "读经、祷告、锻炼、饮食、屏幕……目标、日子、时间点、家人可见": "Bible, prayer, exercise, eating, screen… goals, days, times, family visibility",
   "用药与保健品": "Medication & supplements", "{n} 项 · 剂量、时间点、库存与补货提醒": "{n} items · dose, times, stock and refill reminders", "剂量、时间点、库存与补货提醒": "Dose, times, stock and refill reminders",
   "进行中": "Active", "已归档": "Archived", "没有归档的习惯。": "No archived habits.", "新习惯": "New habit", "编辑习惯": "Edit habit", "用药": "Medication", "保健品": "Supplement", "锻炼": "Exercise", "健康饮食": "Healthy eating", "屏幕时长": "Screen time", "睡眠": "Sleep", "自定义": "Custom",
   "点一项编辑目标、日子、时间点和提醒。“家人可见”只分享做了没有；删除先归档，归档后再删才会连记录一起删。": "Tap a habit to edit its goal, days, times and reminder. “Family can see” shares only whether it was done; delete archives first, and deleting an archived habit removes its records too.",

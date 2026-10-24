@@ -121,24 +121,35 @@ function openPractice(p){
       if (confirm(t("彻底删除这项和它的全部打卡记录？"))) { await wb.deletePractice(p.id); openHabits(); }
     });
 }
-/* 习惯列表：进行中 / 已归档；每行可编辑，可直接切换“家人可见” */
+/* 习惯列表：一行筛选（全部 / 习惯与提醒 / 用药与保健品 / 已归档）+ 同一行的“新增”；每行可编辑，可直接切换“家人可见” */
+const isMed = p => ["med", "supplement"].includes(p.kind);
+function lowStock(p){ const m = p.meta || {}; if (!isMed(p) || m.stock == null || m.stock === "" || m.refillAt == null || m.refillAt === "") return false; return Math.floor(m.stock / Math.max(1, ((p.schedule || {}).times || []).length)) <= m.refillAt; }
 function openHabits(filter){
-  S.habitsFilter = filter || S.habitsFilter || "all";
+  S.habitsFilter = filter && ["all", "habits", "meds", "archived"].includes(filter) ? filter : (S.habitsFilter || "all");
   const all = S.wb.practices, f = S.habitsFilter;
-  const list = all.filter(p => f === "meds" ? ["med", "supplement"].includes(p.kind) : f === "archived" ? p.archived : !p.archived);
+  const live = all.filter(p => !p.archived);
+  const groups = { all: live, habits: live.filter(p => !isMed(p)), meds: live.filter(isMed), archived: all.filter(p => p.archived) };
+  const list = groups[f];
   const row = p => { const k = kindOf(p), tg = p.target || {}, sc = p.schedule || {}, m = p.meta || {};
     const goal = p.kind === "focus" ? t("每天 {n} 段", { n: tg.count || "–" }) : modeOf(p) === "minutes" ? (tg.per === "week" ? t("每周 {n} 次 · 每次 {m} 分钟", { n: tg.count || 1, m: tg.minutes || "–" }) : t("每天 {m} 分钟", { m: tg.minutes || "–" }))
       : p.kind === "screen" ? t("每天不超过 {m} 分钟", { m: tg.max || "–" }) : p.kind === "sleep" ? t("每晚 {h} 小时", { h: tg.min || "–" }) : p.kind === "prayer" ? t("每天 {n} 次", { n: tg.count || 1 })
-      : ["med", "supplement"].includes(p.kind) ? `${esc(m.dose || "")}${m.stock != null && m.stock !== "" ? ` · ${t("剩 {n}", { n: m.stock })}` : ""}` : "";
+      : isMed(p) ? `${esc(m.dose || "")}${m.stock != null && m.stock !== "" ? ` · ${t("剩 {n}", { n: m.stock })}` : ""}` : "";
     const days = (sc.days || ALL_DAYS).length === 7 ? t("每天") : (sc.days || []).map(d => t(WEEKDAY[d])).join("");
     const meta = [goal, days, sc.times && sc.times.length ? sc.times.join(" ") + (sc.remind === false ? "" : " ⏰") : ""].filter(Boolean).join(" · ");
     return `<div class="habit"><span class="hi" style="background:${k.color}22;color:${k.color}">${k.icon}</span>
-      <button class="main" data-act="habit-edit" data-pid="${esc(p.id)}"><span class="title">${esc(p.name || t(k.label))}${p.active === false && !p.archived ? ` <span class="small muted">${t("（暂停）")}</span>` : ""}</span><span class="meta">${meta}</span></button>
+      <button class="main" data-act="habit-edit" data-pid="${esc(p.id)}"><span class="title">${esc(p.name || t(k.label))}${p.active === false && !p.archived ? ` <span class="small muted">${t("（暂停）")}</span>` : ""}${!p.archived && lowStock(p) ? ` <span class="warn">${t("该补货了")}</span>` : ""}</span><span class="meta">${meta}</span></button>
       <span class="acts">${p.archived ? `<button class="chip" data-act="habit-restore" data-pid="${esc(p.id)}">${t("恢复")}</button>` : `<button class="chip" data-act="habit-share" data-pid="${esc(p.id)}" aria-pressed="${p.share === "family"}" title="${t("完成情况开给家人看")}">${p.share === "family" ? t("家人可见") : t("仅自己")}</button>`}</span></div>`; };
-  $("#sheetIn").innerHTML = `${head(t("习惯与提醒"))}
-  <div class="chips" role="group" aria-label="${t("筛选")}">${[["all", "进行中"], ["meds", "用药与保健品"], ["archived", "已归档"]].map(([k, l]) => `<button class="chip" data-hf="${k}" aria-pressed="${f === k}">${t(l)}</button>`).join("")}</div>
-  <div class="panel" style="padding:4px 10px">${list.length ? list.map(row).join("") : `<div class="empty">${f === "archived" ? t("没有归档的习惯。") : t("还没有习惯。")}</div>`}</div>
-  <div class="btns"><button class="btn primary" data-act="habit-add">＋ ${t("新习惯")}</button>${f === "meds" ? `<button class="btn" data-act="habit-add-kind" data-kind="med">＋ ${t("用药")}</button><button class="btn" data-act="habit-add-kind" data-kind="supplement">＋ ${t("保健品")}</button>` : ""}${all.length ? "" : `<button class="btn" data-act="template-apply">${t("一键起步")}</button>`}</div>
+  // “全部”里习惯和用药各一组，用小标题分开；只有一组时不加
+  const body = list.length ? (f === "all" && groups.habits.length && groups.meds.length
+      ? [[t("习惯与提醒"), groups.habits], [t("用药与保健品"), groups.meds]].map(([l, g]) => `<div class="glabel">${l}</div>${g.map(row).join("")}`).join("")
+      : list.map(row).join(""))
+    : `<div class="empty">${f === "archived" ? t("没有归档的习惯。") : f === "meds" ? t("还没有用药或保健品。") : t("还没有习惯。")}${f !== "archived" && !all.length ? `<br><button class="btn" data-act="template-apply">${t("一键起步")}</button>` : ""}</div>`;
+  const addAttr = f === "meds" ? 'data-act="habit-add-kind" data-kind="med"' : 'data-act="habit-add"';
+  const filters = [["all", "全部"], ["habits", "习惯与提醒"], ["meds", "用药与保健品"], ["archived", "已归档"]];
+  $("#sheetIn").innerHTML = `${head(t("习惯与用药"))}
+  <div class="toolbar"><div class="chips" role="group" aria-label="${t("筛选")}">${filters.map(([k, l]) => `<button class="chip" data-hf="${k}" aria-pressed="${f === k}">${t(l)} <span class="cnt">${groups[k].length}</span></button>`).join("")}</div>
+    <button class="btn primary" ${addAttr}>＋ ${t("新增")}</button></div>
+  <div class="panel" style="padding:4px 10px">${body}</div>
   <p class="small muted">${t("点一项编辑目标、日子、时间点和提醒。“家人可见”只分享做了没有；删除先归档，归档后再删才会连记录一起删。")}${!S.family ? " " + t("加入家庭后才能开给家人看。") : ""}</p>`;
   showSheet();
 }
