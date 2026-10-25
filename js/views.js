@@ -17,8 +17,8 @@ import { pendingCount } from "./tk.js";
 /* ============ 渲染 ============ */
 const TAB_LABELS = { today: "今天", tasks: "任务", prayer: "祷告", review: "回顾", me: "我的" };
 const VIEWS = { today: viewToday, tasks: viewTasks, prayer: viewPrayer, review: viewReview, me: viewMe };
-/* 子页：挂在某个底部页签下面，顶部显示完整路径（像爱家小助手）：‹ 我的 / 小Y问。parent 也可以是另一个子页，路径一路显示到底部页签 */
-const SUB = { ask: { parent: "me", label: "小Y问", view: viewAsk } };
+/* 子页：挂在某个底部页签下面，顶部显示完整路径（像爱家小助手）：‹ 我的 / 咩咩咩。parent 也可以是另一个子页，路径一路显示到底部页签 */
+const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk } };
 function crumbParts(tab){
   const parts = [{ label: SUB[tab].label }]; let p = SUB[tab].parent;
   while (p) { parts.unshift({ tab: p, label: SUB[p] ? SUB[p].label : TAB_LABELS[p] }); p = SUB[p] ? SUB[p].parent : null; }
@@ -74,7 +74,7 @@ function render(){
   const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
   $("#main").className = S.tab === "today" ? "wide" : "narrow";
   const crumb = sub ? crumbNav(crumbParts(S.tab)) : "";
-  $("#main").innerHTML = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、小Y问 没登录也能看
+  $("#main").innerHTML = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩 没登录也能看
   updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : "", t("回到顶部"));
 }
 function refreshSettingsIfOpen(){ if ($("#sheet").open && $("#sheetTitle") && $("#sheetTitle").textContent === t("设置")) openSettings(); }

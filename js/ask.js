@@ -11,8 +11,19 @@ import { render } from "./views.js";
 import * as tk from "./tk.js";
 import * as wb from "./wb.js";
 
-/* ============ 小Y问 · AI 问询页（我的 → 小Y问；今天页也有入口）============
-   和爱家小助手的「小Y问」同一套思路：有 key（设置 → AI 助手，复用 js/ai.js）直接出答案；没 key 就把问题连同记录摘要拼成提示词，
+/** 咩咩图标：一只白绒绒的小羊咩咩，额头上一枚珊瑚红的字母 Y（四个应用同一只；颜色固定，深浅色主题下都一样），随文字大小缩放 */
+const aiIcon = (size = 22) => `<svg class="ai-ico" width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+  <ellipse cx="9" cy="37" rx="8.5" ry="4.6" transform="rotate(-24 9 37)" fill="#F6D5C3" stroke="#2C3A4B" stroke-width="2.6"/>
+  <ellipse cx="55" cy="37" rx="8.5" ry="4.6" transform="rotate(24 55 37)" fill="#F6D5C3" stroke="#2C3A4B" stroke-width="2.6"/>
+  <g fill="#fff" stroke="#2C3A4B" stroke-width="2.6"><circle cx="32" cy="14" r="10.5"/><circle cx="19" cy="20" r="8.5"/><circle cx="45" cy="20" r="8.5"/><circle cx="13" cy="31" r="7.5"/><circle cx="51" cy="31" r="7.5"/><circle cx="16" cy="43" r="7"/><circle cx="48" cy="43" r="7"/><circle cx="24" cy="51" r="7"/><circle cx="40" cy="51" r="7"/><circle cx="32" cy="53" r="7"/><circle cx="32" cy="32" r="17"/></g><g fill="#fff"><circle cx="32" cy="14" r="10.5"/><circle cx="19" cy="20" r="8.5"/><circle cx="45" cy="20" r="8.5"/><circle cx="13" cy="31" r="7.5"/><circle cx="51" cy="31" r="7.5"/><circle cx="16" cy="43" r="7"/><circle cx="48" cy="43" r="7"/><circle cx="24" cy="51" r="7"/><circle cx="40" cy="51" r="7"/><circle cx="32" cy="53" r="7"/><circle cx="32" cy="32" r="17"/></g>
+  <ellipse cx="32" cy="41" rx="13" ry="12" fill="#F6D5C3" stroke="#2C3A4B" stroke-width="2.4"/>
+  <circle cx="27" cy="39.5" r="2.1" fill="#2C3A4B"/><circle cx="37" cy="39.5" r="2.1" fill="#2C3A4B"/>
+  <path d="M32 44.5v1.6M29.3 48q2.7 2.4 5.4 0" fill="none" stroke="#2C3A4B" stroke-width="1.9" stroke-linecap="round"/>
+  <circle cx="23.2" cy="44.5" r="1.9" fill="#F4A3B1" opacity=".9"/><circle cx="40.8" cy="44.5" r="1.9" fill="#F4A3B1" opacity=".9"/>
+  <path d="M25.5 11.5l6.5 8 6.5-8M32 19.5v9" fill="none" stroke="#D9655F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+/* ============ 咩咩咩 · AI 问询页（我的 → 咩咩咩；今天页也有入口）============
+   和爱家小助手的「咩咩咩」同一套思路：有 key（设置 → AI 助手，复用 js/ai.js）直接出答案；没 key 就把问题连同记录摘要拼成提示词，
    一键复制到任一 AI 粘贴。场景按成年人的身心灵记录来：本周灵修、身体作息、时间专注、祷告、读经计划、情绪压力、带领家人。
    发出去的记录摘要只有统计数字和计划进度：几天读经、连续几天、锻炼多少分钟、逾期几件、代祷几项……
    绝不包含祷告内容、笔记正文、任务标题、家人姓名。摘要在发送前可以展开看一眼。 */
@@ -97,7 +108,7 @@ function contextText(topic){
 }
 
 /* ---- 提示词 ---- */
-const systemPrompt = () => `你是「小Y」：一位温和、不说教的属灵同伴，也是懂健康生活的顾问，在「牧羊人」这个个人身心灵记录应用里陪伴一位成年基督徒。
+const systemPrompt = () => `你是「咩咩」：一位温和、不说教的属灵同伴，也是懂健康生活的顾问，在「牧羊人」这个个人身心灵记录应用里陪伴一位成年基督徒。
 依据对方的记录摘要（只有统计数字和进度，没有私密内容）给出具体、可行的小步建议；先肯定已经做到的，再说可以调整的，不责备。
 可以引用一两句圣经，但不要堆砌经文；不做医疗诊断、不给药物剂量，身体明显不适请建议就医。
 用${LANG_NAME[locale()] || "简体中文"}回答，250 字以内（英文 180 词），分 2–4 个短段落。`;
@@ -112,7 +123,7 @@ function viewAsk(){
   const a = st(), ready = aiReady(), p = providerOf(aiSettings().provider), ctx = a.withCtx ? contextText(a.topic) : "";
   const topics = TOPICS.map(x => `<button type="button" class="chip" data-act="ask-topic" data-topic="${x.id}" aria-pressed="${a.topic === x.id}">${x.icon} ${t(x.name)}</button>`).join("");
   const sites = AI_SITES.map(([n, u]) => `<a class="btn sm" href="${u}" target="_blank" rel="noopener noreferrer">${t(n)}</a>`).join("");
-  return `${pageHead(`🤖 ${t("小Y问")}`, chipBtn(ready ? t("换模型") : t("填 API key"), 'data-act="ask-settings"'))}
+  return `${pageHead(`${aiIcon(26)} ${t("咩咩咩")}`, chipBtn(ready ? t("换模型") : t("填 API key"), 'data-act="ask-settings"'))}
   <p class="small muted" style="margin:0 0 4px">${ready
     ? t("直接问，回答来自你自己填的 {p}。可以附带最近 7 天的记录摘要（只有数字和进度）。", { p: t(p.name) })
     : t("还没填 API key：把问题连同记录摘要拼成提示词，复制到任一 AI 粘贴即可；填了 key（免费的 Gemini 就行）就能在这里直接出答案。")}</p>
@@ -125,13 +136,13 @@ function viewAsk(){
     ${a.error ? `<p class="small" style="color:var(--rose);margin:8px 0 0" role="alert">${esc(a.error)}</p>` : ""}
   </form>
   ${!ready ? `<div class="panel" style="margin-top:10px"><p class="small muted" style="margin:0 0 8px">${t("复制后打开任一 AI 粘贴（手机上会直接打开已安装的 App）：")}</p><div class="btns" style="margin-top:0">${sites}</div></div>` : ""}
-  ${a.answer ? `<div class="panel ask-answer" style="margin-top:10px"><div class="sec-head" style="margin:0 0 6px"><h2 style="margin:0">${t("小Y的回答")}</h2><span class="sec-acts">${chipBtn(t("复制"), 'data-act="ask-copy-answer"')}</span></div>
+  ${a.answer ? `<div class="panel ask-answer" style="margin-top:10px"><div class="sec-head" style="margin:0 0 6px"><h2 style="margin:0">${t("咩咩的回答")}</h2><span class="sec-acts">${chipBtn(t("复制"), 'data-act="ask-copy-answer"')}</span></div>
     <div class="md">${mdToHtml(a.answer)}</div>
     <p class="small muted" style="margin:10px 0 0">${t("AI 回答仅供参考；身体不适请就医，属灵问题多与牧者和家人交通。")}</p></div>` : ""}`;
 }
 /** 今天页 / 我的 列表里的入口行 */
 function askEntryHTML(){
-  return `<div class="panel mlist ask-entry"><button class="mrow" data-tab="ask"><span class="mi" aria-hidden="true">🤖</span><span class="mt"><b>${t("小Y问")}</b><small>${t("问本周灵修、身体作息、时间专注、祷告与读经…")}</small></span><span class="mch" aria-hidden="true">›</span></button></div>`;
+  return `<div class="panel mlist ask-entry"><button class="mrow" data-tab="ask"><span class="mi" aria-hidden="true">${aiIcon(22)}</span><span class="mt"><b>${t("咩咩咩")}</b><small>${t("问本周灵修、身体作息、时间专注、祷告与读经…")}</small></span><span class="mch" aria-hidden="true">›</span></button></div>`;
 }
 
 /* ---- 动作 ---- */
@@ -160,4 +171,4 @@ async function askAct(act, el){
   return true;
 }
 
-export { TOPICS, viewAsk, askEntryHTML, askAct, contextText };
+export { TOPICS, viewAsk, askEntryHTML, askAct, aiIcon, contextText };

@@ -529,7 +529,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .bk-card.off{opacity:.6}
 .bk-hint{display:block;color:var(--muted,#6b7280);font-size:12px;line-height:1.4;margin:2px 0 4px}
 
-/* 子页顶部的面包屑（像爱家小助手）：‹ 我的 / 小Y问。第一项带 ‹，中间项可点，最后一项加粗当标题；贴顶跟着滚 */
+/* 子页顶部的面包屑（像爱家小助手）：‹ 我的 / 咩咩咩。第一项带 ‹，中间项可点，最后一项加粗当标题；贴顶跟着滚 */
 .crumb{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;display:flex;align-items:center;flex-wrap:wrap;gap:2px 0;margin:0 -16px 10px;padding:8px 16px;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);font-size:14px;line-height:1.5}
 .crumb .crumb-link{background:none;border:0;font:inherit;color:var(--slate);font-weight:600;padding:4px 5px;border-radius:6px;cursor:pointer;white-space:nowrap}
 .crumb .crumb-link:hover,.crumb .crumb-link:focus-visible{background:var(--slate-soft);text-decoration:underline;text-underline-offset:3px}
@@ -538,7 +538,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .crumb b{font-weight:700;color:var(--ink);padding:4px 5px;min-width:0;overflow-wrap:anywhere}
 .crumb.mb{position:static;margin:0;padding:0;border:0;background:none;backdrop-filter:none;flex:1;min-width:0}
 @media print{.crumb{display:none}}
-/* 小Y问（js/ask.js） */
+/* 咩咩咩（js/ask.js） */
 .ask-form textarea{width:100%;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:11px 12px;font-size:16px;line-height:1.6;min-height:84px;resize:vertical}
 .ask-ctx{display:flex;gap:8px;align-items:flex-start;margin:10px 0 0;font-size:13.5px;line-height:1.4;color:var(--muted);cursor:pointer}
 .ask-ctx input{margin-top:3px;flex:none;width:18px;height:18px;accent-color:var(--slate)}
@@ -546,6 +546,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .ask-ctxv summary{cursor:pointer}
 .ask-ctxv pre{white-space:pre-wrap;font:inherit;font-size:13px;background:var(--field);border-radius:var(--radius-sm);padding:10px 12px;margin:6px 0 0;color:var(--muted)}
 .ask-entry{margin-top:12px}
+.ai-ico{vertical-align:-4px;flex:none} .mrow .mi .ai-ico{vertical-align:middle}
 
 .bk-more{margin-top:6px}.bk-more>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);padding:6px 0;list-style:none}
 .bk-more>summary::before{content:"▸ ";}.bk-more[open]>summary::before{content:"▾ ";}

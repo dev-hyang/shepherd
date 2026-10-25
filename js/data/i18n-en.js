@@ -667,10 +667,10 @@ const EN = {
   "Drive 里选的文件夹找不到了（被删或改了名）：重新选一个": "The chosen Drive folder can't be found (deleted or renamed): pick another",
   "选一个放备份的文件夹": "Choose a folder for backups",
   "只能用应用自己建的文件夹；想用你在 Drive 里已有的文件夹，请点下面的「或在 Drive 里选一个文件夹…」。": "Only folders the app created itself work here; to use a folder you already have in Drive, tap “…or pick a folder in Drive” below.",
-   // ---- 小Y问（js/ask.js）与面包屑 ----
+   // ---- 咩咩咩（js/ask.js）与面包屑 ----
   "位置": "Location",
-  "小Y问": "Ask Y",
-  "小Y的回答": "Y's answer",
+  "咩咩咩": "Baa Baa",
+  "咩咩的回答": "Baa's answer",
   "本周灵修回顾": "This week's devotions",
   "身体与作息": "Body & routine",
   "时间与专注": "Time & focus",

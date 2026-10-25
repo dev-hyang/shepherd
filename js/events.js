@@ -34,7 +34,7 @@ document.addEventListener("change", ev => { bkChange(ev); });   // 备份设置 
 
 // 任务：快速添加表单、清单的筛选 / 搜索（搜索框每次重画后把光标放回去）
 document.addEventListener("submit", async ev => {
-  if (ev.target && ev.target.id === "askForm") { ev.preventDefault(); await askAct("ask-send", ev.target); return; }   // 小Y问（js/ask.js）
+  if (ev.target && ev.target.id === "askForm") { ev.preventDefault(); await askAct("ask-send", ev.target); return; }   // 咩咩咩（js/ask.js）
   if (!ev.target || ev.target.id !== "tkQuickForm") return;
   ev.preventDefault();
   const inp = $("#tkQuick"), v = inp && inp.value.trim(); if (!v) return;
@@ -80,7 +80,7 @@ document.addEventListener("click", async ev => {
   if (d.metric) { S.review.metric = d.metric; render(); return; }
 
   if (d.act && d.act.startsWith("bk-")) { await bkAct(d.act, btn); return; }   // 备份与恢复（js/backup.js）
-  if (d.act && d.act.startsWith("ask-")) { await askAct(d.act, btn); return; }  // 小Y问（js/ask.js）
+  if (d.act && d.act.startsWith("ask-")) { await askAct(d.act, btn); return; }  // 咩咩咩（js/ask.js）
   try {
     switch (d.act) {
       case "settings": openSettings(); break;
