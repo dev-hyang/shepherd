@@ -15,7 +15,7 @@ import { familyTasks, mitBlock, nudgeBar, tasksBlock } from "./tasks.js";
 /* ============ 今天页的版式 ============
    自上而下：① 大卡片（问候 + 日期，补记时在这里切换）② 紧急提醒（逾期 / 马上要做）③ 四张统计卡（习惯、任务、读经、祷告：完成几项、还剩什么，点一下滚到对应区块）④ 内容区。
    内容区手机一栏，按“一天怎么过”排：读经 → 三件大事 + 今日任务 → 今日习惯 → 灵修笔记 → 家人；
-   电脑（≥900px）分两栏：左“行动”（三件大事、任务、家人的安排），右“日常”（读经、习惯、笔记、家人）。 */
+   电脑（≥900px）分两栏：左（略宽）放“今日习惯 + 家人”——习惯是每天最常点的，条目多、占地方；右放读经、三件大事 + 任务、笔记、家人的安排——这些条目少、临时性强。 */
 function viewToday(){
   const day = wb.viewDay(), past = day !== S.day, now = new Date(), h = now.getHours(), dt = new Date(day + "T12:00:00");
   const greet = h < 5 ? t("夜深了") : h < 11 ? t("早安") : h < 14 ? t("午安") : h < 18 ? t("下午好") : t("晚上好");
@@ -28,8 +28,8 @@ function viewToday(){
     ${past ? `<div class="hero-note">${t("正在补记，打卡会记到这一天")}</div>` : ""}</section>`;
   // data-o：手机上的先后顺序；a / b：电脑上的左右栏
   const sec = (id, o, html) => (html ? `<section class="tsec" id="sec-${id}" style="--o:${o}">${html}</section>` : "");
-  const colA = [sec("tasks", 2, mitBlock() + tasksBlock()), sec("famtasks", 7, familyTasks(day))].join("");
-  const colB = [sec("reading", 1, readingHTML()), sec("habits", 3, habitsHTML(day, list)), sec("notes", 4, notesHTML()), sec("family", 6, familyHTML(day))].join("");
+  const colA = [sec("habits", 3, habitsHTML(day, list)), sec("family", 6, familyHTML(day))].join("");
+  const colB = [sec("reading", 1, readingHTML()), sec("tasks", 2, mitBlock() + tasksBlock()), sec("notes", 4, notesHTML()), sec("famtasks", 7, familyTasks(day))].join("");
   return `${hero}${nudgeBar()}${kpisHTML(day, list)}${askEntryHTML()}<div class="tgrid"><div class="tcol tcol-a">${colA}</div><div class="tcol tcol-b">${colB}</div></div>`;
 }
 

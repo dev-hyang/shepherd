@@ -516,12 +516,12 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .kpi.done .kbar i{background:var(--sage)}
 .kpi.warn .kbar i{background:var(--rose)}
 .nudge{margin-top:12px}
-/* 内容区：手机一栏按 --o 排序；电脑两栏（左行动、右日常） */
+/* 内容区：手机一栏按 --o 排序；电脑两栏（左：习惯 + 家人；右：读经、任务、笔记、家人的安排） */
 .tgrid{display:flex;flex-direction:column;column-count:auto}
 .tcol{display:contents}
 .tsec{order:var(--o,0);break-inside:auto;padding-top:1px;scroll-margin-top:12px}
 @media (min-width:900px){
-  .tgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 28px;align-items:start}
+  .tgrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0 28px;align-items:start}
   .tcol{display:flex;flex-direction:column;min-width:0}
 }
 @media (min-width:900px){.tgrid{column-count:auto}}
