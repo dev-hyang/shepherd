@@ -8,7 +8,7 @@ const SUPABASE_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/d
 const ICS_FUNCTION = SUPABASE_URL + "/functions/v1/ics";
 
 const LS_PREFIX = "shepherd.v1";              // 本设备偏好的 localStorage 前缀
-const APP_VERSION = "2026-10-25.17";
+const APP_VERSION = "2026-10-25.18";
 const BABY_LOG_URL = "https://dev-hyang.github.io/baby-log/";
 // 四个姊妹站点同一个账号同一个家庭；标题旁的左右箭头在它们之间切换（按这里的顺序环绕）
 const SISTER_APPS = [

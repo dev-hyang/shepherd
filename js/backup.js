@@ -26,10 +26,18 @@ const CFG = {
   afterRestore: async () => { await loadAll(); render(); },
 };
 const KEEP_DAYS = 60, PAGE = 1000, FORMAT = 2;
+/** 云盘：Google Drive / Dropbox / OneDrive / iCloud Drive 的电脑客户端都会在本机放一个同步文件夹，把备份写进去就等于上了那家云盘（网页没法直接调它们的 API：要各家注册 OAuth 应用，这里不做） */
+const PROVIDERS = [
+  { id: "any", name: "任意文件夹 / 其他云盘", hint: "电脑上的任何文件夹都行；用别家云盘就选它的同步文件夹" },
+  { id: "gdrive", name: "Google Drive", hint: "装了 Google Drive 桌面版后，Windows 一般在「G:\\我的云端硬盘」或「Google Drive」盘，Mac 在 ~/Google Drive" },
+  { id: "dropbox", name: "Dropbox", hint: "Windows 一般在 C:\\Users\\<你>\\Dropbox，Mac 在 ~/Dropbox" },
+  { id: "onedrive", name: "OneDrive", hint: "Windows 一般在 C:\\Users\\<你>\\OneDrive，Mac 在 ~/OneDrive" },
+  { id: "icloud", name: "iCloud Drive", hint: "Mac 在 ~/Library/Mobile Documents/com~apple~CloudDocs（访达侧栏的 iCloud 云盘）；Windows 装 iCloud 后在 C:\\Users\\<你>\\iCloudDrive" },
+];
 const FILE_RE = new RegExp(`^${CFG.app}-(\\d{4}-\\d{2}-\\d{2})-\\d{4}\\.json$`);
 
 /* ---- 设置（存本机：文件夹本来就是这台电脑的） ---- */
-const DEFAULTS = { every: "off", days: 14, targets: ["download"], last: null, lastInfo: "" };
+const DEFAULTS = { every: "off", days: 14, targets: ["download"], provider: "any", last: null, lastInfo: "" };
 const settings = () => ({ ...DEFAULTS, ...loadJSON(CFG.key, {}) });
 const saveSettings = (patch) => { const s = { ...settings(), ...patch }; saveJSON(CFG.key, s); return s; };
 const intervalDays = (s = settings()) => (s.every === "week" ? 7 : s.every === "month" ? 30 : s.every === "custom" ? Math.max(1, +s.days || 14) : 0);
@@ -76,8 +84,25 @@ async function writeFolder(blob, name, gesture) {
   const fh = await st.handle.getFileHandle(name, { create: true }), w = await fh.createWritable(); await w.write(blob); await w.close();
   const cut = new Date(Date.now() - KEEP_DAYS * 864e5).toISOString().slice(0, 10);
   try { for await (const [n] of st.handle.entries()) { const m = FILE_RE.exec(n); if (m && m[1] < cut) await st.handle.removeEntry(n).catch(() => {}); } } catch (e) { /* 忽略 */ }
+  try { const n = await copySqlInto(st.handle, gesture); if (n) lastSqlCopied = n; } catch (e) { /* 拷不动 SQL 不影响备份本身 */ }
 }
 
+/* ---- 数据库脚本：supabase/ 目录在电脑上、不进 git，备份文件里也没有；选一次它的位置，每次写云盘文件夹时把 *.sql 一起拷进 sql/ 子目录 ---- */
+async function pickSqlFolder() { const h = await window.showDirectoryPicker({ mode: "read", id: `${IDB}-sql`, startIn: "documents" }); await idbSet("sqldir", h); return h; }
+const forgetSqlFolder = () => idbSet("sqldir", null);
+async function sqlStatus() { const h = await idbGet("sqldir"); return h ? { name: h.name, handle: h } : { name: "" }; }
+let lastSqlCopied = 0;
+async function copySqlInto(dst, gesture) {
+  const src = await idbGet("sqldir"); if (!src) return 0;
+  let perm = "prompt"; try { perm = await src.queryPermission({ mode: "read" }); } catch (e) { /* 旧版 */ }
+  if (perm !== "granted") { if (!gesture) return 0; if ((await src.requestPermission({ mode: "read" })) !== "granted") return 0; }
+  const out = await dst.getDirectoryHandle("sql", { create: true }); let n = 0;
+  const walk = async (dir, to) => { for await (const [name, h] of dir.entries()) {
+    if (h.kind === "directory") { if (name.startsWith(".")) continue; await walk(h, await to.getDirectoryHandle(name, { create: true })); }
+    else if (/\.(sql|md)$/i.test(name)) { const f = await h.getFile(), w = await (await to.getFileHandle(name, { create: true })).createWritable(); await w.write(await f.arrayBuffer()); await w.close(); n++; }
+  } };
+  await walk(src, out); return n;
+}
 /* ---- 云端（Supabase Storage backups 桶；迁移 017 建桶和权限） ---- */
 const bucket = () => SB.client.storage.from("backups");
 async function writeCloud(blob, name) {
@@ -106,8 +131,9 @@ async function runBackup(targets, gesture = false) {
       ok.push(tg);
     } catch (e) { if (e.message === "NEED_GESTURE") needGesture = true; failed.push([tg, e.message === "NO_FOLDER" ? t("还没选文件夹") : e.message === "NEED_GESTURE" ? t("需要你点一下授权") : e.message]); }
   }
-  if (ok.length) saveSettings({ last: new Date().toISOString(), lastInfo: `${name} · ${ok.map(targetName).join("+")} · ${rowCount(data)} ${t("行")}` });
-  return { ok, failed, needGesture, name, rows: rowCount(data) };
+  const sqlN = lastSqlCopied; lastSqlCopied = 0;
+  if (ok.length) saveSettings({ last: new Date().toISOString(), lastInfo: `${name} · ${ok.map(targetName).join("+")} · ${rowCount(data)} ${t("行")}${sqlN ? ` · ${t("SQL {n} 个", { n: sqlN })}` : ""}` });
+  return { ok, failed, needGesture, name, rows: rowCount(data), sqlN };
 }
 let checked = false;
 /** 进入家庭后调一次：到期了就在后台备份；文件夹要点一下授权的，提示去设置里点 */
@@ -141,44 +167,60 @@ async function restore(d, onProgress = () => {}) {
 }
 
 /* ---- 界面：一张 sheet ---- */
-const UI = { folder: null, cloud: [], loading: false, stale: true, preview: null, result: null };
+const UI = { folder: null, cloud: [], sql: null, loading: false, stale: true, preview: null, result: null };
 const when = (iso) => (iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "");
 const kb = (n) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
-function openBackup() {
-  if (!CFG.ready()) { toast(t("先登录")); return; }
-  if (UI.stale) { UI.stale = false; UI.loading = true; Promise.all([folderStatus().catch(() => ({ supported: false, perm: "none", name: "" })), listCloud().catch(() => [])]).then(([f, c]) => { UI.folder = f; UI.cloud = c; UI.loading = false; if ($("#backupForm")) openBackup(); }); }
-  const s = settings(), folder = UI.folder || { supported: folderSupported(), perm: "none", name: "" }, has = (k) => s.targets.includes(k), due = nextDue(s);
-  const chk = (k, label, desc, extra = "") => `<label class="chk"><input type="checkbox" name="target" value="${k}" ${has(k) ? "checked" : ""}> <b>${label}</b> <span class="small muted">· ${desc}</span></label>${extra}`;
-  const folderLine = !folder.supported ? `<p class="small muted">${t("这个浏览器不支持直接写文件夹（手机和 Safari 没有）；用「下载」或云端")}</p>`
-    : folder.name ? `<p class="small muted">${t("文件夹：{n}", { n: esc(folder.name) })}${folder.perm !== "granted" ? ` · <b>${t("需要点一下授权")}</b> <button class="chip" data-act="bk-grant">${t("授权")}</button>` : ""} <button class="chip" data-act="bk-pick">${t("换文件夹")}</button> <button class="chip" data-act="bk-forget">${t("不再用")}</button></p>`
-    : `<p class="small muted"><button class="chip" data-act="bk-pick">${t("选一个文件夹")}</button> ${t("选一次就记住，以后自动写进去；放在 OneDrive / iCloud 同步的文件夹里就等于也上了云")}</p>`;
+/** 一张可勾选的「目标卡」：整张卡都能点，勾选框在左，右边标题 + 说明 + 这张卡自己的设置 */
+const card = (k, on, icon, title, desc, body = "") => `<label class="bk-card ${on ? "on" : ""}"><input type="checkbox" name="target" value="${k}" ${on ? "checked" : ""}><span class="bk-ic" aria-hidden="true">${icon}</span><span class="bk-body"><b>${title}</b><small>${desc}</small>${body ? `<span class="bk-sub">${body}</span>` : ""}</span></label>`;
+function loadUi(redraw) {
+  if (!UI.stale) return; UI.stale = false; UI.loading = true;
+  Promise.all([folderStatus().catch(() => ({ supported: false, perm: "none", name: "" })), listCloud().catch(() => []), sqlStatus().catch(() => ({ name: "" }))]).then(([f, c, q]) => { UI.folder = f; UI.cloud = c; UI.sql = q; UI.loading = false; redraw(); });
+}
+function bkBody(cloudOn, syncLine) {
+  const s = settings(), folder = UI.folder || { supported: folderSupported(), perm: "none", name: "" }, sql = UI.sql || { name: "" }, has = (k) => s.targets.includes(k), due = nextDue(s);
+  const prov = PROVIDERS.find((p) => p.id === s.provider) || PROVIDERS[0];
+  const provSel = `<select name="provider" aria-label="${esc(t("云盘"))}">${PROVIDERS.map((p) => `<option value="${p.id}" ${p.id === prov.id ? "selected" : ""}>${esc(t(p.name))}</option>`).join("")}</select>`;
+  const folderBody = !folder.supported ? `<em class="bk-warn">${t("这个浏览器不能直接写文件夹（手机、iPad 和 Safari 都不行）。手机上用「下载到设备」，再在系统的分享 / 文件里存到 iCloud Drive 或 Google Drive。")}</em>`
+    : `<span class="bk-row">${provSel}${folder.name ? `<span class="bk-pill ok">📁 ${esc(folder.name)}${folder.perm !== "granted" ? ` · ${t("待授权")}` : ""}</span>` : ""}</span>
+       <span class="bk-row">${folder.name ? `${folder.perm !== "granted" ? `<button class="btn" data-act="bk-grant">${t("授权这台电脑写入")}</button>` : ""}<button class="chip" data-act="bk-pick">${t("换文件夹")}</button><button class="chip" data-act="bk-forget">${t("不再用")}</button>` : `<button class="btn" data-act="bk-pick">${t("选同步文件夹")}</button>`}</span>
+       <em>${esc(t(prov.hint))}</em>`;
+  const sqlBody = `<span class="bk-row">${sql.name ? `<span class="bk-pill ok">📁 ${esc(sql.name)}</span><button class="chip" data-act="bk-forget-sql">${t("不再用")}</button>` : folder.supported ? `<button class="chip" data-act="bk-pick-sql">${t("选 supabase 文件夹")}</button>` : ""}</span>`;
+  const status = s.last ? t("上次备份 {d}", { d: when(s.last) }) : t("还没备份过");
+  const nextTxt = !intervalDays(s) ? t("没开定时") : due && due.getTime() <= Date.now() ? t("已到期，下次打开应用时自动备份") : t("下次 {d}", { d: when(due.toISOString()) });
+  const cloudList = cloudOn && has("cloud") ? `<div class="panel bk-panel"><div class="lab">${t("应用云端里的备份")}</div><p class="small muted">${t("存在应用自己的 Supabase 存储里，只留 {n} 天", { n: KEEP_DAYS })}</p>
+      ${UI.loading ? `<p class="small muted">${t("读取中…")}</p>` : UI.cloud.length ? UI.cloud.slice(0, 12).map((f) => `<div class="medrow"><div><b>${esc(f.name)}</b><br><span class="small muted">${esc(when(f.at))} · ${kb(f.size)}</span></div><span class="bk-row"><button class="chip" data-act="bk-cloud-dl" data-name="${esc(f.name)}">${t("下载")}</button><button class="chip" data-act="bk-cloud-restore" data-name="${esc(f.name)}">${t("恢复")}</button><button class="chip" data-act="bk-cloud-del" data-name="${esc(f.name)}" aria-label="${esc(t("删除"))}">✕</button></span></div>`).join("") : `<p class="small muted">${t("还没有。点上面的「现在备份」。")}</p>`}</div>` : "";
   const pv = UI.preview;
   const preview = !pv ? "" : pv.ok ? `<div class="bk-notice"><b>${t("备份来自 {h}，{d}，共 {n} 行", { h: esc(pv.scope || t("未知")), d: when(pv.exported_at), n: pv.rows })}</b><p class="small muted">${Object.entries(pv.counts).map(([k, v]) => `${esc(k)} ${v}`).join(" · ")}</p>
       ${pv.same ? "" : `<p class="small muted">${t("这是另一个账号的备份（换了项目或重新注册时正常）：会导进现在登录的账号。")}</p>`}
       <p class="small">${t("恢复 = 把文件里的数据导回我的账号：同主键的行覆盖成文件里的样子，文件里没有的行不会删。")}</p>
-      <div class="btns"><button class="btn primary" data-act="bk-restore">${t("恢复到我的账号")}</button><button class="btn" data-act="bk-cancel">${t("取消")}</button></div></div>`
-    : `<div class="bk-notice"><b>${t("不能恢复：{why}", { why: esc(pv.why) })}</b> <button class="chip" data-act="bk-cancel">${t("关闭")}</button></div>`;
-  $("#sheetIn").innerHTML = `${head(esc(t("备份与恢复")))}
+      <div class="bk-row" style="margin-top:8px"><button class="btn primary" data-act="bk-restore">${t("恢复到我的账号")}</button><button class="btn" data-act="bk-cancel">${t("取消")}</button></div></div>`
+    : `<div class="bk-notice bad"><b>${t("不能恢复：{why}", { why: esc(pv.why) })}</b> <button class="chip" data-act="bk-cancel">${t("关闭")}</button></div>`;
+  return `<div class="bk-sync">${syncLine}</div>
     ${S.backupPending ? `<div class="bk-notice"><b>${t("定时备份在等你点一下")}</b> ${t("写入这台电脑的文件夹需要你授权一次。")} <button class="btn" data-act="bk-now">${t("继续备份")}</button></div>` : ""}
-    ${UI.result ? `<div class="bk-notice"><b>${esc(UI.result.title)}</b>${UI.result.detail ? `<p class="small muted">${esc(UI.result.detail)}</p>` : ""}</div>` : ""}
-    <h2>${t("备份")}</h2>
-    <div class="panel"><p class="small muted">${s.last ? esc(t("上次备份 {d}（{info}）", { d: when(s.last), info: s.lastInfo || "" })) : t("还没备份过")}<br>${!intervalDays(s) ? t("定时备份已关") : due && due.getTime() <= Date.now() ? t("已到期：下次打开应用时自动备份") : esc(t("下次 {d}", { d: when(due.toISOString()) }))}</p>
-      <div class="btns"><button class="btn primary" data-act="bk-now">${t("现在备份")}</button><button class="btn" data-act="bk-download">${t("只下载一份")}</button></div></div>
-    <form id="backupForm" class="panel" onsubmit="return false">
+    ${UI.result ? `<div class="bk-notice ${UI.result.ok === false ? "bad" : ""}"><b>${esc(UI.result.title)}</b>${UI.result.detail ? `<p class="small muted">${esc(UI.result.detail)}</p>` : ""}</div>` : ""}
+    <div class="panel bk-panel bk-status"><div><b>${esc(status)}</b><small>${s.lastInfo ? `${esc(s.lastInfo)} · ` : ""}${esc(nextTxt)}</small></div>
+      <div class="bk-row"><button class="btn primary" data-act="bk-now">${t("现在备份")}</button><button class="btn" data-act="bk-download">${t("下载一份")}</button></div></div>
+    <form id="backupForm" class="panel bk-panel" onsubmit="return false">
       <div class="lab">${t("多久备份一次")}</div>
-      <select name="every">${[["off", "关闭"], ["week", "每周"], ["month", "每月"], ["custom", "自定义（天）"]].map(([v, l]) => `<option value="${v}" ${s.every === v ? "selected" : ""}>${t(l)}</option>`).join("")}</select>
-      <div ${s.every === "custom" ? "" : "hidden"} data-bk-days><div class="lab">${t("每隔几天")}</div><input name="days" type="number" min="1" max="365" inputmode="numeric" value="${s.days}"></div>
-      <p class="small muted">${t("网页没法在关着的时候跑：到期后下次打开应用时自动备份一次")}</p>
-      <div class="lab">${t("备份到哪（可多选）")}</div>
-      ${chk("cloud", t("云端"), t("我自己的 Supabase 存储（只有本人能看），任何设备都能恢复，只留 {n} 天；需要迁移 017", { n: KEEP_DAYS }))}
-      ${chk("folder", t("这台电脑的文件夹"), t("无需每次确认，自动清掉 {n} 天前的", { n: KEEP_DAYS }), folderLine)}
-      ${chk("download", t("下载"), t("每次备份弹出下载；浏览器下载的文件不会自动清理"))}
+      <div class="bk-seg">${[["off", "关"], ["week", "每周"], ["month", "每月"], ["custom", "自定义"]].map(([v, l]) => `<label class="bk-radio"><input type="radio" name="every" value="${v}" ${s.every === v ? "checked" : ""}><span>${t(l)}</span></label>`).join("")}
+        <label class="bk-days" data-bk-days ${s.every === "custom" ? "" : "hidden"}><input name="days" type="number" min="1" max="365" inputmode="numeric" value="${s.days}" aria-label="${esc(t("每隔几天"))}"> ${t("天")}</label></div>
+      <p class="small muted">${t("网页关着时跑不了：到期后下次打开应用时自动备份一次。")}</p>
+      <div class="lab">${t("备份到哪")} <span class="small muted">${t("可多选")}</span></div>
+      <div class="bk-cards">
+        ${card("folder", has("folder"), "☁️", t("云盘同步文件夹"), t("Google Drive / Dropbox / OneDrive / iCloud Drive 的电脑客户端都有一个同步文件夹，选它就等于备份上了那家云盘；也可以选电脑上任何位置。只留 {n} 天。", { n: KEEP_DAYS }), folderBody)}
+        ${cloudOn ? card("cloud", has("cloud"), "🗄️", t("应用自己的云端"), t("我自己在共用的 Supabase 项目里的存储（只有本人能看），任何设备都能恢复；只留 {n} 天；需要先执行迁移 017。", { n: KEEP_DAYS })) : ""}
+        ${card("download", has("download"), "⬇️", t("下载到设备"), t("每次弹出下载。手机上下载后可以「存储到文件」放进 iCloud Drive / Google Drive；浏览器下载的旧文件不会自动清理。"))}
+      </div>
+      <div class="bk-sql"><b>⚠️ ${t("数据库脚本不在备份里")}</b><small>${t("baby-log 仓库的 supabase/schema.sql 和 migrations 只在你的电脑上（不进 git）。电脑没了，备份文件就导不回去。请把这个文件夹手动拷到云盘或别的位置；选了云盘同步文件夹的话，可以让每次备份顺带把 .sql 一起拷进去：")}</small>${sqlBody}</div>
     </form>
-    <h2>${t("云端备份")}</h2>
-    <div class="panel">${UI.loading ? `<p class="small muted">${t("读取中…")}</p>` : UI.cloud.length ? UI.cloud.slice(0, 12).map((f) => `<div class="medrow"><div><b>${esc(f.name)}</b><br><span class="small muted">${esc(when(f.at))} · ${kb(f.size)}</span></div><span><button class="chip" data-act="bk-cloud-dl" data-name="${esc(f.name)}">${t("下载")}</button> <button class="chip" data-act="bk-cloud-restore" data-name="${esc(f.name)}">${t("恢复")}</button> <button class="chip" data-act="bk-cloud-del" data-name="${esc(f.name)}">✕</button></span></div>`).join("") : `<p class="small muted">${t("还没有云端备份。勾上「云端」再点「现在备份」。")}</p>`}</div>
-    <h2>${t("从备份恢复")}</h2>
-    <div class="panel"><p class="small muted">${t("换了手机、数据库被删、或换了 Supabase 项目：先登录（新项目要先在 SQL Editor 执行 baby-log 仓库的 supabase/schema.sql，再注册），再在这里选备份文件导回来；家庭可见的项会挂到现在的家庭")}</p>
-      <label class="btn">${t("选文件")}<input id="backupFile" type="file" accept="application/json,.json" hidden></label>${preview}</div>`;
+    ${cloudList}
+    <div class="panel bk-panel"><div class="lab">${t("从备份恢复")}</div><p class="small muted">${t("换了手机、数据库被删、或换了 Supabase 项目：先登录（新项目要先在 SQL Editor 执行 baby-log 仓库的 supabase/schema.sql，再注册），再在这里选备份文件导回来；家庭可见的项会挂到现在的家庭。")}</p>
+      <div class="bk-row"><label class="btn">${t("选备份文件")}<input id="backupFile" type="file" accept="application/json,.json" hidden></label></div>${preview}</div>`;
+}
+function openBackup() {
+  if (!CFG.ready()) { toast(t("先登录")); return; }
+  loadUi(() => { if ($("#backupForm")) openBackup(); });
+  $("#sheetIn").innerHTML = `${head(esc(t("备份与恢复")))}${bkBody(true, `<span>${t("已连接云端")} · ${esc(CFG.scopeName())}</span>`)}`;
   showSheet();
 }
 /* ---- 事件（events.js 的 data-act 分发里调 bkAct；change 里调 bkChange） ---- */
@@ -189,9 +231,12 @@ async function bkAct(act, el) {
     case "bk-now": case "bk-download": {
       el.disabled = true;
       try { const r = await runBackup(act === "bk-download" ? ["download"] : (settings().targets.length ? settings().targets : ["download"]), true); S.backupPending = r.needGesture;
-        UI.result = r.ok.length ? { title: t("已备份到 {to}：{name}（{n} 行）", { to: r.ok.map(targetName).join("、"), name: r.name, n: r.rows }), detail: r.failed.map(([k, w]) => `${targetName(k)}：${w}`).join("；") } : { title: t("备份没成功"), detail: r.failed.map(([k, w]) => `${targetName(k)}：${w}`).join("；") }; }
+        const sqlNote = r.sqlN ? t("已顺带拷贝 {n} 个 SQL 文件。", { n: r.sqlN }) : t("提醒：数据库脚本（supabase/*.sql）不在备份里，请手动把它拷到云盘或别的位置。");
+        UI.result = r.ok.length ? { title: t("已备份到 {to}：{name}（{n} 行）", { to: r.ok.map(targetName).join("、"), name: r.name, n: r.rows }), detail: [sqlNote, ...r.failed.map(([k, w]) => `${targetName(k)}：${w}`)].join("；") } : { ok: false, title: t("备份没成功"), detail: r.failed.map(([k, w]) => `${targetName(k)}：${w}`).join("；") }; }
       catch (e) { UI.result = { title: t("备份没成功"), detail: e.message }; }
       redraw(); break; }
+    case "bk-pick-sql": try { await pickSqlFolder(); toast(t("以后每次写云盘文件夹时会把 .sql 一起拷进 sql/ 子目录")); } catch (e) { if (e.name !== "AbortError") toast(t("选文件夹失败：{msg}", { msg: e.message })); } redraw(); break;
+    case "bk-forget-sql": await forgetSqlFolder(); redraw(); break;
     case "bk-pick": try { await pickFolder(); toast(t("已记住这个文件夹")); } catch (e) { if (e.name !== "AbortError") toast(t("选文件夹失败：{msg}", { msg: e.message })); } redraw(); break;
     case "bk-forget": await forgetFolder(); redraw(); break;
     case "bk-grant": { const st = await folderStatus(); if (st.handle) { try { await st.handle.requestPermission({ mode: "readwrite" }); } catch (e) { /* 取消 */ } } redraw(); break; }
@@ -215,9 +260,9 @@ async function bkChange(ev) {
   const el = ev.target;
   if (el.closest && el.closest("#backupForm")) {
     const f = el.closest("#backupForm"), targets = [...f.querySelectorAll('input[name="target"]:checked')].map((x) => x.value);
-    saveSettings({ every: f.elements.every.value, days: Math.max(1, +f.elements.days.value || 14), targets });
+    saveSettings({ every: f.elements.every.value, days: Math.max(1, +f.elements.days.value || 14), targets, provider: f.elements.provider?.value || "any" });
     const box = f.querySelector("[data-bk-days]"); if (box) box.hidden = f.elements.every.value !== "custom";
-    if (el.name === "every") openBackup();
+    if (["every", "provider", "target"].includes(el.name)) openBackup();
     return true;
   }
   if (el.id === "backupFile") {
