@@ -132,7 +132,7 @@ const deleteCloud = (name) => bucket().remove([`${CFG.prefix()}/${name}`]);
 
 /* ---- 云盘直连：Google Drive、Dropbox（代码在 cloud-drives.js，四个应用共用；要在 js/core/config.js 填应用 key，见 README「云盘备份」）
    备份放在你在卡片里填的文件夹路径下（Drive 默认「牧羊人备份」；Dropbox 相对应用文件夹），不往根目录随便放 ---- */
-const DR = createDrives({ googleClientId: GOOGLE_CLIENT_ID, googleApiKey: GOOGLE_API_KEY, dropboxAppKey: DROPBOX_APP_KEY, tokPrefix: "homeworks.backup", defaultFolder: "牧羊人备份", fileRe: FILE_RE, keepDays: KEEP_DAYS, t, load: loadJSON, save: saveJSON, getPaths: () => { const s = settings(); return { gd: s.gdPath, gdId: s.gdId, gdName: s.gdName, dbx: s.dbxPath }; } });   // 令牌前缀四个应用相同：连一次全连上
+const DR = createDrives({ googleClientId: GOOGLE_CLIENT_ID, googleApiKey: GOOGLE_API_KEY, dropboxAppKey: DROPBOX_APP_KEY, tokPrefix: "homeworks.backup", legacyPrefixes: ["shepherd.backup"], defaultFolder: "牧羊人备份", fileRe: FILE_RE, keepDays: KEEP_DAYS, t, load: loadJSON, save: saveJSON, getPaths: () => { const s = settings(); return { gd: s.gdPath, gdId: s.gdId, gdName: s.gdName, dbx: s.dbxPath }; } });   // 令牌前缀四个应用相同：连一次全连上
 /** 打开应用时调一次：从 Dropbox 授权页跳回来（?code=…&state=dbx）就换成令牌，勾上 Dropbox；登录好后打开备份页 */
 async function initProviders() {
   if (!new URL(location.href).searchParams.get("code")) return;
