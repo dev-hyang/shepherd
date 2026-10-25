@@ -527,3 +527,4 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 @media (min-width:900px){.tgrid{column-count:auto}}
 .bk-path{width:100%}.bk-path label{flex:none}.bk-path input{flex:1 1 160px;min-height:34px;min-width:0}
 .bk-card.off{opacity:.6}
+.bk-hint{display:block;color:var(--muted,#6b7280);font-size:12px;line-height:1.4;margin:2px 0 4px}

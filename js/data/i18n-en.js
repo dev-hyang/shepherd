@@ -666,5 +666,6 @@ const EN = {
   "还没在 config 里填 GOOGLE_API_KEY（Picker 要用）": "GOOGLE_API_KEY isn't set in config (needed for the picker)",
   "Drive 里选的文件夹找不到了（被删或改了名）：重新选一个": "The chosen Drive folder can't be found (deleted or renamed): pick another",
   "选一个放备份的文件夹": "Choose a folder for backups",
+  "只能用应用自己建的文件夹；想用你在 Drive 里已有的文件夹，请点下面的「或在 Drive 里选一个文件夹…」。": "Only folders the app created itself work here; to use a folder you already have in Drive, tap “…or pick a folder in Drive” below.",
 };
 export { EN };
