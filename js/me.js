@@ -27,6 +27,7 @@ function viewMe(){
   <div class="panel mlist">
     ${ready ? mrow('data-act="calendar"', t("日历订阅提醒"), t("把提醒放进手机日历，到点响铃"), "⏰") : mrow('data-act="focus"', t("专注计时"), t("番茄工作法，每 20 分钟提醒看远处 20 秒护眼；完成的段自动记录"), "🍅")}
     ${mrow('data-act="settings"', t("设置"), t("账号与家庭、语言、显示"), "⚙")}
+    ${mrow('data-act="bk-open"', t("备份与恢复"), t("定时备份到云端 / 电脑文件夹 / 下载；换手机或重建数据库时导回来"), "🛟")}
     ${mrow('data-act="about"', t("介绍"), t("为什么叫牧羊人、每页怎么用、数据与隐私"), "✎")}
   </div>
 

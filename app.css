@@ -468,3 +468,9 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .glabel .cnt{opacity:.65;font-weight:400;margin-left:2px}
 .fh{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em;margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
 @media (max-width:420px){.hrow .chip.share{padding:6px 10px;font-size:13px}}
+
+/* 备份与恢复（js/backup.js） */
+.bk-notice{background:var(--honey-soft,#fff6d6);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px}
+.bk-notice p{margin:4px 0 0}
+.chk{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:14px;line-height:1.35}
+.chk input{margin-top:3px;flex:none}

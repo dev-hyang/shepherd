@@ -1,4 +1,5 @@
 import { sbAuth, sbFamily, sbLink, sbLogout } from "./core/auth.js";
+import { bkAct, bkChange } from "./backup.js";
 import { LS_PREFIX } from "./core/config.js";
 import { setLocale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
@@ -28,6 +29,7 @@ const setPick = day => {
   S.pick = day === S.day ? null : day; S.showText = false; render();
 };
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "pick-day" && ev.target.value) setPick(ev.target.value); });
+document.addEventListener("change", ev => { bkChange(ev); });   // 备份设置 / 选了备份文件
 
 // 任务：快速添加表单、清单的筛选 / 搜索（搜索框每次重画后把光标放回去）
 document.addEventListener("submit", async ev => {
@@ -74,6 +76,7 @@ document.addEventListener("click", async ev => {
   if (d.range) { S.review.range = d.range; render(); return; }
   if (d.metric) { S.review.metric = d.metric; render(); return; }
 
+  if (d.act && d.act.startsWith("bk-")) { await bkAct(d.act, btn); return; }   // 备份与恢复（js/backup.js）
   try {
     switch (d.act) {
       case "settings": openSettings(); break;

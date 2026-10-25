@@ -3,6 +3,7 @@ import { t } from "./i18n.js";
 import { S } from "./state.js";
 import { $, esc, toast } from "./util.js";
 import { attachRealtime, loadAll } from "../wb.js";
+import { runScheduled } from "../backup.js";
 import { attachRealtime as attachTaskRealtime, loadTasks } from "../tk.js";
 import { attachRealtime as attachNoteRealtime, loadNotes } from "../nt.js";
 import { refreshSettingsIfOpen, render } from "../views.js";
@@ -55,6 +56,7 @@ async function afterAuth(){
   S.cloud = "ready";
   render();
   await loadAll();
+  runScheduled();   // 定时备份到期了就在后台做一次
   try { await loadTasks(); } catch (e) { console.error(e); }   // 任务表（迁移 015）没建时只影响任务页签
   try { await loadNotes(); } catch (e) { console.error(e); }   // 笔记表（迁移 016）没建时只影响笔记页
   setupRealtime();
