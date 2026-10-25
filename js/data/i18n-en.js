@@ -622,5 +622,17 @@ const EN = {
   "立即同步": "Sync now",
   "换了手机、数据库被删、或换了 Supabase 项目：先登录并建好 / 加入家庭（新项目要先在 SQL Editor 执行 baby-log 仓库的 supabase/schema.sql），先恢复小月亮（孩子的 id 在那边），再在这里选备份文件导回来。": "New phone, deleted database or a new Supabase project: sign in and create / join the family first (a new project needs baby-log's supabase/schema.sql run in the SQL Editor), restore Little Moon first (the children's ids live there), then pick the backup file here.",
   "换了手机、数据库被删、或换了 Supabase 项目：先登录（新项目要先在 SQL Editor 执行 baby-log 仓库的 supabase/schema.sql，再注册），再在这里选备份文件导回来；家庭可见的项会挂到现在的家庭。": "New phone, deleted database or a new Supabase project: sign in first (a new project needs baby-log's supabase/schema.sql run in the SQL Editor, then sign up), then pick the backup file here; family-visible items attach to the current family.",
+  /* Markdown 心得 */
+  "{a} 等 {n} 项": "{a} and {n} in all",
+  "还剩": "Left: ",
+  "全部完成": "All done",
+  "今天没有安排": "Nothing scheduled",
+  "共剩 {n} 项": "{n} left",
+  "今天没有排任务": "No tasks today",
+  "未读": "Unread",
+  "连续 {n} 天": "{n}-day streak",
+  "今天读了": "Read today",
+  "选个读经计划": "Pick a reading plan",
+  "代祷中 {n} 项": "{n} prayers open",
 };
 export { EN };

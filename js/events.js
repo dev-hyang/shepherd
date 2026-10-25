@@ -54,6 +54,7 @@ document.addEventListener("click", async ev => {
   const btn = ev.target.closest("button"); if (!btn) return;
   const d = btn.dataset;
   if (d.fpop) { togglePop(d.fpop); return; }
+  if (d.scroll) { const el = document.getElementById(d.scroll); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   if (d.pview) { S.prayerView = d.pview; S.fpop = null; render(); return; }
   if (d.tkf) { S.tkUi[d.tkf] = d.v; render(); return; }
   if (d.tab) { close(); S.fpop = null; S.tab = d.tab; S.pick = null; render(); window.scrollTo(0, 0); return; }

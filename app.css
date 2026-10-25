@@ -497,3 +497,31 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .bk-sql{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--honey-soft,#fff6d6);font-size:13px}.bk-sql b{display:block}.bk-sql small{display:block;color:var(--muted,#6b7280);font-size:12.5px;margin:2px 0 8px;line-height:1.4}
 @media (max-width:520px){.bk-status{flex-direction:column;align-items:stretch}.bk-status .bk-row .btn{flex:1 1 0}}
 @media (min-width:760px){.bk-cards{grid-template-columns:1fr 1fr}.bk-cards .bk-card:first-child{grid-column:1/-1}}
+
+/* ===== 今天页：统计卡 + 内容区 ===== */
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+@media (min-width:600px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.kpi{all:unset;box-sizing:border-box;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0;min-height:96px}
+.kpi:hover{border-color:var(--slate)}
+.kpi:focus-visible{outline:3px solid var(--slate);outline-offset:2px}
+.kpi .kl{font-size:13px;color:var(--muted)}
+.kpi .kv{font-family:var(--f-num);font-weight:600;font-size:26px;line-height:1.15}
+.kpi .kv small{font-size:14px;color:var(--muted);font-weight:400;margin-left:2px}
+.kpi .kbar{display:block;height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin:6px 0 4px}
+.kpi .kbar i{display:block;height:100%;background:var(--slate);border-radius:99px;transition:width .3s}
+.kpi .ks{font-size:12.5px;color:var(--muted);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;margin-top:auto}
+.kpi .ks.warn{color:var(--rose);font-weight:600}
+.kpi.done{border-color:var(--sage);background:var(--sage-soft)}
+.kpi.done .kv{color:var(--sage)}
+.kpi.done .kbar i{background:var(--sage)}
+.kpi.warn .kbar i{background:var(--rose)}
+.nudge{margin-top:12px}
+/* 内容区：手机一栏按 --o 排序；电脑两栏（左行动、右日常） */
+.tgrid{display:flex;flex-direction:column;column-count:auto}
+.tcol{display:contents}
+.tsec{order:var(--o,0);break-inside:auto;padding-top:1px;scroll-margin-top:12px}
+@media (min-width:900px){
+  .tgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 28px;align-items:start}
+  .tcol{display:flex;flex-direction:column;min-width:0}
+}
+@media (min-width:900px){.tgrid{column-count:auto}}
