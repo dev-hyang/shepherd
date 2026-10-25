@@ -7,6 +7,7 @@ import * as tk from "./tk.js";
 import * as wb from "./wb.js";
 import { kindLabel, otdHTML } from "./notes.js";
 import { noteHeading } from "./notes-lib.js";
+import { askEntryHTML } from "./ask.js";
 import { chipBtn, secHead } from "./ui.js";
 import { familyTasks, mitBlock, nudgeBar, tasksBlock } from "./tasks.js";
 
@@ -29,7 +30,7 @@ function viewToday(){
   const sec = (id, o, html) => (html ? `<section class="tsec" id="sec-${id}" style="--o:${o}">${html}</section>` : "");
   const colA = [sec("tasks", 2, mitBlock() + tasksBlock()), sec("famtasks", 7, familyTasks(day))].join("");
   const colB = [sec("reading", 1, readingHTML()), sec("habits", 3, habitsHTML(day, list)), sec("notes", 4, notesHTML()), sec("family", 6, familyHTML(day))].join("");
-  return `${hero}${nudgeBar()}${kpisHTML(day, list)}<div class="tgrid"><div class="tcol tcol-a">${colA}</div><div class="tcol tcol-b">${colB}</div></div>`;
+  return `${hero}${nudgeBar()}${kpisHTML(day, list)}${askEntryHTML()}<div class="tgrid"><div class="tcol tcol-a">${colA}</div><div class="tcol tcol-b">${colB}</div></div>`;
 }
 
 /* 统计卡：数字（完成/总数）+ 进度条 + 一行说明（还剩什么 / 全部完成 / 逾期）。全部做完变绿 */

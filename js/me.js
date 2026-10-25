@@ -3,6 +3,7 @@ import { APP_VERSION, SISTER_APPS, THIS_APP } from "./core/config.js";
 import { t, tc } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc } from "./core/util.js";
+import { askEntryHTML } from "./ask.js";
 
 /* ============ “我的”页：不常用的入口收到一处 ============ */
 const mrow = (act, title, desc, icon, badge) => `<button class="mrow" ${act}><span class="mi" aria-hidden="true">${icon}</span><span class="mt"><b>${title}</b>${desc ? `<small>${desc}</small>` : ""}</span>${badge ? `<span class="mbadge">${badge}</span>` : ""}<span class="mch" aria-hidden="true">›</span></button>`;
@@ -14,6 +15,7 @@ function viewMe(){
   const meds = live.filter(p => ["med", "supplement"].includes(p.kind)).length, habits = live.length - meds;
   return `
   <h2>${t("我的")}${who ? ` <span class="small muted" style="font-family:var(--f-body);font-weight:400">${who}</span>` : ""}</h2>
+  ${askEntryHTML()}
   ${ready ? `<div class="msec">${t("每天要做的")}</div>
   <div class="panel mlist">
     ${mrow('data-act="habits"', t("习惯与提醒"), t("读经、祷告、锻炼、饮食、屏幕……目标、日子、时间点、家人可见"), "✦", habits || "")}

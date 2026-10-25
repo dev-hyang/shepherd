@@ -5,6 +5,7 @@ import { LOCALES, locale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { $, esc } from "./core/util.js";
 import { WEEKDAY } from "./data/kinds.js";
+import { viewAsk } from "./ask.js";
 import { viewMe } from "./me.js";
 import { viewPrayer } from "./prayer.js";
 import { viewReview } from "./review.js";
@@ -16,6 +17,18 @@ import { pendingCount } from "./tk.js";
 /* ============ 渲染 ============ */
 const TAB_LABELS = { today: "今天", tasks: "任务", prayer: "祷告", review: "回顾", me: "我的" };
 const VIEWS = { today: viewToday, tasks: viewTasks, prayer: viewPrayer, review: viewReview, me: viewMe };
+/* 子页：挂在某个底部页签下面，顶部显示完整路径（像爱家小助手）：‹ 我的 / 小Y问。parent 也可以是另一个子页，路径一路显示到底部页签 */
+const SUB = { ask: { parent: "me", label: "小Y问", view: viewAsk } };
+function crumbParts(tab){
+  const parts = [{ label: SUB[tab].label }]; let p = SUB[tab].parent;
+  while (p) { parts.unshift({ tab: p, label: SUB[p] ? SUB[p].label : TAB_LABELS[p] }); p = SUB[p] ? SUB[p].parent : null; }
+  return parts;
+}
+/** 面包屑：第一项带「‹ 」，中间项可点，最后一项加粗当标题 */
+function crumbNav(parts, cls = ""){
+  return `<nav class="crumb ${cls}" aria-label="${t("位置")}">${parts.map((x, i) => `${i ? '<span class="sep">/</span>' : ""}${i === parts.length - 1
+    ? `<b aria-current="page">${t(x.label)}</b>` : `<button type="button" class="crumb-link" data-tab="${x.tab}">${i === 0 ? "‹ " : ""}${t(x.label)}</button>`}`).join("")}</nav>`;
+}
 // 应用切换（四个姊妹站点共用）：右上角九宫格按钮，宽屏浮层、手机底部抽屉。
 // 组件放在 home-pantry/shared；首次离线加载不到时，先用原来的 ‹ 上一个 / 下一个 › 胶囊，切换不受影响。
 const SWITCHER_URL = "https://dev-hyang.github.io/home-pantry/shared/app-switcher.js";
@@ -56,11 +69,13 @@ function renderStatus(){
 }
 function render(){
   renderStatus();
-  document.querySelectorAll("nav.tabs button").forEach(b => { if (b.dataset.tab === S.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-  const v = VIEWS[S.tab] || viewToday;
+  const sub = SUB[S.tab], cur = sub ? sub.parent : S.tab;   // 子页时底部仍高亮它所属的页签
+  document.querySelectorAll("nav.tabs button").forEach(b => { if (b.dataset.tab === cur) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
   $("#main").className = S.tab === "today" ? "wide" : "narrow";
-  $("#main").innerHTML = S.tab === "me" ? v() : (gateHTML() || v());
-  updateMiniBar($("#bname").textContent, "", t("回到顶部"));
+  const crumb = sub ? crumbNav(crumbParts(S.tab)) : "";
+  $("#main").innerHTML = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、小Y问 没登录也能看
+  updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : "", t("回到顶部"));
 }
 function refreshSettingsIfOpen(){ if ($("#sheet").open && $("#sheetTitle") && $("#sheetTitle").textContent === t("设置")) openSettings(); }
 
@@ -76,4 +91,4 @@ function gateHTML(){
   return "";
 }
 
-export { renderStatus, render, refreshSettingsIfOpen, gateHTML };
+export { renderStatus, render, refreshSettingsIfOpen, gateHTML, crumbNav, SUB };

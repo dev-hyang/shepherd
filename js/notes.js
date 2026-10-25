@@ -305,7 +305,7 @@ function openResult(title, text){
 const resultText = () => lastResult;
 
 /* ---------- AI 设置 ---------- */
-function openAiSettings(){
+function openAiSettings(after){
   const s = aiSettings(), p = providerOf(s.provider);
   openForm("AI 助手", [
     { k: "provider", label: "服务商", type: "seg", opts: PROVIDERS.map(x => [x.id, x.name]) },
@@ -314,7 +314,7 @@ function openAiSettings(){
     { k: "base", label: "接口地址（只有“自定义”要填）", type: "text", ph: "https://…/v1", when: d => d.provider === "custom" },
     { k: "help", type: "html", html: d => { const q = providerOf(d.provider); return `<div class="small muted">${t(q.hint)}${q.signup ? ` <a href="${esc(q.signup)}" target="_blank" rel="noopener">${t("申请 key")}</a>` : ""}</div>${s.borrowed && d.key === s.key ? `<div class="small" style="margin-top:6px">${t("这里用的是你在爱家小助手里填的 key。")}</div>` : ""}<div class="btns" style="margin-top:8px"><button type="button" class="btn" data-act="ai-test">${t("测试连接")}</button></div>` } }
   ], { provider: s.provider, key: s.key, model: s.model, base: s.base },
-  async f => { saveAiSettings({ provider: f.provider, key: f.key, model: f.model, base: f.base }); toast(t("已保存")); closeSheet(); });
+  async f => { saveAiSettings({ provider: f.provider, key: f.key, model: f.model, base: f.base }); toast(t("已保存")); closeSheet(); if (after) after(); });
 }
 async function runAiTest(){
   readForm(); const f = getForm().draft; saveAiSettings({ provider: f.provider, key: f.key, model: f.model, base: f.base });
