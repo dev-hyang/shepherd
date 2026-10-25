@@ -722,6 +722,8 @@ const EN = {
   "提示词已复制，打开任一 AI 粘贴即可": "Prompt copied; open any AI and paste",
   "豆包": "Doubao",
   "通义千问": "Qwen",
+  "备份记录": "Backup history",
+  "更早的 {n} 条": "{n} earlier",
 };
 export { EN };
 

@@ -546,3 +546,6 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .ask-ctxv summary{cursor:pointer}
 .ask-ctxv pre{white-space:pre-wrap;font:inherit;font-size:13px;background:var(--field);border-radius:var(--radius-sm);padding:10px 12px;margin:6px 0 0;color:var(--muted)}
 .ask-entry{margin-top:12px}
+
+.bk-more{margin-top:6px}.bk-more>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);padding:6px 0;list-style:none}
+.bk-more>summary::before{content:"▸ ";}.bk-more[open]>summary::before{content:"▾ ";}
