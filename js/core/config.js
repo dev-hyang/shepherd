@@ -9,9 +9,10 @@ const ICS_FUNCTION = SUPABASE_URL + "/functions/v1/ics";
 
 /* 云盘备份（我的 → 备份与恢复）：填两个公开的客户端标识（不是密钥，和 anon key 一样可以放在网页里），留空时卡片提示「需要先填好」。申请步骤见 README「云盘备份」 */
 const GOOGLE_CLIENT_ID = "";   // Google Cloud Console → OAuth 2.0 客户端（Web 应用）；「已获授权的 JavaScript 来源」填站点地址
+const GOOGLE_API_KEY = "";     // Google Cloud Console → 凭据 → API 密钥（限制为 Google Picker API）；用于「在 Drive 里选文件夹」，留空就只能填路径
 const DROPBOX_APP_KEY = "";    // Dropbox App Console → App key；Access type 选 App folder；Redirect URI 填站点地址（带结尾的 /）
 const LS_PREFIX = "shepherd.v1";              // 本设备偏好的 localStorage 前缀
-const APP_VERSION = "2026-10-25.20";
+const APP_VERSION = "2026-10-25.21";
 const BABY_LOG_URL = "https://dev-hyang.github.io/baby-log/";
 // 四个姊妹站点同一个账号同一个家庭；标题旁的左右箭头在它们之间切换（按这里的顺序环绕）
 const SISTER_APPS = [
@@ -22,4 +23,4 @@ const SISTER_APPS = [
 ];
 const THIS_APP = "shepherd";
 
-export { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS, ICS_FUNCTION, LS_PREFIX, APP_VERSION, BABY_LOG_URL, SISTER_APPS, THIS_APP, GOOGLE_CLIENT_ID, DROPBOX_APP_KEY };
+export { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS, ICS_FUNCTION, LS_PREFIX, APP_VERSION, BABY_LOG_URL, SISTER_APPS, THIS_APP, GOOGLE_CLIENT_ID, GOOGLE_API_KEY, DROPBOX_APP_KEY };

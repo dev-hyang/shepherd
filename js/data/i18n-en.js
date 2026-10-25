@@ -655,5 +655,16 @@ const EN = {
   "Google 登录已过期，请重新连接": "Google sign-in expired; connect again",
   "还没连接 Dropbox": "Dropbox isn't connected",
   "Dropbox 登录已过期，请重新连接": "Dropbox sign-in expired; connect again",
+  "定时备份由小月亮统一做": "Scheduled backups are done by Little Moon",
+  "小月亮的「同步、备份与恢复」会连同家庭学堂、牧羊人一起定时备份（家主备份全家，含每位家人的数据）；这里只用来手动备份 / 恢复本应用。云盘连接与小月亮共用，在任一应用连接一次即可。": "Little Moon's “Sync, backup & restore” backs up Homeschool and Shepherd along with it on a schedule (the owner backs up the whole family, every member's data). This page is only for manual backup / restore of this app. Cloud-drive connections are shared with Little Moon: connect once in any app.",
+  "只补缺的：已有同主键的行不动，文件里没有的行也不删。": "Only fills in what's missing: existing rows are left alone, nothing is deleted.",
+  "只补缺的，已有的不动、不删。": "Only fills in what's missing; existing rows stay, nothing is deleted.",
+  "改用路径": "Use a path instead",
+  "已选的文件夹": "chosen folder",
+  "或在 Drive 里选一个文件夹…": "…or pick a folder in Drive",
+  "以后备份放到「{n}」": "Backups will go to “{n}”",
+  "还没在 config 里填 GOOGLE_API_KEY（Picker 要用）": "GOOGLE_API_KEY isn't set in config (needed for the picker)",
+  "Drive 里选的文件夹找不到了（被删或改了名）：重新选一个": "The chosen Drive folder can't be found (deleted or renamed): pick another",
+  "选一个放备份的文件夹": "Choose a folder for backups",
 };
 export { EN };

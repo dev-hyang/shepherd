@@ -8,7 +8,7 @@ import { SB, myName } from "./core/auth.js";
 import { S } from "./core/state.js";
 import { $, esc, toast, loadJSON, saveJSON } from "./core/util.js";
 import { t } from "./core/i18n.js";
-import { APP_VERSION, DROPBOX_APP_KEY, GOOGLE_CLIENT_ID } from "./core/config.js";
+import { APP_VERSION, DROPBOX_APP_KEY, GOOGLE_API_KEY, GOOGLE_CLIENT_ID } from "./core/config.js";
 import { createDrives } from "./cloud-drives.js";
 import { head, showSheet } from "./sheet.js";
 import { loadAll } from "./wb.js";
@@ -38,9 +38,17 @@ const PROVIDERS = [
 const FILE_RE = new RegExp(`^${CFG.app}-(\\d{4}-\\d{2}-\\d{2})-\\d{4}\\.json$`);
 
 /* ---- 设置（存本机：文件夹本来就是这台电脑的） ---- */
-const DEFAULTS = { every: "off", days: 14, targets: ["download"], provider: "any", gdPath: "", dbxPath: "", last: null, lastInfo: "" };
-const settings = () => ({ ...DEFAULTS, ...loadJSON(CFG.key, {}) });
-const saveSettings = (patch) => { const s = { ...settings(), ...patch }; saveJSON(CFG.key, s); return s; };
+const DEFAULTS = { every: "off", days: 14, targets: ["download"], provider: "any", gdPath: "", gdId: "", gdName: "", dbxPath: "", last: null, lastInfo: "" };
+/* 四个应用共用的部分（同一域名下 localStorage 互通）：多久备份、备份到哪、云盘；各应用自己的：路径、上次备份时间 */
+const SHARED_KEY = "homeworks.backup.shared", SHARED = ["every", "days", "targets", "provider"];
+const localPart = () => { const o = loadJSON(CFG.key, {}); SHARED.forEach((k) => delete o[k]); return o; };
+const settings = () => ({ ...DEFAULTS, ...loadJSON(SHARED_KEY, {}), ...localPart() });
+const saveSettings = (patch) => {
+  const sh = {}, loc = {}; for (const [k, v] of Object.entries(patch)) (SHARED.includes(k) ? sh : loc)[k] = v;
+  if (Object.keys(sh).length) saveJSON(SHARED_KEY, { ...loadJSON(SHARED_KEY, {}), ...sh });
+  if (Object.keys(loc).length) saveJSON(CFG.key, { ...localPart(), ...loc });
+  return settings();
+};
 const intervalDays = (s = settings()) => (s.every === "week" ? 7 : s.every === "month" ? 30 : s.every === "custom" ? Math.max(1, +s.days || 14) : 0);
 const nextDue = (s = settings()) => { const d = intervalDays(s); if (!d) return null; return s.last ? new Date(new Date(s.last).getTime() + d * 864e5) : new Date(); };
 const isDue = (s = settings()) => { const n = nextDue(s); return !!n && n.getTime() <= Date.now(); };
@@ -67,7 +75,7 @@ function download(blob, name) { const a = Object.assign(document.createElement("
 
 /* ---- 这台电脑的文件夹（File System Access API：桌面 Chrome / Edge；手机和 Safari 没有） ---- */
 const folderSupported = () => typeof window.showDirectoryPicker === "function";
-const IDB = `${CFG.app}-fs`;
+const IDB = "homeworks-fs";   // 四个应用共用一个文件夹（同一域名）
 function idb() { return new Promise((res, rej) => { const r = indexedDB.open(IDB, 1); r.onupgradeneeded = () => r.result.createObjectStore("h"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
 async function idbGet(k) { try { const db = await idb(); return await new Promise((res, rej) => { const q = db.transaction("h").objectStore("h").get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); } catch (e) { return null; } }
 async function idbSet(k, v) { try { const db = await idb(); await new Promise((res, rej) => { const tx = db.transaction("h", "readwrite"); if (v == null) tx.objectStore("h").delete(k); else tx.objectStore("h").put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); } catch (e) { /* 忽略 */ } }
@@ -124,7 +132,7 @@ const deleteCloud = (name) => bucket().remove([`${CFG.prefix()}/${name}`]);
 
 /* ---- 云盘直连：Google Drive、Dropbox（代码在 cloud-drives.js，四个应用共用；要在 js/core/config.js 填应用 key，见 README「云盘备份」）
    备份放在你在卡片里填的文件夹路径下（Drive 默认「牧羊人备份」；Dropbox 相对应用文件夹），不往根目录随便放 ---- */
-const DR = createDrives({ googleClientId: GOOGLE_CLIENT_ID, dropboxAppKey: DROPBOX_APP_KEY, tokPrefix: CFG.key, defaultFolder: "牧羊人备份", fileRe: FILE_RE, keepDays: KEEP_DAYS, t, load: loadJSON, save: saveJSON, getPaths: () => ({ gd: settings().gdPath, dbx: settings().dbxPath }) });
+const DR = createDrives({ googleClientId: GOOGLE_CLIENT_ID, googleApiKey: GOOGLE_API_KEY, dropboxAppKey: DROPBOX_APP_KEY, tokPrefix: "homeworks.backup", defaultFolder: "牧羊人备份", fileRe: FILE_RE, keepDays: KEEP_DAYS, t, load: loadJSON, save: saveJSON, getPaths: () => { const s = settings(); return { gd: s.gdPath, gdId: s.gdId, gdName: s.gdName, dbx: s.dbxPath }; } });   // 令牌前缀四个应用相同：连一次全连上
 /** 打开应用时调一次：从 Dropbox 授权页跳回来（?code=…&state=dbx）就换成令牌，勾上 Dropbox；登录好后打开备份页 */
 async function initProviders() {
   if (!new URL(location.href).searchParams.get("code")) return;
@@ -153,6 +161,8 @@ let checked = false;
 async function runScheduled() {
   if (checked || !CFG.ready()) return; checked = true;
   if (UI.pendingOpen) { UI.pendingOpen = false; openBackup(); }   // 从 Dropbox 授权页跳回来：登录好了就打开备份页
+  return;   // 定时备份由小月亮统一做（连同本应用的数据一起）；这里只手动
+  // eslint-disable-next-line no-unreachable
   const s = settings(); if (!isDue(s) || !s.targets.length) return;
   try {
     const r = await runBackup(s.targets, false); S.backupPending = r.needGesture;
@@ -162,7 +172,10 @@ async function runScheduled() {
 }
 
 /* ---- 恢复 ---- */
+/** 小月亮「连同一起备份」的文件：取出属于本应用的那一段 */
+const unwrap = (d) => (d && d.app === "xiaoyueliang" && d.bundle?.[CFG.app]?.tables ? { app: CFG.app, format: FORMAT, exported_at: d.exported_at, scope: { id: null, name: d.family?.name || "" }, exporter: d.exporter, tables: d.bundle[CFG.app].tables, fromBundle: true } : d);
 function inspect(d) {
+  d = unwrap(d);
   if (!d || d.app !== CFG.app) return { ok: false, why: t("这不是{app}的备份文件", { app: t(CFG.title) }) };
   if (!d.tables) return { ok: false, why: t("文件里没有数据") };
   const counts = Object.fromEntries(Object.entries(d.tables).filter(([, v]) => v?.length).map(([k, v]) => [k, v.length]));
@@ -170,11 +183,12 @@ function inspect(d) {
 }
 const chunks = (arr, n) => { const out = []; for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n)); return out; };
 async function restore(d, onProgress = () => {}) {
+  d = unwrap(d);
   const done = {}, errors = [];
   for (const tb of CFG.tables) {
     const rows = (d.tables[tb] || []).map(CFG.remap); if (!rows.length) continue;
     onProgress(tb); let n = 0;
-    for (const part of chunks(rows, 200)) { const { error } = await SB.client.from(tb).upsert(part, { defaultToNull: false }); if (error) { errors.push([tb, error.message]); break; } n += part.length; }
+    for (const part of chunks(rows, 200)) { const { error } = await SB.client.from(tb).upsert(part, { ignoreDuplicates: true }); /* 只补缺的：已有同主键的不动 */ if (error) { errors.push([tb, error.message]); break; } n += part.length; }
     done[tb] = n;
   }
   return { done, errors };
@@ -218,11 +232,11 @@ function bkBody(cloudOn, syncLine) {
   }
   const notCfg = t("需要先在 js/core/config.js 里填好（见 README「云盘备份」）");
   const driveCard = (k, icon, label, cfgd, tk, pathName, pathLabel, pathVal, ph, pathText) => card(k, has(k), icon, label, cfgd ? t("放在你 {d} 里指定的文件夹，手机电脑都能用；只留 {n} 天", { d: label, n: KEEP_DAYS }) : notCfg,
-    !cfgd ? "" : `<span class="bk-row bk-path"><label class="small muted">${pathLabel}</label><input name="${pathName}" value="${esc(pathVal || "")}" placeholder="${esc(ph)}" maxlength="120" autocomplete="off"></span><span class="bk-row">${tk ? `<span class="bk-pill ok">${t("已连接")}${tk.email ? ` ${esc(tk.email)}` : ""}${pathText ? ` · ${esc(pathText)}` : ""}</span><button class="chip" data-act="bk-${k === "gdrive" ? "gd" : "dbx"}-off">${t("断开")}</button>` : `<button class="btn" data-act="bk-${k === "gdrive" ? "gd" : "dbx"}-on">${t("连接 {d}", { d: label })}</button>`}</span>`, !cfgd || !tk);
+    !cfgd ? "" : (k === "gdrive" && s.gdId ? `<span class="bk-row"><span class="bk-pill ok">📁 ${esc(s.gdName || t("已选的文件夹"))}</span><button class="chip" data-act="bk-gd-clear">${t("改用路径")}</button></span>` : `<span class="bk-row bk-path"><label class="small muted">${pathLabel}</label><input name="${pathName}" value="${esc(pathVal || "")}" placeholder="${esc(ph)}" maxlength="120" autocomplete="off"></span>${k === "gdrive" && tk && DR.gdPickerAvailable() ? `<span class="bk-row"><button class="chip" data-act="bk-gd-pick">${t("或在 Drive 里选一个文件夹…")}</button></span>` : ""}`) + `<span class="bk-row">${tk ? `<span class="bk-pill ok">${t("已连接")}${tk.email ? ` ${esc(tk.email)}` : ""}${pathText ? ` · ${esc(pathText)}` : ""}</span><button class="chip" data-act="bk-${k === "gdrive" ? "gd" : "dbx"}-off">${t("断开")}</button>` : `<button class="btn" data-act="bk-${k === "gdrive" ? "gd" : "dbx"}-on">${t("连接 {d}", { d: label })}</button>`}</span>`, !cfgd || !tk);
   const pv = UI.preview;
   const preview = !pv ? "" : pv.ok ? `<div class="bk-notice"><b>${t("备份来自 {h}，{d}，共 {n} 行", { h: esc(pv.scope || t("未知")), d: when(pv.exported_at), n: pv.rows })}</b><p class="small muted">${Object.entries(pv.counts).map(([k, v]) => `${esc(k)} ${v}`).join(" · ")}</p>
       ${pv.same ? "" : `<p class="small muted">${t("这是另一个账号的备份（换了项目或重新注册时正常）：会导进现在登录的账号。")}</p>`}
-      <p class="small">${t("恢复 = 把文件里的数据导回我的账号：同主键的行覆盖成文件里的样子，文件里没有的行不会删。")}</p>
+      <p class="small">${t("恢复 = 把文件里的数据导回我的账号：只补缺的：已有同主键的行不动，文件里没有的行也不删。")}</p>
       <div class="bk-row" style="margin-top:8px"><button class="btn primary" data-act="bk-restore">${t("恢复到我的账号")}</button><button class="btn" data-act="bk-cancel">${t("取消")}</button></div></div>`
     : `<div class="bk-notice bad"><b>${t("不能恢复：{why}", { why: esc(pv.why) })}</b> <button class="chip" data-act="bk-cancel">${t("关闭")}</button></div>`;
   return `<div class="bk-sync">${syncLine}</div>
@@ -231,10 +245,7 @@ function bkBody(cloudOn, syncLine) {
     <div class="panel bk-panel bk-status"><div><b>${esc(status)}</b><small>${s.lastInfo ? `${esc(s.lastInfo)} · ` : ""}${esc(nextTxt)}</small></div>
       <div class="bk-row"><button class="btn primary" data-act="bk-now">${t("现在备份")}</button><button class="btn" data-act="bk-download">${t("下载一份")}</button></div></div>
     <form id="backupForm" class="panel bk-panel" onsubmit="return false">
-      <div class="lab">${t("多久备份一次")}</div>
-      <div class="bk-seg">${[["off", "关"], ["week", "每周"], ["month", "每月"], ["custom", "自定义"]].map(([v, l]) => `<label class="bk-radio"><input type="radio" name="every" value="${v}" ${s.every === v ? "checked" : ""}><span>${t(l)}</span></label>`).join("")}
-        <label class="bk-days" data-bk-days ${s.every === "custom" ? "" : "hidden"}><input name="days" type="number" min="1" max="365" inputmode="numeric" value="${s.days}" aria-label="${esc(t("每隔几天"))}"> ${t("天")}</label></div>
-      <p class="small muted">${t("网页关着时跑不了：到期后下次打开应用时自动备份一次。")}</p>
+      <div class="bk-notice"><b>${t("定时备份由小月亮统一做")}</b> ${t("小月亮的「同步、备份与恢复」会连同家庭学堂、牧羊人一起定时备份（家主备份全家，含每位家人的数据）；这里只用来手动备份 / 恢复本应用。云盘连接与小月亮共用，在任一应用连接一次即可。")}</div>
       <div class="lab">${t("备份到哪")} <span class="small muted">${t("可多选")}</span></div>
       <div class="bk-cards">
         ${card("folder", has("folder"), "☁️", t("云盘同步文件夹"), t("Google Drive / Dropbox / OneDrive / iCloud Drive 的电脑客户端都有一个同步文件夹，选它就等于备份上了那家云盘；也可以选电脑上任何位置。只留 {n} 天。", { n: KEEP_DAYS }), folderBody)}
@@ -267,6 +278,8 @@ async function bkAct(act, el) {
         UI.result = r.ok.length ? { title: t("已备份到 {to}：{name}（{n} 行）", { to: r.ok.map(targetName).join("、"), name: r.name, n: r.rows }), detail: [sqlNote, ...r.failed.map(([k, w]) => `${targetName(k)}：${w}`)].join("；") } : { ok: false, title: t("备份没成功"), detail: r.failed.map(([k, w]) => `${targetName(k)}：${w}`).join("；") }; }
       catch (e) { UI.result = { title: t("备份没成功"), detail: e.message }; }
       redraw(); break; }
+    case "bk-gd-pick": try { const f = await DR.gdPickFolder(); if (f) { saveSettings({ gdId: f.id, gdName: f.name }); toast(t("以后备份放到「{n}」", { n: f.name })); } } catch (e) { toast(t("选文件夹失败：{msg}", { msg: e.message })); } redraw(); break;
+    case "bk-gd-clear": saveSettings({ gdId: "", gdName: "" }); redraw(); break;
     case "bk-pick-sql": try { await pickSqlFolder(); toast(t("以后每次写云盘文件夹时会把 .sql 一起拷进 sql/ 子目录")); } catch (e) { if (e.name !== "AbortError") toast(t("选文件夹失败：{msg}", { msg: e.message })); } redraw(); break;
     case "bk-forget-sql": await forgetSqlFolder(); redraw(); break;
     case "bk-pick": try { await pickFolder(); toast(t("已记住这个文件夹")); } catch (e) { if (e.name !== "AbortError") toast(t("选文件夹失败：{msg}", { msg: e.message })); } redraw(); break;
@@ -283,7 +296,7 @@ async function bkAct(act, el) {
     case "bk-cancel": UI.preview = null; openBackup(); break;
     case "bk-restore": {
       const pv = UI.preview; if (!pv?.ok) break;
-      if (!confirm(t("把备份（{d}，{n} 行）导回我的账号「{h}」？同主键的行会被文件里的覆盖。", { d: String(pv.exported_at).slice(0, 16).replace("T", " "), n: pv.rows, h: CFG.scopeName() }))) break;
+      if (!confirm(t("把备份（{d}，{n} 行）导回我的账号「{h}」？只补缺的，已有的不动、不删。", { d: String(pv.exported_at).slice(0, 16).replace("T", " "), n: pv.rows, h: CFG.scopeName() }))) break;
       el.disabled = true; el.textContent = t("恢复中…");
       try { const r = await restore(pv.data, (tb) => { el.textContent = t("恢复中… {t}", { t: tb }); }); const n = Object.values(r.done).reduce((a, b) => a + b, 0);
         UI.result = { title: r.errors.length ? t("恢复了 {n} 行，但有表出错", { n }) : t("已恢复 {n} 行", { n }), detail: r.errors.map(([tb, w]) => `${tb}：${w}`).join("；") }; UI.preview = null; await CFG.afterRestore(); }
@@ -297,7 +310,7 @@ async function bkChange(ev) {
   const el = ev.target;
   if (el.closest && el.closest("#backupForm")) {
     const f = el.closest("#backupForm"), targets = [...f.querySelectorAll('input[name="target"]:checked')].map((x) => x.value);
-    saveSettings({ every: f.elements.every.value, days: Math.max(1, +f.elements.days.value || 14), targets, provider: f.elements.provider?.value || "any", gdPath: (f.elements.gdPath?.value || "").trim(), dbxPath: (f.elements.dbxPath?.value || "").trim() });
+    saveSettings({ every: f.elements.every?.value ?? settings().every, days: Math.max(1, +(f.elements.days?.value ?? settings().days) || 14), targets, provider: f.elements.provider?.value || "any", gdPath: (f.elements.gdPath?.value || "").trim(), dbxPath: (f.elements.dbxPath?.value || "").trim() });
     const box = f.querySelector("[data-bk-days]"); if (box) box.hidden = f.elements.every.value !== "custom";
     if (el.name === "gdPath" || el.name === "dbxPath") UI.stale = true;   // 路径改了：列表换到新文件夹
     if (["every", "provider", "target", "gdPath", "dbxPath"].includes(el.name)) openBackup();
