@@ -525,3 +525,5 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
   .tcol{display:flex;flex-direction:column;min-width:0}
 }
 @media (min-width:900px){.tgrid{column-count:auto}}
+.bk-path{width:100%}.bk-path label{flex:none}.bk-path input{flex:1 1 160px;min-height:34px;min-width:0}
+.bk-card.off{opacity:.6}

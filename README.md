@@ -67,3 +67,11 @@ python -m http.server 8766
 ```
 
 打开 http://localhost:8766/ 。登录用和小月亮一样的账号。
+
+## 云盘备份
+
+「我的 → 备份与恢复」可以把牧羊人的数据定时备份到 Google Drive / Dropbox（手机电脑都能用）、电脑上的云盘同步文件夹、共用 Supabase 项目的存储（baby-log 迁移 017）或直接下载。Google Drive / Dropbox 要在 `js/core/config.js` 填两个公开的客户端标识（不是密钥）：
+
+- Google Drive：Google Cloud Console → APIs & Services → 启用 Google Drive API → OAuth 2.0 客户端（类型 Web 应用），「已获授权的 JavaScript 来源」填站点地址，Client ID 填到 `GOOGLE_CLIENT_ID`。权限只有 drive.file（只看得到这个应用自己建的文件）。
+- Dropbox：Dropbox App Console → Create app → Scoped access，Access type 选 **App folder**，Permissions 勾 `files.content.write` / `files.content.read` / `account_info.read`，Redirect URIs 填站点地址（带结尾的 /），App key 填到 `DROPBOX_APP_KEY`。
+- 备份放在卡片里填的路径下：Drive 默认「牧羊人备份」（可多级，不存在就逐级建）；Dropbox 是应用文件夹里的子路径。令牌存本机 localStorage，「断开」会吊销并清掉。代码在 `js/cloud-drives.js`，四个应用共用同一份。
