@@ -195,13 +195,14 @@ async function restore(d, onProgress = () => {}) {
 }
 
 /* ---- 界面：一张 sheet ---- */
-const UI = { folder: null, lists: {}, src: null, sql: null, loading: false, stale: true, preview: null, result: null, pendingOpen: false };
+const UI = { folder: null, lists: {}, errs: {}, src: null, sql: null, loading: false, stale: true, preview: null, result: null, pendingOpen: false };
 // 能列出 / 恢复的来源（文件夹和下载的备份通过「选备份文件」读回来）
 const SOURCES = {   // 顺序即显示顺序：Google Drive 在前（默认选它），再 Dropbox，最后应用云端
-  gdrive: { icon: "▲", label: "Google Drive", ready: () => DR.gdOn(), list: () => DR.gdList(false), read: DR.gdRead, del: DR.gdDelete },
+  gdrive: { icon: "▲", label: "Google Drive", ready: () => DR.gdOn(), list: () => DR.gdList(false), relist: () => DR.gdList(true), read: DR.gdRead, del: DR.gdDelete },
   dropbox: { icon: "◆", label: "Dropbox", ready: () => DR.dbxOn(), list: DR.dbxList, read: DR.dbxRead, del: DR.dbxDelete },
   cloud: { icon: "🗄️", label: "应用云端", ready: () => CFG.ready(), list: listCloud, read: readCloud, del: deleteCloud },
 };
+const bkErr = (e) => (e && e.message === "NEED_GESTURE" ? t("Google 登录过期了（授权只管一小时）") : (e && e.message) || t("读取失败"));
 const available = () => Object.keys(SOURCES).filter((k) => SOURCES[k].ready());
 const when = (iso) => (iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "");
 const kb = (n) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
@@ -210,7 +211,7 @@ const card = (k, on, icon, title, desc, body = "", off = false) => `<label class
 function loadUi(redraw) {
   if (!UI.stale) return; UI.stale = false; UI.loading = true;
   const srcs = available();
-  Promise.all([folderStatus().catch(() => ({ supported: false, perm: "none", name: "" })), sqlStatus().catch(() => ({ name: "" })), ...srcs.map((k) => SOURCES[k].list().catch(() => []))]).then(([f, q, ...ls]) => { UI.folder = f; UI.sql = q; srcs.forEach((k, i) => { UI.lists[k] = ls[i]; }); UI.loading = false; redraw(); });
+  Promise.all([folderStatus().catch(() => ({ supported: false, perm: "none", name: "" })), sqlStatus().catch(() => ({ name: "" })), ...srcs.map((k) => SOURCES[k].list().then((r) => ({ r }), (e) => ({ e })))]).then(([f, q, ...ls]) => { UI.folder = f; UI.sql = q; srcs.forEach((k, i) => { if (ls[i].e) UI.errs[k] = bkErr(ls[i].e); else { UI.lists[k] = ls[i].r; UI.errs[k] = ""; } }); /* 读失败（多半是 Google 令牌过期）：保留上次的列表，不要清空 */ UI.loading = false; redraw(); });
 }
 function bkBody(cloudOn, syncLine) {
   const s = settings(), folder = UI.folder || { supported: folderSupported(), perm: "none", name: "" }, sql = UI.sql || { name: "" }, has = (k) => s.targets.includes(k), due = nextDue(s);
@@ -228,7 +229,7 @@ function bkBody(cloudOn, syncLine) {
     UI.src = srcs.includes(UI.src) ? UI.src : srcs[0]; const list = UI.lists[UI.src] || [], S0 = SOURCES[UI.src];
     const row = (f) => `<div class="medrow"><div><b>${esc(f.name)}</b><br><span class="small muted">${esc(when(f.at))} · ${kb(f.size)}</span></div><span class="bk-row"><button class="chip" data-act="bk-dl" data-src="${UI.src}" data-id="${esc(f.id || f.name)}" data-name="${esc(f.name)}">${t("下载")}</button><button class="chip" data-act="bk-use" data-src="${UI.src}" data-id="${esc(f.id || f.name)}">${t("恢复")}</button><button class="chip" data-act="bk-rm" data-src="${UI.src}" data-id="${esc(f.id || f.name)}" data-name="${esc(f.name)}" aria-label="${esc(t("删除"))}">✕</button></span></div>`;
     cloudList = `<div class="panel bk-panel"><div class="lab">${t("备份记录")}</div>${srcs.length > 1 ? `<div class="bk-seg">${srcs.map((k) => `<button type="button" class="chip" data-act="bk-src" data-src="${k}" aria-pressed="${k === UI.src}">${SOURCES[k].icon} ${t(SOURCES[k].label)}</button>`).join("")}</div>` : `<p class="small muted">${S0.icon} ${t(S0.label)}</p>`}
-      ${UI.loading ? `<p class="small muted">${t("读取中…")}</p>` : list.length ? list.slice(0, 3).map(row).join("") + (list.length > 3 ? `<details class="bk-more"><summary>${t("更早的 {n} 条", { n: Math.min(list.length, 30) - 3 })}</summary>${list.slice(3, 30).map(row).join("")}</details>` : "") : `<p class="small muted">${t("这里还没有备份。上面勾上它，再点「现在备份」。")}</p>`}</div>`;
+      ${UI.errs[UI.src] ? `<p class="small bk-err">⚠️ ${esc(UI.errs[UI.src])} <button class="chip" data-act="bk-relist" data-src="${UI.src}">${t("重新授权并刷新")}</button></p>` : ""}${UI.loading && !list.length ? `<p class="small muted">${t("读取中…")}</p>` : list.length ? list.slice(0, 3).map(row).join("") + (list.length > 3 ? `<details class="bk-more"><summary>${t("更早的 {n} 条", { n: Math.min(list.length, 30) - 3 })}</summary>${list.slice(3, 30).map(row).join("")}</details>` : "") : `<p class="small muted">${t("这里还没有备份。上面勾上它，再点「现在备份」。")}</p>`}</div>`;
   }
   const notCfg = t("需要先在 js/core/config.js 里填好（见 README「云盘备份」）");
   const driveCard = (k, icon, label, cfgd, tk, pathName, pathLabel, pathVal, ph, pathText) => card(k, has(k), icon, label, cfgd ? t("放在你 {d} 里指定的文件夹，手机电脑都能用；只留 {n} 天", { d: label, n: KEEP_DAYS }) : notCfg,
@@ -285,6 +286,7 @@ async function bkAct(act, el) {
     case "bk-pick": try { await pickFolder(); toast(t("已记住这个文件夹")); } catch (e) { if (e.name !== "AbortError") toast(t("选文件夹失败：{msg}", { msg: e.message })); } redraw(); break;
     case "bk-forget": await forgetFolder(); redraw(); break;
     case "bk-grant": { const st = await folderStatus(); if (st.handle) { try { await st.handle.requestPermission({ mode: "readwrite" }); } catch (e) { /* 取消 */ } } redraw(); break; }
+    case "bk-relist": el.disabled = true; try { const S0 = SOURCES[el.dataset.src]; UI.lists[el.dataset.src] = await (S0.relist || S0.list)(); UI.errs[el.dataset.src] = ""; } catch (e) { toast(t("读取失败：{msg}", { msg: e.message === "NEED_GESTURE" ? t("需要重新登录 Google") : e.message })); } openBackup(); break;
     case "bk-src": UI.src = el.dataset.src; openBackup(); break;
     case "bk-dl": try { const d = await SOURCES[el.dataset.src].read(el.dataset.id); download(toBlob(d), el.dataset.name); } catch (e) { toast(t("下载失败：{msg}", { msg: e.message })); } break;
     case "bk-use": try { const d = await SOURCES[el.dataset.src].read(el.dataset.id); UI.preview = { ...inspect(d), data: d }; } catch (e) { toast(t("读取失败：{msg}", { msg: e.message })); } openBackup(); break;

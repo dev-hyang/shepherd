@@ -550,3 +550,4 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 
 .bk-more{margin-top:6px}.bk-more>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);padding:6px 0;list-style:none}
 .bk-more>summary::before{content:"▸ ";}.bk-more[open]>summary::before{content:"▾ ";}
+.bk-err{margin:6px 0;color:#b4506a;font-size:13px}.bk-err .btn,.bk-err .chip{margin-left:6px}

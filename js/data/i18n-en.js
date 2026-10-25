@@ -724,6 +724,9 @@ const EN = {
   "通义千问": "Qwen",
   "备份记录": "Backup history",
   "更早的 {n} 条": "{n} earlier",
+  "Google 登录过期了（授权只管一小时）": "Google sign-in expired (the grant lasts an hour)",
+  "读取失败": "Read failed",
+  "重新授权并刷新": "Re-authorize and refresh",
 };
 export { EN };
 
