@@ -70,6 +70,8 @@ python -m http.server 8766
 
 ## 云盘备份
 
+> 详细的设置步骤（Google Drive 的 Client ID / API Key、Dropbox 的 App key 和 Redirect URI、本地文件夹、数据库重建、排错）见 [docs/backup-and-sync.md](docs/backup-and-sync.md)。
+
 「我的 → 备份与恢复」可以把牧羊人的数据定时备份到 Google Drive / Dropbox（手机电脑都能用）、电脑上的云盘同步文件夹、共用 Supabase 项目的存储（baby-log 迁移 017）或直接下载。Google Drive / Dropbox 要在 `js/core/config.js` 填两个公开的客户端标识（不是密钥）：
 
 - Google Drive：Google Cloud Console → APIs & Services → 启用 Google Drive API → OAuth 2.0 客户端（类型 Web 应用），「已获授权的 JavaScript 来源」填站点地址，Client ID 填到 `GOOGLE_CLIENT_ID`。权限只有 drive.file（只看得到这个应用自己建的文件）。
