@@ -8,6 +8,7 @@ import { ALL_DAYS, KINDS, WEEKDAY, kindOf, modeOf } from "./data/kinds.js";
 import { PLANS } from "./data/plans.js";
 import { fbar } from "./ui.js";
 import { render } from "./views.js";
+import { usageHTML } from "./usage.js";
 import * as wb from "./wb.js";
 import * as tk from "./tk.js";
 
@@ -223,6 +224,10 @@ function openSettings(){
 
   <h2>${t("任务提醒与催办")}</h2>
   <div class="panel">${nudgeSettingsHTML()}</div>
+
+  <h2>${t("存储用量")}</h2>
+  <p class="small muted" style="margin-top:0">${t("看看数据占了 Supabase 免费空间的多少，快满之前会变黄、变红提醒你。")}</p>
+  ${usageHTML()}
 
   <h2>${t("姊妹应用")}</h2>
   <div class="panel" style="padding:4px 14px">

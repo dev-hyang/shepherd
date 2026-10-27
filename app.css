@@ -551,3 +551,16 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .bk-more{margin-top:6px}.bk-more>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);padding:6px 0;list-style:none}
 .bk-more>summary::before{content:"▸ ";}.bk-more[open]>summary::before{content:"▾ ";}
 .bk-err{margin:6px 0;color:#b4506a;font-size:13px}.bk-err .btn,.bk-err .chip{margin-left:6px}
+
+/* 存储用量（js/usage.js）：手机上上下叠、电脑上数字靠右；状态靠图标 + 文字，不只靠颜色 */
+.usage{display:grid;gap:18px}
+.usage-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 12px}
+.usage-num{font-family:var(--f-num);font-size:14px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.usage-bar{height:14px;margin:8px 0 6px;border-radius:999px;background:var(--line);overflow:hidden}
+.usage-bar>i{display:block;height:100%;border-radius:inherit;background:var(--sage);transition:width .4s ease}
+.usage-row.warn .usage-bar>i{background:var(--honey)}
+.usage-row.full .usage-bar>i{background:var(--rose)}
+.usage-note{margin:0;font-size:13px;line-height:1.6}
+.usage-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.usage .small{margin:0}
+@media (prefers-reduced-motion:reduce){.usage-bar>i{transition:none}}
