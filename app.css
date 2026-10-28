@@ -567,3 +567,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 /* 深色主题下让原生日期/时间选择器的图标和弹层也用深色 */
 :root[data-theme="dark"]{color-scheme:dark}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}
+/* 面包屑最前面的「‹ 返回」：回到刚才来的那一页（没有就退一层）；后面的路径按层级跳 */
+.crumb .crumb-back{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;min-height:30px;padding:2px 12px;margin:0 8px 0 -5px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--slate);font:inherit;font-size:13.5px;font-weight:700;white-space:nowrap}
+.crumb .crumb-back:hover,.crumb .crumb-back:active{background:var(--slate-soft);text-decoration:none}
+.crumb .crumb-back:focus-visible{outline:3px solid var(--slate);outline-offset:1px}

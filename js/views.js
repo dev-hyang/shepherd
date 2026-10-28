@@ -24,10 +24,15 @@ function crumbParts(tab){
   while (p) { parts.unshift({ tab: p, label: SUB[p] ? SUB[p].label : TAB_LABELS[p] }); p = SUB[p] ? SUB[p].parent : null; }
   return parts;
 }
+/* 「‹ 返回」= 回到你刚才来的那一页；直接打开或刷新后没有上一页时，退到上一层。面包屑负责按层级往上跳，两者分工（和 iOS / 安卓 / 网页的常见做法一致） */
+const NAV = { last: null, stack: [], back: false };
+function trackNav(tab){ if (NAV.last && NAV.last !== tab && !NAV.back) { NAV.stack.push(NAV.last); if (NAV.stack.length > 30) NAV.stack.shift(); } NAV.back = false; NAV.last = tab; }
+function backTo(parent){ NAV.back = true; while (NAV.stack.length) { const p = NAV.stack.pop(); if (p !== S.tab) return p; } return parent; }
+const backBtn = parent => `<button type="button" class="crumb-link crumb-back" data-act="nav-back" data-parent="${parent}" aria-label="${t("返回")}">‹ ${t("返回")}</button>`;
 /** 面包屑：第一项带「‹ 」，中间项可点，最后一项加粗当标题 */
 function crumbNav(parts, cls = ""){
-  return `<nav class="crumb ${cls}" aria-label="${t("位置")}">${parts.map((x, i) => `${i ? '<span class="sep">/</span>' : ""}${i === parts.length - 1
-    ? `<b aria-current="page">${t(x.label)}</b>` : `<button type="button" class="crumb-link" data-tab="${x.tab}">${i === 0 ? "‹ " : ""}${t(x.label)}</button>`}`).join("")}</nav>`;
+  return `<nav class="crumb ${cls}" aria-label="${t("位置")}">${backBtn(parts[parts.length - 2].tab)}${parts.map((x, i) => `${i ? '<span class="sep">/</span>' : ""}${i === parts.length - 1
+    ? `<b aria-current="page">${t(x.label)}</b>` : `<button type="button" class="crumb-link" data-tab="${x.tab}">${t(x.label)}</button>`}`).join("")}</nav>`;
 }
 // 应用切换（四个姊妹站点共用）：右上角九宫格按钮，宽屏浮层、手机底部抽屉。
 // 组件放在 home-pantry/shared；首次离线加载不到时，先用原来的 ‹ 上一个 / 下一个 › 胶囊，切换不受影响。
@@ -69,6 +74,7 @@ function renderStatus(){
 }
 function render(){
   renderStatus();
+  trackNav(S.tab);
   const sub = SUB[S.tab], cur = sub ? sub.parent : S.tab;   // 子页时底部仍高亮它所属的页签
   document.querySelectorAll("nav.tabs button").forEach(b => { if (b.dataset.tab === cur) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
@@ -91,4 +97,4 @@ function gateHTML(){
   return "";
 }
 
-export { renderStatus, render, refreshSettingsIfOpen, gateHTML, crumbNav, SUB };
+export { backTo, renderStatus, render, refreshSettingsIfOpen, gateHTML, crumbNav, SUB };

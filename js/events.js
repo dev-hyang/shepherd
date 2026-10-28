@@ -10,7 +10,7 @@ import { openAbout } from "./about.js";
 import { askAct } from "./ask.js";
 import * as fz from "./focus.js";
 import { closeSheet, drawForm, getForm, head, openCalendar, openForm, openHabits, openInfo, openPlan, openPractice, openSettings, readForm, showSheet } from "./sheet.js";
-import { render } from "./views.js";
+import { backTo, render } from "./views.js";
 import * as wb from "./wb.js";
 import * as tkm from "./tk.js";
 import * as nt from "./nt.js";
@@ -59,6 +59,7 @@ document.addEventListener("click", async ev => {
   if (d.scroll) { const el = document.getElementById(d.scroll); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   if (d.pview) { S.prayerView = d.pview; S.fpop = null; render(); return; }
   if (d.tkf) { S.tkUi[d.tkf] = d.v; render(); return; }
+  if (d.act === "nav-back") d.tab = backTo(d.parent);   // 返回：上一页，没有就上一层
   if (d.tab) { close(); S.fpop = null; S.tab = d.tab; S.pick = null; render(); window.scrollTo(0, 0); return; }
   if (d.copy) { try { await navigator.clipboard.writeText(d.copy); toast(t("已复制")); } catch (e) { toast(t("请手动复制：") + d.copy); } return; }
   if (d.themeSet !== undefined) { if (d.themeSet) document.documentElement.dataset.theme = d.themeSet; else delete document.documentElement.dataset.theme; try { localStorage.setItem(LS_PREFIX + ".theme", d.themeSet); } catch (e) {} openSettings(); return; }
