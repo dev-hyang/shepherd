@@ -1,4 +1,4 @@
-import { myName } from "./core/auth.js";
+import { isOwner, myName } from "./core/auth.js";
 import { t, tc } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc, hm } from "./core/util.js";
@@ -30,7 +30,8 @@ function viewToday(){
   const sec = (id, o, html) => (html ? `<section class="tsec" id="sec-${id}" style="--o:${o}">${html}</section>` : "");
   const colA = [sec("habits", 3, habitsHTML(day, list)), sec("family", 6, familyHTML(day))].join("");
   const colB = [sec("reading", 1, readingHTML()), sec("tasks", 2, mitBlock() + tasksBlock()), sec("notes", 4, notesHTML()), sec("famtasks", 7, familyTasks(day))].join("");
-  return `${hero}${nudgeBar()}${kpisHTML(day, list)}${askEntryHTML()}<div class="tgrid"><div class="tcol tcol-a">${colA}</div><div class="tcol tcol-b">${colB}</div></div>`;
+  const joinNote = isOwner() && S.pending.length ? `<div class="nudge"><b>${t("{n} 人申请加入家庭", { n: S.pending.length })}</b> <button class="chip" data-act="settings">${t("去批准")}</button></div>` : "";
+  return `${hero}${joinNote}${nudgeBar()}${kpisHTML(day, list)}${askEntryHTML()}<div class="tgrid"><div class="tcol tcol-a">${colA}</div><div class="tcol tcol-b">${colB}</div></div>`;
 }
 
 /* 统计卡：数字（完成/总数）+ 进度条 + 一行说明（还剩什么 / 全部完成 / 逾期）。全部做完变绿 */

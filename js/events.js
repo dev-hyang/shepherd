@@ -1,4 +1,4 @@
-import { sbAuth, sbFamily, sbLink, sbLogout } from "./core/auth.js";
+import { recheckWaiting, sbApprove, sbCloseInvite, sbReject, sbResetInvite, sbAuth, sbFamily, sbLink, sbLogout } from "./core/auth.js";
 import { bkAct, bkChange } from "./backup.js";
 import { LS_PREFIX } from "./core/config.js";
 import { setLocale, t } from "./core/i18n.js";
@@ -123,6 +123,11 @@ document.addEventListener("click", async ev => {
       case "sb-create": await sbFamily("create"); break;
       case "sb-join": await sbFamily("join"); break;
       case "sb-logout": await sbLogout(); break;
+      case "sb-recheck": await recheckWaiting(); break;
+      case "sb-approve": await sbApprove(d.uid); break;
+      case "sb-reject": await sbReject(d.uid); break;
+      case "sb-reset-invite": await sbResetInvite(); break;
+      case "sb-close-invite": await sbCloseInvite(); break;
 
       /* 读经 */
       case "plan": openPlan(); break;

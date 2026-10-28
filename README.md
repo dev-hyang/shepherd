@@ -78,3 +78,8 @@ python -m http.server 8766
 - Google Drive：Google Cloud Console → APIs & Services → 启用 Google Drive API → OAuth 2.0 客户端（类型 Web 应用），「已获授权的 JavaScript 来源」填站点地址，Client ID 填到 `GOOGLE_CLIENT_ID`。权限只有 drive.file（只看得到这个应用自己建的文件）。
 - Dropbox：Dropbox App Console → Create app → Scoped access，Access type 选 **App folder**，Permissions 勾 `files.content.write` / `files.content.read` / `account_info.read`，Redirect URIs 填站点地址（带结尾的 /），App key 填到 `DROPBOX_APP_KEY`。
 - 备份放在卡片里填的路径下：Drive 默认「牧羊人备份」（可多级，不存在就逐级建）；Dropbox 是应用文件夹里的子路径。令牌存本机 localStorage，「断开」会吊销并清掉。代码在 `js/cloud-drives.js`，四个应用共用同一份。
+
+## 邀请与批准（迁移 022）
+- 邀请码 7 天有效；家主在 设置 → 账号与家庭 里可以「重新生成（7 天）」或「关闭邀请」，并看到有效期。
+- 用邀请码加入的人先是「待批准」，看到「等家主批准」（每 20 秒自动检查）；家主在 今天 的提醒或设置里点「批准 / 拒绝」。猜码有限速，返回 invalid / expired / throttled / full。
+- 升级顺序：**先部署本版页面，再执行 baby-log 的 `022_join_hardening.sql`**。没执行 022 时页面照旧能用（按直接加入处理，不显示有效期）。

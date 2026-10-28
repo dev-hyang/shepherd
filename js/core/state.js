@@ -9,6 +9,7 @@ const S = {
   tab: "today",
   cloud: "loading",        // loading | offline | signedout | anon | ready（ready 时 family 可能为 null：还没加入家庭，照样能用）
   user: null, family: null, members: {},
+  pending: [], waiting: null,   // pending：家主看到的加入申请；waiting：我已申请加入、等家主批准（{ family_id }）
   day: dayKey(Date.now()),   // 真正的今天
   pick: null,              // 今天页“补记”选的过去某一天（null = 今天）；见 wb.viewDay()
   review: { range: "4w", metric: "scripture" },
