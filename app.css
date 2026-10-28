@@ -564,3 +564,6 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .usage-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
 .usage .small{margin:0}
 @media (prefers-reduced-motion:reduce){.usage-bar>i{transition:none}}
+/* 深色主题下让原生日期/时间选择器的图标和弹层也用深色 */
+:root[data-theme="dark"]{color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}

@@ -12,7 +12,7 @@ const GOOGLE_CLIENT_ID = "";   // Google Cloud Console → OAuth 2.0 客户端�
 const GOOGLE_API_KEY = "";     // Google Cloud Console → 凭据 → API 密钥（限制为 Google Picker API）；用于「在 Drive 里选文件夹」，留空就只能填路径
 const DROPBOX_APP_KEY = "";    // Dropbox App Console → App key；Access type 选 App folder；Redirect URI 填站点地址（带结尾的 /）
 const LS_PREFIX = "shepherd.v1";              // 本设备偏好的 localStorage 前缀
-const APP_VERSION = "2026-10-27.1";
+const APP_VERSION = "2026-10-27.2";
 const BABY_LOG_URL = "https://dev-hyang.github.io/baby-log/";
 // 四个姊妹站点同一个账号同一个家庭；标题旁的左右箭头在它们之间切换（按这里的顺序环绕）
 const SISTER_APPS = [
