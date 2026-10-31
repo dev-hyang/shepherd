@@ -34,8 +34,8 @@
 | `js/focus.js` | 专注计时：番茄工作法 + 20-20-20 护眼浮层，完成的段自动记为 focus 打卡 |
 | `js/tk.js` `js/tasks.js` `js/recur.js` `js/data/taskcats.js` | 任务：数据层（wb_tasks、完成记进 wb_logs）、任务页（今天 / 计划 日周月 / 清单 / 已完成）、重复与一句话解析、默认分类；设计见 `docs/design-tasks.md` |
 | `js/ui.js` | 共用版式：区块标题 secHead、页面标题 pageHead、筛选栏 fbar（“筛选 ▾”按钮 + 搜索 + 新增，下拉面板里是各组选项，已选的显示成可点掉的小标签） |
-| `js/pager.js` | 长列表分批显示（代祷、任务清单、已完成 / 放弃的、灵修笔记）：先画一页，底部“继续加载”；每页条数在 设置 → 显示 里选（5 / 10 / 20 / 50，存本机，默认手机 10、电脑 20） |
-| `js/nt.js` `js/notes.js` `js/notes-lib.js` `js/markdown.js` `js/ai.js` | 灵修笔记：数据层（wb_notes，自己的 + 家人分享给我的）、界面（记 / 拍照识字点选 / 筛选搜索 / 导出打印 / AI 整理 / AI 设置）、纯逻辑（筛选、分组、导出 Markdown、OCR 解析、提示词）、轻量 Markdown 渲染（心得栏：先转义再加标签，不支持原始 HTML；`tests/` 里有单测）、AI 调用层（自带 key、浏览器直连，和爱家小助手同一套思路） |
+| `js/pager.js` | 长列表分批显示（代祷、任务清单、已完成 / 放弃的）：先画一页，底部“继续加载”；每页条数在 设置 → 显示 里选（5 / 10 / 20 / 50，存本机，默认手机 10、电脑 20）。灵修笔记用同一个每页条数，但每次“继续加载”是向数据库要下一页 |
+| `js/nt.js` `js/notes.js` `js/notes-lib.js` `js/markdown.js` `js/ai.js` | 灵修笔记：数据层（wb_notes，自己的 + 家人分享给我的；服务器端键集分页 + 统计 RPC，不把全部笔记读进内存，导出时才现读）、界面（记 / 拍照识字点选 / 筛选搜索 / 导出打印 / AI 整理 / AI 设置）、纯逻辑（筛选、分组、导出 Markdown、OCR 解析、提示词）、轻量 Markdown 渲染（心得栏：先转义再加标签，不支持原始 HTML；`tests/` 里有单测）、AI 调用层（自带 key、浏览器直连，和爱家小助手同一套思路） |
 | `js/data/kinds.js` | 习惯种类、打卡方式、起步模板 |
 | `js/data/plans.js` | 内置读经计划（按章自动生成）与导入解析 |
 | `js/data/bible.js` | 书卷表、出处解析、经文抓取（和学堂同源，加了整章抓取） |
@@ -45,7 +45,7 @@
 
 表 `wb_profile` `wb_practices` `wb_logs` `wb_prayers`，建表脚本在 baby-log 仓库本机的 `supabase/migrations/013_shepherd.sql`（不进 git），在 Supabase SQL Editor 里执行一次。
 任务表 `wb_tasks`：脚本在 baby-log 仓库 `supabase/migrations/015_shepherd_tasks.sql`，在 Supabase SQL Editor 里执行一次（可重复执行）；没执行时只有“任务”页签提示，其余功能照常。日历订阅要带上任务，需要重新部署一次 `ics` 函数（命令见下）。
-灵修笔记表 `wb_notes`：脚本在 baby-log 仓库 `supabase/migrations/016_shepherd_notes.sql`，在 Supabase SQL Editor 里执行一次（可重复执行）；没执行时只有笔记页提示，其余功能照常。每条默认只有本人；可逐条分享给家庭里指定的成员（`shared_with`，对方只读，守卫触发器会丢掉不是同一家庭的 id）。
+灵修笔记表 `wb_notes`：脚本在 baby-log 仓库 `supabase/migrations/016_shepherd_notes.sql`，在 Supabase SQL Editor 里执行一次（可重复执行）；没执行时只有笔记页提示，其余功能照常。分页、筛选、统计在数据库里做：baby-log 仓库 `supabase/migrations/025_shepherd_notes_paging.sql` 建 `wb_notes_page`（键集分页，按 日期 / 创建时间 / user_id / id 倒序，游标是上一页最后一行）和 `wb_notes_stats`（条数、类型、标签、月份、筛选命中数、最近一条、历史上的今天）两个 security invoker 函数和配套索引；**先执行 025 再上线新版前端**，没执行时笔记页提示执行它。每条默认只有本人；可逐条分享给家庭里指定的成员（`shared_with`，对方只读，守卫触发器会丢掉不是同一家庭的 id）。
 性能索引：baby-log 仓库 `supabase/migrations/024_shepherd_tasks_done_idx.sql` 给“近 12 周关掉的任务”的查询加一个部分索引（只加索引，可重复执行）；不执行也能用，只是任务多了以后打开稍慢。
 AI（拍照识字、整理笔记）：用户自己的 key 存在本机 localStorage，浏览器直连服务商，不经任何服务器；爱家小助手里已填的 key 直接沿用。照片压缩后只在内存里发出去，不保存，数据库里只有用户选定的文字。
 测试：`node --test tests/*.test.mjs`（纯逻辑和 AI 调用层，不需要网络）。

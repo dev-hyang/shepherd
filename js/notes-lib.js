@@ -1,5 +1,6 @@
 /* ============ 灵修笔记 · 纯逻辑（不碰 DOM、不碰网络，node 里可直接测：tests/notes-lib.test.mjs） ============
-   筛选、标签、分组、导出成 Markdown、拍照识字结果解析、给 AI 的提示词。界面文字由调用方传入（labels），这里不翻译。 */
+   筛选、标签、分组、导出成 Markdown、拍照识字结果解析、给 AI 的提示词、服务器端分页的参数和游标。界面文字由调用方传入（labels），这里不翻译。
+   笔记页的筛选、计数现在在数据库里做（025_shepherd_notes_paging.sql）；filterNotes / tagCounts / monthsOf / onThisDay 留着当规则说明和单测，SQL 照同样的规则写。 */
 
 const NOTE_KINDS = {
   reading:   { label: "读书心得",   icon: "📖" },
@@ -62,6 +63,35 @@ function onThisDay(notes, day){
   return notes.filter(n => n.day && n.day.slice(5) === md && +n.day.slice(0, 4) < y).sort(byNewest);
 }
 
+/* ---- 服务器端分页 / 筛选的参数（js/nt.js 调 wb_notes_page / wb_notes_stats，见 baby-log/supabase/migrations/025_shepherd_notes_paging.sql） ---- */
+/** 搜索框 → 搜索词：转小写、按空白切开、去重，最多 8 个（和 filterNotes 的规则一致，只是挪到 SQL 里比） */
+function searchWords(q){ return [...new Set(String(q || "").toLowerCase().split(/\s+/).filter(Boolean))].slice(0, 8); }
+/** 有没有筛选（搜索 / 类型 / 标签）：有就跨全部月份找，没有就按月翻页 */
+const filtersOn = ui => !!(String(ui.q || "").trim() || (ui.kind && ui.kind !== "all") || (ui.tag && ui.tag !== "all"));
+/** 笔记页的筛选状态 → 两个 RPC 共用的参数。month：有筛选或选了“全部月份”= null；选过某月 = "YYYY-MM"；没选过 = "latest"（最新有笔记的月） */
+function noteArgs(ui, { family = null } = {}){
+  const shared = ui.scope === "shared" && !!family;
+  const month = filtersOn(ui) || ui.month === "all" ? null : ui.month || "latest";
+  return { p_scope: shared ? "shared" : "mine", p_family: shared ? family : null, p_words: searchWords(ui.q),
+    p_kind: ui.kind && ui.kind !== "all" ? ui.kind : null, p_tag: ui.tag && ui.tag !== "all" ? ui.tag : null, p_month: month };
+}
+/** 统计 RPC 的参数：同样的范围和筛选，不分月，另带“今天”（历史上的今天） */
+function statsArgs(args, day){ const { p_month, ...rest } = args; return { ...rest, p_day: day }; }
+/** 键集分页的游标：上一页最后一行的 day / created_at / user_id / id（和 SQL 的排序列一致）；没有行 = 从头读 */
+function cursorArgs(row){
+  return row ? { p_after_day: row.day, p_after_created: row.created_at, p_after_user: row.user_id, p_after_id: row.id }
+    : { p_after_day: null, p_after_created: null, p_after_user: null, p_after_id: null };
+}
+/** 一页 = 多要一条（size + 1）：多出来的那条只用来判断还有没有下一页，不显示 */
+function pageSlice(rows, size){ const list = rows || []; return { rows: list.slice(0, size), hasNext: list.length > size }; }
+/** 当前月份："all" 或 "YYYY-MM"；没选过 / 选的月已经没有笔记 = 最新有笔记的那个月（和 SQL 的 "latest" 一致）。months 新的在前 */
+function effMonth(ui, months){
+  const m = ui.month;
+  if (m === "all") return "all";
+  if (m && months.some(x => x[0] === m)) return m;
+  return months.length ? months[0][0] : "all";
+}
+
 /** 每条笔记的小标题：出处 / 书名，没有就用类型 */
 const noteHeading = (n, kindLabel = k => k) => n.ref || n.source || kindLabel(n.kind);
 const meta = (n, kindLabel = k => k) => [n.day, kindLabel(n.kind), n.ref && n.source ? n.source : "", ...(n.tags || []).map(x => "#" + x)].filter(Boolean).join(" · ");
@@ -117,4 +147,5 @@ function compilePrompt(purpose, notes, { kindLabel = k => k, lang = "zh" } = {})
 }
 
 export { NOTE_KINDS, kindKeys, parseTags, filterNotes, byNewest, byOldest, tagCounts, monthsOf, onThisDay, groupNotes, noteHeading, meta, toMarkdown,
+  searchWords, filtersOn, noteArgs, statsArgs, cursorArgs, pageSlice, effMonth,
   OCR_SYSTEM, OCR_USER, parseOcr, joinQuote, PURPOSES, compilePrompt };

@@ -72,7 +72,7 @@ function kpisHTML(day, list){
 /* 灵修笔记：和“读经”同样的版式——标题 + 右上角入口，卡片里一行摘要和两个主按钮；往年今天写过的显示在下面 */
 function notesHTML(){
   const tp = wb.todayPassage(), rl = wb.readingLog(), ref = rl ? (rl.data.ref || "") : tp ? tp.item.label : "";
-  const loaded = !!(S.nt && S.nt.loaded), n = loaded ? S.nt.mine.length : 0, last = loaded ? S.nt.mine[0] : null;
+  const st = S.nt && S.nt.loaded ? S.nt.stats : null, loaded = !!st, n = loaded ? st.mine : 0, last = loaded ? st.latest : null;   // 条数、最近一条来自统计 RPC（nt.js），不读全部笔记
   const sum = last ? `${t("最近：{h}", { h: esc(noteHeading(last, kindLabel)) })} · ${esc(last.day)}` : t("读书、读经、祷告时的心得、疑问或感动，随手记在这里。");
   return `${secHead(t("灵修笔记"), chipBtn(t("全部") + (n ? ` ${n}` : ""), 'data-act="notes"'))}<div class="panel"><div class="small muted">${sum}</div>
     <div class="btns"><button class="btn primary" data-act="note-add" data-kind="reading" data-photo="1">📷 ${t("拍照摘录")}</button><button class="btn" data-act="note-add" data-kind="scripture" data-ref="${esc(ref)}">✎ ${t("记心得")}</button></div></div>${loaded ? otdHTML(2) : ""}`;

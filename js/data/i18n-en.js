@@ -320,6 +320,7 @@ const EN = {
   "家人还没有分享笔记给你。": "No family member has shared notes with you yet.",
   "读书、读经、祷告时有心得、疑问或感动，随手记在这里，日积月累就是自己的参考。": "Jot down insights, questions and promptings while reading or praying; over time they become your own reference.",
   "数据库还没有笔记表。": "The database has no notes table yet.",
+  "数据库还没有笔记表或分页函数。": "The database is missing the notes table or its paging functions.", "和": "and",
   "请在 Supabase 执行": "Run",
   "读取笔记失败，请刷新重试。": "Could not load notes; refresh and try again.",
   "来源": "Source",

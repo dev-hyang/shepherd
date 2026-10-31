@@ -60,7 +60,7 @@ document.addEventListener("click", async ev => {
   if (d.fpop) { togglePop(d.fpop); return; }
   if (d.scroll) { const el = document.getElementById(d.scroll); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   if (d.pagerMore) { if (d.pagerMore === "notes") nts.moreNotes(); else { pg.more(d.pagerMore); render(); } return; }   // 继续加载（js/pager.js）
-  if (d.pview) { S.prayerView = d.pview; S.fpop = null; pg.reset("prayers", "notes"); render(); return; }
+  if (d.pview) { S.prayerView = d.pview; S.fpop = null; pg.reset("prayers"); render(); return; }
   if (d.tkf) { S.tkUi[d.tkf] = d.v; pg.reset("tkList"); render(); return; }
   if (d.act === "nav-back") d.tab = backTo(d.parent);   // 返回：上一页，没有就上一层
   if (d.tab) { close(); S.fpop = null; S.tab = d.tab; S.pick = null; pg.resetAll(); render(); window.scrollTo(0, 0); return; }
@@ -214,7 +214,7 @@ document.addEventListener("click", async ev => {
       case "nt-pick-none": nts.pickAll(false); break;
       case "nt-tag": nts.addTag(d.tag); break;
       case "nt-exmonth": nts.toggleExMonth(); break;
-      case "note-export": nts.openExport(); break;
+      case "note-export": await nts.openExport(d.fresh === "1"); break;
       case "nt-x": nts.toggleExport(d.id); break;
       case "nt-preview": nts.openPreview(); break;
       case "nt-print": window.print(); break;

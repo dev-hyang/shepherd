@@ -12,7 +12,7 @@ import * as wb from "./wb.js";
    灵修笔记：读书心得、读经领受、问题、感动（见 notes.js），读经祷告时遇到的问题和感动记在这里，日后查找、导出、打印。 */
 function viewPrayer(){
   const v = S.prayerView === "notes" ? "notes" : "pray";
-  const nOpen = S.wb.prayers.filter(p => p.status !== "answered").length, nNotes = S.nt && S.nt.loaded ? S.nt.mine.length : 0;
+  const nOpen = S.wb.prayers.filter(p => p.status !== "answered").length, nNotes = S.nt && S.nt.loaded && S.nt.stats ? S.nt.stats.mine : 0;
   const tabs = [["pray", t("代祷"), nOpen], ["notes", t("灵修笔记"), nNotes]];
   return `${pageHead(t("祷告与灵修"))}
   <div class="seg eq" role="group" aria-label="${t("祷告与灵修")}">${tabs.map(([k, l, n]) => `<button data-pview="${k}" aria-pressed="${v === k}">${l}${n ? ` <span class="cnt">${n}</span>` : ""}</button>`).join("")}</div>

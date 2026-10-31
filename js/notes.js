@@ -1,13 +1,12 @@
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
-import { $, esc, toast } from "./core/util.js";
+import { $, debounce, esc, toast } from "./core/util.js";
 import { LS_PREFIX } from "./core/config.js";
 import { mdToHtml, mdToText } from "./markdown.js";
 import { memberName } from "./core/auth.js";
 import { PROVIDERS, aiReady, aiSettings, askText, providerOf, saveAiSettings, testAi } from "./ai.js";
-import { NOTE_KINDS, monthsOf, onThisDay, OCR_SYSTEM, OCR_USER, PURPOSES, byNewest, compilePrompt, filterNotes, groupNotes, joinQuote, meta, noteHeading, parseOcr, parseTags, tagCounts, toMarkdown } from "./notes-lib.js";
+import { NOTE_KINDS, OCR_SYSTEM, OCR_USER, PURPOSES, compilePrompt, effMonth, filtersOn as isFiltered, groupNotes, joinQuote, meta, noteHeading, parseOcr, parseTags, toMarkdown } from "./notes-lib.js";
 import * as nt from "./nt.js";
-import * as pg from "./pager.js";
 import { chipBtn, fbar } from "./ui.js";
 import { render } from "./views.js";
 import { closeSheet, drawForm, getForm, head, openForm, openInfo, readForm, showSheet } from "./sheet.js";
@@ -27,18 +26,13 @@ const others = () => Object.entries(S.members).filter(([u]) => S.user && u !== S
 const fileStamp = () => new Date().toISOString().slice(0, 10);
 
 /* ---------- 列表 ---------- */
-const current = () => (S.ntUi.scope === "shared" ? S.nt.shared : S.nt.mine);
-/* 翻页规则：没有任何筛选（搜索 / 类型 / 标签）时按月翻页，月内再分批显示；有筛选就跨全部月份找，结果分批显示 */
-const filtersOn = () => !!(S.ntUi.q.trim() || S.ntUi.kind !== "all" || S.ntUi.tag !== "all");
+/* 翻页规则：没有任何筛选（搜索 / 类型 / 标签）时按月翻页，月内再分批显示；有筛选就跨全部月份找，结果分批显示。
+   筛选、计数都在数据库里做（js/nt.js → wb_notes_page / wb_notes_stats）：这里只画已经读到的几页，“继续加载”再向数据库要一页 */
+const st = () => S.nt.stats || { mine: 0, shared: 0, kinds: {}, tags: [], mytags: [], months: [], matched: 0, latest: null, otd: [], otd_count: 0 };
+const filtersOn = () => isFiltered(S.ntUi);
+const scopeCount = () => (S.ntUi.scope === "shared" ? st().shared : st().mine);
 /** 当前月份："all" 或 "YYYY-MM"；没选过就是最新有笔记的那个月 */
-function curMonth(){
-  const ms = monthsOf(current()), m = S.ntUi.month;
-  if (m === "all") return "all";
-  if (m && ms.some(x => x[0] === m)) return m;
-  return ms.length ? ms[0][0] : "all";
-}
-const matched = () => { const all = filterNotes(current(), S.ntUi).sort(byNewest), m = curMonth(); return !filtersOn() && m !== "all" ? all.filter(n => String(n.day).slice(0, 7) === m) : all; };
-const shown = () => pg.page("notes", matched());
+const curMonth = () => effMonth(S.ntUi, st().months || []);
 const monthLabel = ym => t("{y} 年 {m} 月", { y: ym.slice(0, 4), m: +ym.slice(5, 7) });
 function rowHTML(n){
   const mine = nt.isMine(n), n_sh = (n.shared_with || []).length;
@@ -49,57 +43,67 @@ function rowHTML(n){
 }
 /** 月份导航：‹ 较早 | 选月份 | 较晚 ›；有筛选时换成一行说明 */
 function navHTML(){
-  if (filtersOn()) return `<p class="small muted" style="margin:6px 2px">${t("筛选中：在全部月份里找，共 {n} 条", { n: matched().length })}</p>`;
-  const ms = monthsOf(current()); if (ms.length < 2 && curMonth() !== "all") return ms.length ? `<p class="small muted" style="margin:6px 2px">${esc(monthLabel(ms[0][0]))}</p>` : "";
+  if (filtersOn()) return `<p class="small muted" style="margin:6px 2px">${t("筛选中：在全部月份里找，共 {n} 条", { n: st().matched })}</p>`;
+  const ms = st().months || []; if (ms.length < 2 && curMonth() !== "all") return ms.length ? `<p class="small muted" style="margin:6px 2px">${esc(monthLabel(ms[0][0]))}</p>` : "";
   const cur = curMonth(), i = ms.findIndex(x => x[0] === cur), older = i >= 0 ? ms[i + 1] : null, newer = i > 0 ? ms[i - 1] : null;
   const years = [...new Set(ms.map(x => x[0].slice(0, 4)))];
-  const opts = `<option value="all" ${cur === "all" ? "selected" : ""}>${esc(t("全部月份"))}（${current().length}）</option>` + years.map(y => `<optgroup label="${y}">${ms.filter(x => x[0].startsWith(y)).map(([ym, c]) => `<option value="${ym}" ${ym === cur ? "selected" : ""}>${esc(monthLabel(ym))}（${c}）</option>`).join("")}</optgroup>`).join("");
+  const opts = `<option value="all" ${cur === "all" ? "selected" : ""}>${esc(t("全部月份"))}（${scopeCount()}）</option>` + years.map(y => `<optgroup label="${y}">${ms.filter(x => x[0].startsWith(y)).map(([ym, c]) => `<option value="${ym}" ${ym === cur ? "selected" : ""}>${esc(monthLabel(ym))}（${c}）</option>`).join("")}</optgroup>`).join("");
   return `<div class="monthnav"><button class="chip" data-ntf="month" data-v="${older ? older[0] : ""}" aria-label="${esc(t("较早的月份"))}" ${older ? "" : "disabled"}>‹</button>
     <select id="ntMonth" aria-label="${esc(t("选择月份"))}">${opts}</select>
     <button class="chip" data-ntf="month" data-v="${newer ? newer[0] : ""}" aria-label="${esc(t("较晚的月份"))}" ${newer ? "" : "disabled"}>›</button></div>`;
 }
-/** 历史上的今天：往年同一天写过的（只在我的、没有筛选时显示） */
+/** 历史上的今天：往年同一天写过的（只在我的、没有筛选时显示；数据来自统计 RPC，最多 3 条 + 总数） */
 function otdHTML(max = 3){
-  if (filtersOn() || S.ntUi.scope !== "mine") return "";
-  const list = onThisDay(S.nt.mine, S.day); if (!list.length) return "";
-  return `<div class="panel otd" style="padding:4px 10px;margin-bottom:10px"><div class="glabel">🗓 ${t("历史上的今天")}</div>${list.slice(0, max).map(rowHTML).join("")}${list.length > max ? `<div class="small muted" style="padding:4px 6px">${t("还有 {n} 条", { n: list.length - max })}</div>` : ""}</div>`;
+  if (filtersOn() || S.ntUi.scope !== "mine" || !S.nt.loaded) return "";
+  const list = st().otd || [], total = st().otd_count || list.length; if (!list.length) return "";
+  return `<div class="panel otd" style="padding:4px 10px;margin-bottom:10px"><div class="glabel">🗓 ${t("历史上的今天")}</div>${list.slice(0, max).map(rowHTML).join("")}${total > max ? `<div class="small muted" style="padding:4px 6px">${t("还有 {n} 条", { n: total - max })}</div>` : ""}</div>`;
 }
+/** 还有下一页就给“继续加载”（按钮样式和 pager.js 一样；events.js 按 data-pager-more="notes" 交给 moreNotes） */
+const moreBtn = () => (S.nt.hasNext ? `<div class="btns" style="margin-top:8px"><button class="btn" data-pager-more="notes" ${S.nt.busy ? "disabled" : ""}>${S.nt.busy ? t("正在读取…") : t("继续加载")}</button></div>` : "");
 function bodyHTML(){
-  return `${otdHTML()}${navHTML()}<div class="panel" id="ntList" style="padding:4px 10px">${listHTML()}</div>${pg.moreBtn("notes", matched().length)}`;
+  return `${otdHTML()}${navHTML()}<div class="panel" id="ntList" style="padding:4px 10px">${listHTML()}</div>${moreBtn()}`;
 }
 function listHTML(){
-  const list = shown();
+  const list = S.nt.rows;
   if (list.length) return list.map(rowHTML).join("");
-  const any = current().length;
+  const any = scopeCount();
   return `<div class="empty">${any ? t("这个筛选下没有笔记。") : S.ntUi.scope === "shared" ? t("家人还没有分享笔记给你。") : t("读书、读经、祷告时有心得、疑问或感动，随手记在这里，日积月累就是自己的参考。")}</div>`;
 }
 /** 笔记子页（在祷告页里）：筛选面板 + 搜索 + 新增，下面是历史上的今天、月份翻页、列表 */
 function viewNotes(){
-  if (S.nt.error === "missing") return `<div class="empty">${t("数据库还没有笔记表。")}<br>${t("请在 Supabase 执行")} <code>baby-log/supabase/migrations/016_shepherd_notes.sql</code>${t("，然后刷新。")}</div>`;
+  if (S.nt.error === "missing") return `<div class="empty">${t("数据库还没有笔记表或分页函数。")}<br>${t("请在 Supabase 执行")} <code>baby-log/supabase/migrations/016_shepherd_notes.sql</code> ${t("和")} <code>025_shepherd_notes_paging.sql</code>${t("，然后刷新。")}</div>`;
   if (S.nt.error || !S.nt.loaded) return `<div class="empty">${S.nt.error ? t("读取笔记失败，请刷新重试。") : t("正在读取…")}</div>`;
-  const ui = S.ntUi, base = current(), tags = tagCounts(base);
+  const ui = S.ntUi, s = st(), tags = s.tags || [];
   const opt = (k, v, label, count) => ({ label, attrs: `data-ntf="${k}" data-v="${esc(v)}"`, on: ui[k] === v, count });
-  const cnt = k => (k === "all" ? base : base.filter(n => n.kind === k)).length;
+  const cnt = k => (k === "all" ? scopeCount() : (s.kinds || {})[k] || 0);
   const groups = [
-    ...(S.nt.shared.length ? [{ label: "来源", opts: [opt("scope", "mine", t("我的"), S.nt.mine.length), opt("scope", "shared", t("家人分享给我"), S.nt.shared.length)] }] : []),
+    ...(s.shared ? [{ label: "来源", opts: [opt("scope", "mine", t("我的"), s.mine), opt("scope", "shared", t("家人分享给我"), s.shared)] }] : []),
     { label: "类型", opts: ["all", ...Object.keys(NOTE_KINDS)].map(k => opt("kind", k, k === "all" ? t("全部") : `${kindIcon(k)} ${esc(kindLabel(k))}`, cnt(k))) },
     ...(tags.length ? [{ label: "标签", opts: [opt("tag", "all", t("全部标签")), ...tags.slice(0, 30).map(([x, c]) => opt("tag", x, `#${esc(x)}`, c))] }] : [])];
-  return `<div class="sec-acts-row">${ui.scope === "mine" && S.nt.mine.length ? chipBtn(t("导出 / 打印 / 整理"), 'data-act="note-export"') : ""}${chipBtn(t("AI 设置"), 'data-act="ai-settings"')}</div>
+  return `<div class="sec-acts-row">${ui.scope === "mine" && s.mine ? chipBtn(t("导出 / 打印 / 整理"), 'data-act="note-export" data-fresh="1"') : ""}${chipBtn(t("AI 设置"), 'data-act="ai-settings"')}</div>
   ${fbar({ id: "nt", groups, q: { id: "ntQ", value: ui.q, ph: "搜索笔记" }, add: ui.scope === "mine" ? { attrs: 'data-act="note-add"', label: "笔记" } : null })}
   <div id="ntBody">${bodyHTML()}</div>
   <p class="small muted" style="margin-top:8px">${t("默认只有你自己看得到；每一条可以单独分享给指定的家人（对方只读）。拍照识字的照片不会被保存。")}</p>`;
 }
 /** 切到祷告页的“灵修笔记”子页（今天页、我的页、保存后的跳转都用这个） */
 function openNotes(){
-  S.tab = "prayer"; S.prayerView = "notes"; S.pick = null; S.fpop = null; pg.reset("notes");
+  S.tab = "prayer"; S.prayerView = "notes"; S.pick = null; S.fpop = null;
   closeSheet();   // 有表单开着就先关掉（会重画）；没开就直接重画
   window.scrollTo(0, 0); setTimeout(() => window.scrollTo(0, 0), 60);
 }
-/** 点筛选：scope / kind / tag */
-function setFilter(k, v){ if (k === "month" && !v) return; S.ntUi[k] = v; pg.reset("notes"); if (k === "scope") { S.ntUi.kind = "all"; S.ntUi.tag = "all"; S.ntUi.month = null; } render(); }
-function moreNotes(){ pg.more("notes"); const b = $("#ntBody"); if (b) b.innerHTML = bodyHTML(); }
-/** 搜索框每次输入只重画列表（不然光标会丢） */
-function onSearch(v){ S.ntUi.q = v; pg.reset("notes"); const box = $("#ntBody"); if (box) box.innerHTML = bodyHTML(); }
+/** 换了筛选：向数据库重读统计 + 第一页，回来再画（whole = 整页重画，否则只画列表区，搜索框不丢光标） */
+async function requery(whole){
+  const p = nt.refresh(); if (whole) render(); else redrawBody();
+  if (await p) { if (whole) render(); else redrawBody(); }
+  else if (S.nt.error) render();
+}
+const redrawBody = () => { const b = $("#ntBody"); if (b) b.innerHTML = bodyHTML(); };
+/** 点筛选：scope / kind / tag / month */
+function setFilter(k, v){ if (k === "month" && !v) return; S.ntUi[k] = v; if (k === "scope") { S.ntUi.kind = "all"; S.ntUi.tag = "all"; S.ntUi.month = null; } requery(true); }
+async function moreNotes(){ const p = nt.more(); redrawBody(); await p; redrawBody(); }
+/** 搜索框：停手 300ms 再向数据库查；每次只重画列表（不然光标会丢） */
+const searchLater = debounce(() => requery(false), 300);
+function onSearch(v){ S.ntUi.q = v; searchLater(); }
 
 /* ---------- 看（只读，家人分享给我的）---------- */
 function viewNote(n){
@@ -133,7 +137,7 @@ function noteFields(){
     { k: "quote", label: "摘录的原文（可空）", type: "area", rows: 4 },
     { k: "reflection", type: "html", html: mdEditorHTML },
     { k: "tags", label: "标签（逗号分隔，可空）", type: "text", ph: "信心, 祷告, 管教孩子" },
-    { k: "tagsug", type: "html", html: () => { const tg = tagCounts(S.nt.mine).slice(0, 12); return tg.length ? `<div class="chips" style="margin:0">${tg.map(([x]) => `<button type="button" class="chip" data-act="nt-tag" data-tag="${esc(x)}">#${esc(x)}</button>`).join("")}</div>` : ""; } },
+    { k: "tagsug", type: "html", html: () => { const tg = (st().mytags || []).slice(0, 12); return tg.length ? `<div class="chips" style="margin:0">${tg.map(([x]) => `<button type="button" class="chip" data-act="nt-tag" data-tag="${esc(x)}">#${esc(x)}</button>`).join("")}</div>` : ""; } },
     { k: "day", label: "日期", type: "date" },
     ...(fam.length ? [{ k: "shared_with", label: "分享给（不选 = 只有自己看得到）", type: "multi", raw: true, opts: fam.map(([u, m]) => [u, m.name]), hint: "对方只能看，不能改。随时可以取消。" }]
       : [{ k: "noshare", type: "html", html: () => `<div class="small muted">${S.family ? t("家里没有其他成员，暂时没人可分享。") : t("加入家庭后，可以把某一条分享给指定的家人。")}</div>` }])
@@ -149,8 +153,9 @@ function openNoteForm(n, prefill = {}, { photo = false } = {}){
     if (!f.quote && !f.reflection) { toast(t("摘录和心得至少写一样")); return; }
     const used = !!f.ai_used && !!f.ocr && f.ocr.paragraphs.some(p => hasPara(f.quote, p));
     const d = await nt.saveNote({ ...f, ai_used: used || (!f.ocr && !!f.ai_used), tags: parseTags(f.tags), day: f.day || S.day });
-    S.ntUi.month = String(d.day).slice(0, 7); pg.reset("notes");   // 回到列表时落在这条所在的月份
+    S.ntUi.month = String(d.day).slice(0, 7);   // 回到列表时落在这条所在的月份
     toast(t("记下了"));
+    await nt.refresh();   // 统计 + 这个月的第一页重读完再关表单（关表单会重画）
     closeSheet();
   }, isNew ? null : async () => { if (confirm(t("删除这条笔记？"))) { await nt.deleteNote(n.id); closeSheet(); } });
   if (photo) { const el = $("#ntPhoto"); if (el && !el.disabled) el.click(); else if (!aiReady()) toast(t("先在 设置 → AI 助手 填 key，或直接粘贴文字")); }
@@ -238,9 +243,19 @@ function openNote(id){ const n = nt.note(id); if (!n) return; if (nt.isMine(n)) 
 /* ---------- 导出 / 打印 / AI 整理 ---------- */
 /** 导出范围：有筛选就是筛选结果（跨全部月份），没有就是全部笔记；在月份视图里可以勾“只导出这个月” */
 const monthMode = () => !filtersOn() && curMonth() !== "all";
-const exportList = () => { const all = filterNotes(S.nt.mine, S.ntUi).sort(byNewest); return S.ntUi.exMonth && monthMode() ? all.filter(n => String(n.day).slice(0, 7) === curMonth()) : all; };
+/* 导出要的是范围里的全部笔记，不是列表里已经读到的几页：打开导出时向数据库现读一次（nt.fetchAll，按 1000 行一页读完），
+   在导出页里切 只导出这个月 / 整理方式 / 逐条取消 都用这份；从笔记页再点“导出”才重读。不预先读进内存 */
+let exAll = [];
+const exportList = () => (S.ntUi.exMonth && monthMode() ? exAll.filter(n => String(n.day).slice(0, 7) === curMonth()) : exAll);
 const picked = () => exportList().filter(n => !S.ntUi.off.has(n.id));
-function openExport(){
+async function openExport(fresh = false){
+  if (fresh) {
+    S.ntUi.off.clear();
+    $("#sheetIn").innerHTML = `${head(t("导出 / 打印 / 整理"))}<div class="empty">${t("正在读取…")}</div>`; showSheet();
+    const all = await nt.fetchAll(); if (!all) return;
+    exAll = all;
+    if (!$("#sheet").open) return;   // 读的时候已经关掉了
+  }
   const ui = S.ntUi, list = exportList(), sel = picked();
   const groups = [["date", "按月份"], ["kind", "按类型"], ["tag", "按标签"]];
   $("#sheetIn").innerHTML = `${head(t("导出 / 打印 / 整理"))}
