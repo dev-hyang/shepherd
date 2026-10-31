@@ -1,7 +1,7 @@
--- 牧羊人 · 增量升级 023：给“近 12 周关掉的任务”加索引
+-- 牧羊人 · 增量升级 024：给“近 12 周关掉的任务”加索引
 -- 适用：已执行 015。可重复执行；不删任何数据；不改表结构，只加一个索引；整体在一个事务里。
 -- 这个文件放在 shepherd/docs 里方便复制；baby-log 本机的 supabase/migrations 目录是 .sql 的老家，也可以拷一份过去（那里不进 git）。
--- 编号接着 baby-log 的 022（同一个 Supabase 项目，迁移共用一套编号）；那边如果已经有了 023，拷过去时顺延成下一个号。
+-- 编号接着 baby-log 的 023（entries_type_ts_idx；同一个 Supabase 项目，迁移共用一套编号）。
 --
 -- 为什么：任务页一打开（js/tk.js loadTasks）就读
 --   where user_id = 我 and status <> 'open' and done_at >= 84 天前  order by done_at desc, id

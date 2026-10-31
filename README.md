@@ -46,7 +46,7 @@
 表 `wb_profile` `wb_practices` `wb_logs` `wb_prayers`，建表脚本在 baby-log 仓库本机的 `supabase/migrations/013_shepherd.sql`（不进 git），在 Supabase SQL Editor 里执行一次。
 任务表 `wb_tasks`：脚本在本仓库 `docs/015_shepherd_tasks.sql`，在 Supabase SQL Editor 里执行一次（可重复执行）；没执行时只有“任务”页签提示，其余功能照常。日历订阅要带上任务，需要重新部署一次 `ics` 函数（命令见下）。
 灵修笔记表 `wb_notes`：脚本在本仓库 `docs/016_shepherd_notes.sql`，在 Supabase SQL Editor 里执行一次（可重复执行）；没执行时只有笔记页提示，其余功能照常。每条默认只有本人；可逐条分享给家庭里指定的成员（`shared_with`，对方只读，守卫触发器会丢掉不是同一家庭的 id）。
-性能索引：`docs/023_shepherd_tasks_done_idx.sql` 给“近 12 周关掉的任务”的查询加一个部分索引（只加索引，可重复执行）；不执行也能用，只是任务多了以后打开稍慢。
+性能索引：`docs/024_shepherd_tasks_done_idx.sql` 给“近 12 周关掉的任务”的查询加一个部分索引（只加索引，可重复执行）；不执行也能用，只是任务多了以后打开稍慢。
 AI（拍照识字、整理笔记）：用户自己的 key 存在本机 localStorage，浏览器直连服务商，不经任何服务器；爱家小助手里已填的 key 直接沿用。照片压缩后只在内存里发出去，不保存，数据库里只有用户选定的文字。
 测试：`node --test tests/*.test.mjs`（纯逻辑和 AI 调用层，不需要网络）。
 行级权限：本人读写；`share = 'family'` 的习惯和打卡，家庭成员只读。
