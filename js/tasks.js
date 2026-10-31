@@ -3,6 +3,7 @@ import { S } from "./core/state.js";
 import { esc, newId, pad, toast } from "./core/util.js";
 import { WEEKDAY, kindOf } from "./data/kinds.js";
 import { addDays, addMonths, diffDays, periodEnd, recurText, weekStart, wdOf } from "./recur.js";
+import * as pg from "./pager.js";
 import { closeSheet, openForm, openInfo } from "./sheet.js";
 import * as tk from "./tk.js";
 import { chipBtn, fbar, pageHead, secHead } from "./ui.js";
@@ -164,13 +165,21 @@ function listView(){
   const f = ui(), q = f.q.trim().toLowerCase();
   const ok = x => (f.prio === "all" || (f.prio === "hi" ? x.prio === 3 : x.prio >= 1)) && (f.cat === "all" || x.cat === f.cat) && (!q || `${x.title}${x.note}`.toLowerCase().includes(q));
   const all = tk.open(), mine = all.filter(ok), cats = tk.cats();
-  const groups = cats.map(c => {
-    const own = mine.filter(x => x.cat === c.id); if (!own.length) return "";
-    const subs = (c.subs || []).map(s => ({ s, list: own.filter(x => x.sub === s.id) })).filter(g => g.list.length), loose = own.filter(x => !x.sub || !(c.subs || []).some(s => s.id === x.sub));
-    const sorted = list => [...list].sort((a, b) => ((a.due || "9999") < (b.due || "9999") ? -1 : 1) || b.prio - a.prio);
+  const sorted = list => [...list].sort((a, b) => ((a.due || "9999") < (b.due || "9999") ? -1 : 1) || b.prio - a.prio);
+  // 先按完整结果分好组（组里的件数照旧是全部），再按“大类 → 不分小类的 → 各小类”的顺序只画前 limit 条；整组都没轮到的连标题一起不画
+  const tree = cats.map(c => {
+    const own = mine.filter(x => x.cat === c.id);
+    const subs = (c.subs || []).map(s => ({ s, list: sorted(own.filter(x => x.sub === s.id)) })).filter(g => g.list.length), loose = sorted(own.filter(x => !x.sub || !(c.subs || []).some(s => s.id === x.sub)));
+    return { c, own, loose, subs };
+  }).filter(g => g.own.length);
+  let left = pg.limit("tkList");
+  const take = list => { const r = list.slice(0, Math.max(0, left)); left -= r.length; return r; };
+  const groups = tree.map(({ c, own, loose, subs }) => {
+    if (left <= 0) return "";
+    const lo = take(loose), ss = subs.map(g => ({ ...g, part: take(g.list) })).filter(g => g.part.length);
     return `<details class="lib-group" open><summary><span style="color:${c.color}">${c.icon}</span> <b>${esc(tk.catName(c))}</b> <span class="small muted">${t("{n} 件", { n: own.length })}</span></summary>
-      ${loose.length ? `<div class="panel" style="padding:4px 10px">${rows(sorted(loose), { showDue: true })}</div>` : ""}
-      ${subs.map(g => `<h3 class="tk-h" style="margin:8px 4px 2px">${esc(tk.subName(c, g.s))} <span class="muted small">${g.list.length}</span></h3><div class="panel" style="padding:4px 10px">${rows(sorted(g.list), { showDue: true })}</div>`).join("")}</details>`;
+      ${lo.length ? `<div class="panel" style="padding:4px 10px">${rows(lo, { showDue: true })}</div>` : ""}
+      ${ss.map(g => `<h3 class="tk-h" style="margin:8px 4px 2px">${esc(tk.subName(c, g.s))} <span class="muted small">${g.list.length}</span></h3><div class="panel" style="padding:4px 10px">${rows(g.part, { showDue: true })}</div>`).join("")}</details>`;
   }).join("");
   const opt = (key, v, label, on, count) => ({ label, attrs: `data-tkf="${key}" data-v="${esc(v)}"`, on, count });
   const bar = fbar({ id: "tk", q: { id: "tkQ", value: f.q, ph: "搜索任务" }, add: { attrs: 'data-act="tk-new"', label: "任务" },
@@ -178,15 +187,16 @@ function listView(){
       { label: "优先级", opts: [["all", "全部"], ["any", "有优先级"], ["hi", "只看高"]].map(([v, l]) => opt("prio", v, t(l), f.prio === v)) },
       { label: "分类", opts: [opt("cat", "all", t("全部"), f.cat === "all", all.length), ...cats.filter(c => all.some(x => x.cat === c.id)).map(c => opt("cat", c.id, `${c.icon} ${esc(tk.catName(c))}`, f.cat === c.id, all.filter(x => x.cat === c.id).length))] }],
     extra: chipBtn(t("管理分类"), 'data-act="tk-cats"') });
-  return `${bar}${groups || `<div class="empty">${t("没有符合条件的任务。")}</div>`}`;
+  return `${bar}${groups || `<div class="empty">${t("没有符合条件的任务。")}</div>`}${pg.moreBtn("tkList", mine.length)}`;
 }
 
 /* ---- 已完成 ---- */
 function doneView(){
   const logs = tk.doneLogs(), dropped = S.tk.items.filter(x => x.status === "dropped").sort((a, b) => (b.done_at || "").localeCompare(a.done_at || ""));
   return `<h3 class="tk-h">${t("最近完成（12 周内）")}</h3>
-  <div class="panel" style="padding:4px 10px">${logs.length ? logs.slice(0, 80).map(l => `<div class="habit done"><span class="hi" style="background:var(--sage-soft);color:var(--sage)">✓</span><span class="main"><span class="title">${esc(l.data.title || "")}</span><span class="meta">${l.day}${l.data.cat ? ` · ${esc(tk.catLabel({ cat: l.data.cat, sub: l.data.sub }))}` : ""}</span></span><span class="acts"><button class="chip" data-act="tk-undo-log" data-lid="${esc(l.id)}">${t("撤销")}</button></span></div>`).join("") : `<div class="empty">${t("还没有完成的任务。")}</div>`}</div>
-  ${dropped.length ? `<h3 class="tk-h">${t("放弃的")}</h3><div class="panel" style="padding:4px 10px">${dropped.map(x => `<div class="habit done" data-swipe-del="dropped-task"><span class="hi">⌀</span><span class="main"><span class="title">${esc(x.title)}</span><span class="meta">${(x.done_at || "").slice(0, 10)}</span></span><span class="acts"><button class="chip" data-act="tk-reopen" data-tid="${esc(x.id)}">${t("重新打开")}</button><button class="chip swipe-src" data-act="tk-del" data-tid="${esc(x.id)}">${t("删除")}</button></span></div>`).join("")}</div>` : ""}`;
+  <div class="panel" style="padding:4px 10px">${logs.length ? pg.page("tkDone", logs).map(l => `<div class="habit done"><span class="hi" style="background:var(--sage-soft);color:var(--sage)">✓</span><span class="main"><span class="title">${esc(l.data.title || "")}</span><span class="meta">${l.day}${l.data.cat ? ` · ${esc(tk.catLabel({ cat: l.data.cat, sub: l.data.sub }))}` : ""}</span></span><span class="acts"><button class="chip" data-act="tk-undo-log" data-lid="${esc(l.id)}">${t("撤销")}</button></span></div>`).join("") : `<div class="empty">${t("还没有完成的任务。")}</div>`}</div>
+  ${pg.moreBtn("tkDone", logs.length)}
+  ${dropped.length ? `<h3 class="tk-h">${t("放弃的")}</h3><div class="panel" style="padding:4px 10px">${pg.page("tkDropped", dropped).map(x => `<div class="habit done" data-swipe-del="dropped-task"><span class="hi">⌀</span><span class="main"><span class="title">${esc(x.title)}</span><span class="meta">${(x.done_at || "").slice(0, 10)}</span></span><span class="acts"><button class="chip" data-act="tk-reopen" data-tid="${esc(x.id)}">${t("重新打开")}</button><button class="chip swipe-src" data-act="tk-del" data-tid="${esc(x.id)}">${t("删除")}</button></span></div>`).join("")}</div>${pg.moreBtn("tkDropped", dropped.length)}` : ""}`;
 }
 
 /* ---- 任务页 ---- */

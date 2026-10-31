@@ -7,6 +7,7 @@ import { memberName } from "./core/auth.js";
 import { PROVIDERS, aiReady, aiSettings, askText, providerOf, saveAiSettings, testAi } from "./ai.js";
 import { NOTE_KINDS, monthsOf, onThisDay, OCR_SYSTEM, OCR_USER, PURPOSES, byNewest, compilePrompt, filterNotes, groupNotes, joinQuote, meta, noteHeading, parseOcr, parseTags, tagCounts, toMarkdown } from "./notes-lib.js";
 import * as nt from "./nt.js";
+import * as pg from "./pager.js";
 import { chipBtn, fbar } from "./ui.js";
 import { render } from "./views.js";
 import { closeSheet, drawForm, getForm, head, openForm, openInfo, readForm, showSheet } from "./sheet.js";
@@ -15,8 +16,8 @@ import * as wb from "./wb.js";
 /* ============ 灵修笔记：随手记 / 拍照识字 / 筛选查找 / 导出打印 / 分享给家人 / AI 整理 ============
    四种：读书心得、读经领受、遇到的问题、圣灵感动。拍照识字的原图只在内存里过一下，识别完就丢，不保存；
    识别出的段落由你点选要留哪几段，再写自己的心得。默认只有自己看得到，可以逐条分享给指定的家人（只读）。 */
-const PAGE = 30;   // 一次最多画多少条，其余点“显示更多”
-S.ntUi = { q: "", kind: "all", tag: "all", scope: "mine", group: "date", off: new Set(), month: null, limit: PAGE, exMonth: false };
+// 一次画多少条走全应用的“每页条数”（pager.js），其余点“继续加载”
+S.ntUi = { q: "", kind: "all", tag: "all", scope: "mine", group: "date", off: new Set(), month: null, exMonth: false };
 
 const kindLabel = k => t((NOTE_KINDS[k] || NOTE_KINDS.reading).label);
 const kindIcon = k => (NOTE_KINDS[k] || NOTE_KINDS.reading).icon;
@@ -27,7 +28,7 @@ const fileStamp = () => new Date().toISOString().slice(0, 10);
 
 /* ---------- 列表 ---------- */
 const current = () => (S.ntUi.scope === "shared" ? S.nt.shared : S.nt.mine);
-/* 翻页规则：没有任何筛选（搜索 / 类型 / 标签）时按月翻页；有筛选就跨全部月份找，结果分页显示 */
+/* 翻页规则：没有任何筛选（搜索 / 类型 / 标签）时按月翻页，月内再分批显示；有筛选就跨全部月份找，结果分批显示 */
 const filtersOn = () => !!(S.ntUi.q.trim() || S.ntUi.kind !== "all" || S.ntUi.tag !== "all");
 /** 当前月份："all" 或 "YYYY-MM"；没选过就是最新有笔记的那个月 */
 function curMonth(){
@@ -37,7 +38,7 @@ function curMonth(){
   return ms.length ? ms[0][0] : "all";
 }
 const matched = () => { const all = filterNotes(current(), S.ntUi).sort(byNewest), m = curMonth(); return !filtersOn() && m !== "all" ? all.filter(n => String(n.day).slice(0, 7) === m) : all; };
-const shown = () => matched().slice(0, S.ntUi.limit);
+const shown = () => pg.page("notes", matched());
 const monthLabel = ym => t("{y} 年 {m} 月", { y: ym.slice(0, 4), m: +ym.slice(5, 7) });
 function rowHTML(n){
   const mine = nt.isMine(n), n_sh = (n.shared_with || []).length;
@@ -64,8 +65,7 @@ function otdHTML(max = 3){
   return `<div class="panel otd" style="padding:4px 10px;margin-bottom:10px"><div class="glabel">🗓 ${t("历史上的今天")}</div>${list.slice(0, max).map(rowHTML).join("")}${list.length > max ? `<div class="small muted" style="padding:4px 6px">${t("还有 {n} 条", { n: list.length - max })}</div>` : ""}</div>`;
 }
 function bodyHTML(){
-  const total = matched().length, more = total - shown().length;
-  return `${otdHTML()}${navHTML()}<div class="panel" id="ntList" style="padding:4px 10px">${listHTML()}</div>${more > 0 ? `<div class="btns" style="margin-top:8px"><button class="btn" data-act="nt-more">${t("显示更多（还有 {n} 条）", { n: more })}</button></div>` : ""}`;
+  return `${otdHTML()}${navHTML()}<div class="panel" id="ntList" style="padding:4px 10px">${listHTML()}</div>${pg.moreBtn("notes", matched().length)}`;
 }
 function listHTML(){
   const list = shown();
@@ -91,15 +91,15 @@ function viewNotes(){
 }
 /** 切到祷告页的“灵修笔记”子页（今天页、我的页、保存后的跳转都用这个） */
 function openNotes(){
-  S.tab = "prayer"; S.prayerView = "notes"; S.pick = null; S.fpop = null;
+  S.tab = "prayer"; S.prayerView = "notes"; S.pick = null; S.fpop = null; pg.reset("notes");
   closeSheet();   // 有表单开着就先关掉（会重画）；没开就直接重画
   window.scrollTo(0, 0); setTimeout(() => window.scrollTo(0, 0), 60);
 }
 /** 点筛选：scope / kind / tag */
-function setFilter(k, v){ if (k === "month" && !v) return; S.ntUi[k] = v; S.ntUi.limit = PAGE; if (k === "scope") { S.ntUi.kind = "all"; S.ntUi.tag = "all"; S.ntUi.month = null; } render(); }
-function moreNotes(){ S.ntUi.limit += PAGE; const b = $("#ntBody"); if (b) b.innerHTML = bodyHTML(); }
+function setFilter(k, v){ if (k === "month" && !v) return; S.ntUi[k] = v; pg.reset("notes"); if (k === "scope") { S.ntUi.kind = "all"; S.ntUi.tag = "all"; S.ntUi.month = null; } render(); }
+function moreNotes(){ pg.more("notes"); const b = $("#ntBody"); if (b) b.innerHTML = bodyHTML(); }
 /** 搜索框每次输入只重画列表（不然光标会丢） */
-function onSearch(v){ S.ntUi.q = v; S.ntUi.limit = PAGE; const box = $("#ntBody"); if (box) box.innerHTML = bodyHTML(); }
+function onSearch(v){ S.ntUi.q = v; pg.reset("notes"); const box = $("#ntBody"); if (box) box.innerHTML = bodyHTML(); }
 
 /* ---------- 看（只读，家人分享给我的）---------- */
 function viewNote(n){
@@ -149,7 +149,7 @@ function openNoteForm(n, prefill = {}, { photo = false } = {}){
     if (!f.quote && !f.reflection) { toast(t("摘录和心得至少写一样")); return; }
     const used = !!f.ai_used && !!f.ocr && f.ocr.paragraphs.some(p => hasPara(f.quote, p));
     const d = await nt.saveNote({ ...f, ai_used: used || (!f.ocr && !!f.ai_used), tags: parseTags(f.tags), day: f.day || S.day });
-    S.ntUi.month = String(d.day).slice(0, 7); S.ntUi.limit = PAGE;   // 回到列表时落在这条所在的月份
+    S.ntUi.month = String(d.day).slice(0, 7); pg.reset("notes");   // 回到列表时落在这条所在的月份
     toast(t("记下了"));
     closeSheet();
   }, isNew ? null : async () => { if (confirm(t("删除这条笔记？"))) { await nt.deleteNote(n.id); closeSheet(); } });

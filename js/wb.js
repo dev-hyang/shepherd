@@ -1,7 +1,7 @@
 import { SB, memberName } from "./core/auth.js";
 import { locale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
-import { D, dayKey, newId, toast } from "./core/util.js";
+import { D, dayKey, newId, readPaged, toast } from "./core/util.js";
 import { fetchChapter } from "./data/bible.js";
 import { ALL_DAYS, TEMPLATE, modeOf } from "./data/kinds.js";
 import { bookZh, planById } from "./data/plans.js";
@@ -33,35 +33,41 @@ async function loadAll(){
   let tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
   const lang = locale(); // 日历订阅按这个语言生成事件标题
   const famId = S.family ? S.family.id : null;
-  let r = await SB.client.from("wb_profile").select("*").eq("user_id", me()).maybeSingle();
-  if (r.error) { console.error(r.error); S.wb.error = missingTable(r.error) ? "missing" : "error"; return; }
-  let prof = r.data;
-  if (!prof) {
-    r = await SB.client.from("wb_profile").insert({ user_id: me(), family_id: famId, settings: { tz, lang } }).select().single();
-    if (r.error) { console.error(r.error); S.wb.error = "error"; return; }
-    prof = r.data;
-  } else if (prof.family_id !== famId || (tz && prof.settings.tz !== tz) || prof.settings.lang !== lang) {
-    // 家庭变了（加入 / 离开）、换了时区或界面语言：日历订阅按这里的设置生成
-    r = await SB.client.from("wb_profile").update({ family_id: famId, settings: { ...prof.settings, tz: tz || prof.settings.tz, lang } }).eq("user_id", me()).select().single();
-    if (!r.error) prof = r.data;
-  }
+  // 个人设置那一行（没有就建、家庭 / 时区 / 语言变了就改）；其余的读取不依赖它，一起发出去
+  const profile = async () => {
+    let r = await SB.client.from("wb_profile").select("*").eq("user_id", me()).maybeSingle();
+    if (r.error) return { error: r.error };
+    let prof = r.data;
+    if (!prof) {
+      r = await SB.client.from("wb_profile").insert({ user_id: me(), family_id: famId, settings: { tz, lang } }).select().single();
+      if (r.error) return { error: r.error, insert: true };
+      prof = r.data;
+    } else if (prof.family_id !== famId || (tz && prof.settings.tz !== tz) || prof.settings.lang !== lang) {
+      // 家庭变了（加入 / 离开）、换了时区或界面语言：日历订阅按这里的设置生成
+      r = await SB.client.from("wb_profile").update({ family_id: famId, settings: { ...prof.settings, tz: tz || prof.settings.tz, lang } }).eq("user_id", me()).select().single();
+      if (!r.error) prof = r.data;
+    }
+    return { data: prof };
+  };
   const from = dayAdd(today(), -HISTORY_DAYS);
-  const rs = await Promise.all([
+  // 打卡记录（12 周）和祷告清单可能超过 1000 行：分页读完（readPaged），排序带唯一键兜底
+  const [pr, ...rs] = await Promise.all([
+    profile(),
     SB.client.from("wb_practices").select("*").eq("user_id", me()).order("sort"),
-    SB.client.from("wb_logs").select("*").eq("user_id", me()).gte("day", from),
-    SB.client.from("wb_prayers").select("*").eq("user_id", me()).order("sort")
+    readPaged(() => SB.client.from("wb_logs").select("*").eq("user_id", me()).gte("day", from).order("day").order("id")),
+    readPaged(() => SB.client.from("wb_prayers").select("*").eq("user_id", me()).order("sort").order("id")),
+    ...(famId ? [
+      SB.client.from("wb_practices").select("*").eq("family_id", famId).eq("share", "family").neq("user_id", me()),
+      readPaged(() => SB.client.from("wb_logs").select("*").eq("family_id", famId).eq("share", "family").neq("user_id", me()).gte("day", dayAdd(today(), -7)).order("day").order("user_id").order("id"))
+    ] : [])
   ]);
-  const bad = rs.find(x => x.error);
+  if (pr.error) { console.error(pr.error); S.wb.error = !pr.insert && missingTable(pr.error) ? "missing" : "error"; return; }
+  const prof = pr.data, fr = rs.slice(3);
+  const bad = rs.slice(0, 3).find(x => x.error);
   if (bad) { console.error(bad.error); S.wb.error = missingTable(bad.error) ? "missing" : "error"; return; }
   S.wb.profile = prof; S.wb.practices = rs[0].data || []; S.wb.logs = rs[1].data || []; S.wb.prayers = rs[2].data || [];
   S.wb.fam = { practices: [], logs: [] };
-  if (famId) {
-    const fr = await Promise.all([
-      SB.client.from("wb_practices").select("*").eq("family_id", famId).eq("share", "family").neq("user_id", me()),
-      SB.client.from("wb_logs").select("*").eq("family_id", famId).eq("share", "family").neq("user_id", me()).gte("day", dayAdd(today(), -7))
-    ]);
-    if (!fr.some(x => x.error)) S.wb.fam = { practices: fr[0].data || [], logs: fr[1].data || [] };
-  }
+  if (fr.length && !fr.some(x => x.error)) S.wb.fam = { practices: fr[0].data || [], logs: fr[1].data || [] };
   // 换了家庭：以前开给旧家庭看的项，重新盖上现在的家庭（没有家庭就收回）
   for (const p of S.wb.practices.filter(p => p.share === "family" && p.family_id !== famId)) await upsertPractice({ ...p, share: famId ? "family" : "private" });
   S.wb.loaded = true;

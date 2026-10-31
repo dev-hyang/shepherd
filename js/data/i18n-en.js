@@ -452,7 +452,7 @@ const EN = {
   "选择月份": "Choose month",
   "历史上的今天": "On this day",
   "还有 {n} 条": "{n} more",
-  "显示更多（还有 {n} 条）": "Show more ({n} left)",
+  "继续加载": "Load more", "列表每次显示": "List items per page", "{n} 条": "{n}",
   "只导出 {m}": "Export only {m}",
   "范围 = 笔记页当前的筛选结果（类型、标签、搜索）；没有筛选就是全部笔记。下面可以逐条取消。已选 {a} / {b} 条。": "Scope = the notes page's current filter (type, tag, search); with no filter, all notes. Untick any below. {a} of {b} selected.",
   /* Markdown 心得 */

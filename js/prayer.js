@@ -3,6 +3,7 @@ import { S } from "./core/state.js";
 import { esc } from "./core/util.js";
 import { PRAYER_CATS } from "./data/kinds.js";
 import { viewNotes } from "./notes.js";
+import * as pg from "./pager.js";
 import { fbar, pageHead } from "./ui.js";
 import * as wb from "./wb.js";
 
@@ -40,7 +41,8 @@ function viewPray(){
   </div>
   <div class="btns" style="margin-top:12px">${todayLogs.length ? `<button class="btn" data-act="pray-today-undo">${t("今天祷告了 ✓ · 撤销一次")}</button><button class="btn primary" data-act="pray-today">${t("再记一次")}</button>` : `<button class="btn primary" data-act="pray-today">${t("今天祷告了")}</button>`}</div>
   ${bar}
-  <div class="panel" style="padding:4px 10px">${list.length ? list.map(row).join("") : `<div class="empty">${all.length ? t("这个筛选下没有事项。") : t("写下为谁、为什么祷告。应允了就记下来，成为日后的见证。")}</div>`}</div>
+  <div class="panel" style="padding:4px 10px">${list.length ? pg.page("prayers", list).map(row).join("") : `<div class="empty">${all.length ? t("这个筛选下没有事项。") : t("写下为谁、为什么祷告。应允了就记下来，成为日后的见证。")}</div>`}</div>
+  ${pg.moreBtn("prayers", list.length)}
   <p class="small muted" style="margin-top:8px">${t("清单只有你自己看得到。“祷告了”记在事项上；“今天祷告了”记在祷告习惯上，开给家人看时也只有做了没有。")}</p>`;
 }
 

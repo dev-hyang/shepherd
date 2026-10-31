@@ -1,7 +1,7 @@
 import { SB } from "./core/auth.js";
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
-import { newId, toast } from "./core/util.js";
+import { newId, readPaged, toast } from "./core/util.js";
 import { DEFAULT_CATS, KIND_CAT } from "./data/taskcats.js";
 import { addDays, diffDays, expand, nextDue, periodEnd, periodStart } from "./recur.js";
 import * as wb from "./wb.js";
@@ -23,15 +23,16 @@ const tsFor = day => (day === S.day ? nowIso() : new Date(day + "T12:00:00").toI
 
 async function loadTasks(){
   S.tk.loaded = false; S.tk.error = null;
-  const open = await SB.client.from("wb_tasks").select("*").eq("user_id", me()).eq("status", "open");
+  // 三个查询互不依赖，同时发；自己的未完成 / 近 12 周关掉的可能超过 1000 行，分页读完（排序带 id 兜底，翻页不漏不重）
+  const since = new Date(Date.now() - wb.HISTORY_DAYS * 864e5).toISOString();
+  const [open, closed, fr] = await Promise.all([
+    readPaged(() => SB.client.from("wb_tasks").select("*").eq("user_id", me()).eq("status", "open").order("id")),
+    readPaged(() => SB.client.from("wb_tasks").select("*").eq("user_id", me()).neq("status", "open").gte("done_at", since).order("done_at", { ascending: false }).order("id")),
+    S.family ? SB.client.from("wb_tasks").select("*").eq("family_id", S.family.id).eq("share", "family").neq("user_id", me()).eq("status", "open").gte("due", addDays(S.day, -1)) : null
+  ]);
   if (open.error) { console.error(open.error); S.tk.error = missingTable(open.error) ? "missing" : "error"; return; }
-  const closed = await SB.client.from("wb_tasks").select("*").eq("user_id", me()).neq("status", "open").gte("done_at", new Date(Date.now() - wb.HISTORY_DAYS * 864e5).toISOString());
   S.tk.items = [...(open.data || []), ...(closed.data || [])];
-  S.tk.fam = [];
-  if (S.family) {
-    const fr = await SB.client.from("wb_tasks").select("*").eq("family_id", S.family.id).eq("share", "family").neq("user_id", me()).eq("status", "open").gte("due", addDays(S.day, -1));
-    if (!fr.error) S.tk.fam = fr.data || [];
-  }
+  S.tk.fam = fr && !fr.error ? fr.data || [] : [];
   S.tk.loaded = true;
 }
 function attachRealtime(ch, onChange){

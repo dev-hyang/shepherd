@@ -6,6 +6,7 @@ import { S } from "./core/state.js";
 import { $, esc } from "./core/util.js";
 import { ALL_DAYS, KINDS, WEEKDAY, kindOf, modeOf } from "./data/kinds.js";
 import { PLANS } from "./data/plans.js";
+import { SIZES as PAGE_SIZES, pageSize } from "./pager.js";
 import { fbar } from "./ui.js";
 import { render } from "./views.js";
 import { usageHTML } from "./usage.js";
@@ -245,6 +246,8 @@ function openSettings(){
 
   <h2>${t("显示")}</h2>
   <div class="seg" role="group" aria-label="${t("外观")}">${[["", t("跟随系统")], ["light", t("浅色")], ["dark", t("深色")]].map(([v, l]) => `<button data-theme-set="${v}" aria-pressed="${themePref() === v}">${esc(l)}</button>`).join("")}</div>
+  <div class="small muted" style="margin:12px 0 6px">${t("列表每次显示")}</div>
+  <div class="seg" role="group" aria-label="${t("列表每次显示")}">${PAGE_SIZES.map(n => `<button data-page-size="${n}" aria-pressed="${pageSize() === n}">${esc(t("{n} 条", { n }))}</button>`).join("")}</div>
   <p class="small muted" style="margin-top:24px">${t("版本")} ${APP_VERSION}</p>`;
   showSheet();
 }

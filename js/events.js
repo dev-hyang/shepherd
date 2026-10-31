@@ -1,9 +1,9 @@
-import { recheckWaiting, sbApprove, sbCloseInvite, sbReject, sbResetInvite, sbAuth, sbFamily, sbLink, sbLogout } from "./core/auth.js";
+import { loadData, recheckWaiting, sbApprove, sbCloseInvite, sbReject, sbResetInvite, sbAuth, sbFamily, sbLink, sbLogout } from "./core/auth.js";
 import { bkAct, bkChange } from "./backup.js";
 import { LS_PREFIX } from "./core/config.js";
 import { setLocale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
-import { $, esc, hm, toast } from "./core/util.js";
+import { $, debounce, esc, hm, toast } from "./core/util.js";
 import { EXERCISE_TYPES, PRAYER_CATS, RATINGS, kindOf } from "./data/kinds.js";
 import { parsePlan } from "./data/plans.js";
 import { openAbout } from "./about.js";
@@ -13,8 +13,8 @@ import { closeSheet, drawForm, getForm, head, openCalendar, openForm, openHabits
 import { backTo, render } from "./views.js";
 import * as wb from "./wb.js";
 import * as tkm from "./tk.js";
-import * as nt from "./nt.js";
 import * as nts from "./notes.js";
+import * as pg from "./pager.js";
 import { closePop, togglePop } from "./ui.js";
 import { editCat, openCats, openMit, openTaskForm, resetCats, shiftPlan, startTidy } from "./tasks.js";
 
@@ -33,6 +33,8 @@ document.addEventListener("change", ev => { if (ev.target && ev.target.id === "p
 document.addEventListener("change", ev => { bkChange(ev); });   // 备份设置 / 选了备份文件
 
 // 任务：快速添加表单、清单的筛选 / 搜索（搜索框每次重画后把光标放回去）
+// 搜索框：状态马上记下、回到第一页，停手约 200ms 再重画整页（重画后把光标放回去），不再每敲一个字就重画一次
+const redrawSearch = debounce(id => { render(); const i = $("#" + id); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 200);
 document.addEventListener("submit", async ev => {
   if (ev.target && ev.target.id === "askForm") { ev.preventDefault(); await askAct("ask-send", ev.target); return; }   // 咩咩咩（js/ask.js）
   if (!ev.target || ev.target.id !== "tkQuickForm") return;
@@ -42,31 +44,33 @@ document.addEventListener("submit", async ev => {
   try { const x = await tkm.quickAdd(v, wb.viewDay()); render(); if (x) toast(x.due ? t("已加到 {d}", { d: x.due }) : t("已放进收件箱")); } catch (e) { inp.disabled = false; }
   requestAnimationFrame(() => { const i = $("#tkQuick"); if (i) i.focus(); });
 });
-document.addEventListener("change", ev => { if (ev.target && ev.target.id === "tkPrio") { S.tkUi.prio = ev.target.value; render(); } });
+document.addEventListener("change", ev => { if (ev.target && ev.target.id === "tkPrio") { S.tkUi.prio = ev.target.value; pg.reset("tkList"); render(); } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "f_reflection") nts.growText(); });
-document.addEventListener("input", ev => { if (ev.target && ev.target.id === "prayQ") { S.prayerFilter.q = ev.target.value; render(); const i = $("#prayQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
+document.addEventListener("input", ev => { if (ev.target && ev.target.id === "prayQ") { S.prayerFilter.q = ev.target.value; pg.reset("prayers"); redrawSearch("prayQ"); } });
 document.addEventListener("click", ev => { if (S.fpop && !ev.target.closest(".fbar-wrap")) closePop(); });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "habQ") { S.habitsQ = ev.target.value; openHabits(); const i = $("#habQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "ntQ") nts.onSearch(ev.target.value); });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntMonth") nts.setFilter("month", ev.target.value); });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntPhoto") { const fs = [...ev.target.files]; ev.target.value = ""; nts.onPhotos(fs); } });
-document.addEventListener("input", ev => { if (ev.target && ev.target.id === "tkQ") { S.tkUi.q = ev.target.value; render(); const i = $("#tkQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
+document.addEventListener("input", ev => { if (ev.target && ev.target.id === "tkQ") { S.tkUi.q = ev.target.value; pg.reset("tkList"); redrawSearch("tkQ"); } });
 
 document.addEventListener("click", async ev => {
   const btn = ev.target.closest("button"); if (!btn) return;
   const d = btn.dataset;
   if (d.fpop) { togglePop(d.fpop); return; }
   if (d.scroll) { const el = document.getElementById(d.scroll); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
-  if (d.pview) { S.prayerView = d.pview; S.fpop = null; render(); return; }
-  if (d.tkf) { S.tkUi[d.tkf] = d.v; render(); return; }
+  if (d.pagerMore) { if (d.pagerMore === "notes") nts.moreNotes(); else { pg.more(d.pagerMore); render(); } return; }   // 继续加载（js/pager.js）
+  if (d.pview) { S.prayerView = d.pview; S.fpop = null; pg.reset("prayers", "notes"); render(); return; }
+  if (d.tkf) { S.tkUi[d.tkf] = d.v; pg.reset("tkList"); render(); return; }
   if (d.act === "nav-back") d.tab = backTo(d.parent);   // 返回：上一页，没有就上一层
-  if (d.tab) { close(); S.fpop = null; S.tab = d.tab; S.pick = null; render(); window.scrollTo(0, 0); return; }
+  if (d.tab) { close(); S.fpop = null; S.tab = d.tab; S.pick = null; pg.resetAll(); render(); window.scrollTo(0, 0); return; }
   if (d.copy) { try { await navigator.clipboard.writeText(d.copy); toast(t("已复制")); } catch (e) { toast(t("请手动复制：") + d.copy); } return; }
   if (d.themeSet !== undefined) { if (d.themeSet) document.documentElement.dataset.theme = d.themeSet; else delete document.documentElement.dataset.theme; try { localStorage.setItem(LS_PREFIX + ".theme", d.themeSet); } catch (e) {} openSettings(); return; }
+  if (d.pageSize) { pg.setPageSize(+d.pageSize); render(); openSettings(); return; }   // 设置 → 显示 → 列表每次显示
   if (d.localeSet !== undefined) { setLocale(d.localeSet); render(); openSettings(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: d.localeSet }).catch(() => {}); return; }
   // generic form controls
   if (d.seg) { readForm(); const dr = getForm().draft; dr[d.seg] = d.v; if (d.seg === "cat") dr.sub = ""; drawForm(); return; }   // 换大类：小类清空重选
-  if (d.tks) { S.tkUi.seg = d.tks; render(); return; }
+  if (d.tks) { S.tkUi.seg = d.tks; pg.reset("tkList", "tkDone", "tkDropped"); render(); return; }
   if (d.tkr) { S.tkUi.range = d.tkr; render(); return; }
   if (d.multi) { readForm(); const f = getForm().draft, cur = (f[d.multi] || []).map(String); f[d.multi] = cur.includes(d.v) ? cur.filter(x => x !== d.v) : [...cur, d.v]; drawForm(); return; }
   // chips with their own data attributes
@@ -75,8 +79,8 @@ document.addEventListener("click", async ev => {
   if (d.plan) { await wb.choosePlan(d.plan); openPlan(); toast(t("已切换读经计划")); return; }
   if (d.verZh !== undefined) { await wb.saveSettings({ versionZh: d.verZh }); openPlan(); return; }
   if (d.verEn !== undefined) { await wb.saveSettings({ versionEn: d.verEn }); openPlan(); return; }
-  if (d.pfStatus) { S.prayerFilter.status = d.pfStatus; render(); return; }
-  if (d.pfCat) { S.prayerFilter.cat = d.pfCat; render(); return; }
+  if (d.pfStatus) { S.prayerFilter.status = d.pfStatus; pg.reset("prayers"); render(); return; }
+  if (d.pfCat) { S.prayerFilter.cat = d.pfCat; pg.reset("prayers"); render(); return; }
   if (d.range) { S.review.range = d.range; render(); return; }
   if (d.metric) { S.review.metric = d.metric; render(); return; }
 
@@ -113,7 +117,7 @@ document.addEventListener("click", async ev => {
       case "cat-add": editCat(null); break;
       case "cat-edit": editCat(d.cid); break;
       case "cat-reset": await resetCats(); break;
-      case "tk-open-list": S.tab = "tasks"; S.tkUi.seg = "list"; S.fpop = null; render(); window.scrollTo(0, 0); break;
+      case "tk-open-list": S.tab = "tasks"; S.tkUi.seg = "list"; S.fpop = null; pg.reset("tkList"); render(); window.scrollTo(0, 0); break;
       case "nudge-set": { const k = d.k, v = d.v; await tkm.saveNudge({ [k]: k === "eveningAt" ? v : k === "capacityH" ? +v : k === "remind" ? JSON.parse(v) : v === "1" }); openSettings(); break; }
 
       case "about": openAbout(); break;
@@ -209,7 +213,6 @@ document.addEventListener("click", async ev => {
       case "nt-pick-all": nts.pickAll(true); break;
       case "nt-pick-none": nts.pickAll(false); break;
       case "nt-tag": nts.addTag(d.tag); break;
-      case "nt-more": nts.moreNotes(); break;
       case "nt-exmonth": nts.toggleExMonth(); break;
       case "note-export": nts.openExport(); break;
       case "nt-x": nts.toggleExport(d.id); break;
@@ -238,8 +241,12 @@ const prayerFields = () => [
   { k: "category", label: "分类", type: "seg", opts: Object.entries(PRAYER_CATS) }];
 
 document.addEventListener("keydown", e => { if (e.key === "Escape") { if (S.fpop) closePop(); else if ($("#sheet").open && !nts.exitFull()) closeSheet(); } });
+// 切回前台：上次成功读取不到 60 秒就不整页重读（这期间有实时通知保持数据新鲜）
+const RELOAD_GAP = 60e3;
 document.addEventListener("visibilitychange", async () => {
-  if (document.visibilityState === "visible" && S.cloud === "ready" && S.wb.loaded && !$("#sheet").open) { await wb.loadAll(); try { await tkm.loadTasks(); } catch (e) { console.error(e); } try { await nt.loadNotes(); } catch (e) { console.error(e); } render(); }
+  if (document.visibilityState !== "visible" || S.cloud !== "ready" || !S.wb.loaded || $("#sheet").open) return;
+  if (S.loadedAt && Date.now() - S.loadedAt < RELOAD_GAP) return;
+  await loadData(); render();
 });
 export { showSheet, head, kindOf, RATINGS };
 

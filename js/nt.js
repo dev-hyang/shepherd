@@ -1,7 +1,7 @@
 import { SB } from "./core/auth.js";
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
-import { newId, toast } from "./core/util.js";
+import { newId, readPaged, toast } from "./core/util.js";
 import { byNewest, parseTags } from "./notes-lib.js";
 import * as wb from "./wb.js";
 
@@ -20,13 +20,14 @@ const isMine = n => n.user_id === me();
 
 async function loadNotes(){
   S.nt.loaded = false; S.nt.error = null;
-  const mine = await SB.client.from("wb_notes").select("*").eq("user_id", me()).order("day", { ascending: false }).limit(5000);
+  // 以前用 .limit(5000) / .limit(1000)，但 PostgREST 一次最多回 1000 行，多的被悄悄截掉：改成分页读完（排序带唯一键兜底）。两个查询同时发
+  const [mine, sh] = await Promise.all([
+    readPaged(() => SB.client.from("wb_notes").select("*").eq("user_id", me()).order("day", { ascending: false }).order("id")),
+    S.family ? readPaged(() => SB.client.from("wb_notes").select("*").eq("family_id", S.family.id).contains("shared_with", [me()]).neq("user_id", me()).order("day", { ascending: false }).order("user_id").order("id")) : null
+  ]);
   if (mine.error) { console.error(mine.error); S.nt.error = missingTable(mine.error) ? "missing" : "error"; return; }
-  S.nt.mine = (mine.data || []).sort(byNewest); S.nt.shared = [];
-  if (S.family) {
-    const sh = await SB.client.from("wb_notes").select("*").eq("family_id", S.family.id).contains("shared_with", [me()]).neq("user_id", me()).order("day", { ascending: false }).limit(1000);
-    if (!sh.error) S.nt.shared = (sh.data || []).sort(byNewest);
-  }
+  S.nt.mine = (mine.data || []).sort(byNewest);
+  S.nt.shared = sh && !sh.error ? (sh.data || []).sort(byNewest) : [];
   S.nt.loaded = true;
 }
 function attachRealtime(ch, onChange){

@@ -60,12 +60,20 @@ async function afterAuth(){
   if (S.waiting) SB.waitTimer = setInterval(recheckWaiting, 20000);
   S.cloud = "ready";
   render();
-  await loadAll();
+  await loadData();
   runScheduled();   // 定时备份到期了就在后台做一次
-  try { await loadTasks(); } catch (e) { console.error(e); }   // 任务表（迁移 015）没建时只影响任务页签
-  try { await loadNotes(); } catch (e) { console.error(e); }   // 笔记表（迁移 016）没建时只影响笔记页
   setupRealtime();
   render(); refreshSettingsIfOpen();
+}
+/** 读全部数据：习惯 / 打卡 / 祷告、任务、笔记三块互不依赖，同时读（以前是一块读完再读下一块）。
+    任务表（迁移 015）、笔记表（迁移 016）没建时只影响各自的页。成功后记下时间，切回前台时据此决定要不要重读（events.js） */
+async function loadData(){
+  await Promise.all([
+    loadAll().catch(e => console.error(e)),
+    loadTasks().catch(e => console.error(e)),
+    loadNotes().catch(e => console.error(e))
+  ]);
+  if (S.wb.loaded) S.loadedAt = Date.now();
 }
 // 读我的成员行。迁移 022 之前没有 status 列（42703）：去掉它再读一次，status 为空按正式成员处理
 async function myMemberships(){
@@ -220,4 +228,4 @@ function familyHTML(){
     <div class="btns"><button class="btn" data-act="sb-logout">${t("退出登录")}</button></div>`;
 }
 
-export { SB, memberName, myName, isOwner, initSupabase, afterAuth, recheckWaiting, sbAuth, sbLink, sbFamily, sbLogout, sbApprove, sbReject, sbResetInvite, sbCloseInvite, familyHTML };
+export { SB, memberName, myName, isOwner, initSupabase, afterAuth, loadData, recheckWaiting, sbAuth, sbLink, sbFamily, sbLogout, sbApprove, sbReject, sbResetInvite, sbCloseInvite, familyHTML };
