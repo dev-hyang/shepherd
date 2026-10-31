@@ -7,7 +7,7 @@ import { addDays, diffDays, expand, nextDue, periodEnd, periodStart } from "./re
 import * as wb from "./wb.js";
 
 /* ============ 任务数据层（在线优先）============
-   wb_tasks 表由 docs/015_shepherd_tasks.sql 建立；表不存在时 S.tk.error = "missing"，只有任务页签提示，其余照常。
+   wb_tasks 表由 baby-log/supabase/migrations/015_shepherd_tasks.sql 建立；表不存在时 S.tk.error = "missing"，只有任务页签提示，其余照常。
    完成记录不另建表：写 wb_logs（kind = 'task'，data 带 task_id / 标题 / 分类 / 当次到期日），回顾和报表直接用。
    重复任务是一条主记录：完成 = 记一条日志 + 把 due 推到下一次；计划视图用 recur.expand 把未来几次展开显示。 */
 S.tk = { loaded: false, error: null, items: [], fam: [] };

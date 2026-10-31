@@ -21,7 +21,7 @@ const PERIOD_LABEL = { week: "本周", month: "本月", quarter: "本季度", ye
 const shortDay = d => `${+d.slice(5, 7)}/${+d.slice(8)}`;
 const wdLabel = d => t("周{d}", { d: t(WEEKDAY[wdOf(d)]) });
 const gate = () => (S.tk.error === "missing"
-  ? `<div class="empty">${t("任务功能需要一次数据库升级。")}<br>${t("请在 Supabase 执行 docs/015_shepherd_tasks.sql（仓库里有），然后刷新。")}</div>`
+  ? `<div class="empty">${t("任务功能需要一次数据库升级。")}<br>${t("请在 Supabase 执行 baby-log/supabase/migrations/015_shepherd_tasks.sql，然后刷新。")}</div>`
   : S.tk.error ? `<div class="empty">${t("任务读取失败，请刷新重试。")}</div>` : !S.tk.loaded ? `<div class="empty">${t("正在读取…")}</div>` : "");
 
 /* ---- 一行任务 ---- */

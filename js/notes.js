@@ -75,7 +75,7 @@ function listHTML(){
 }
 /** 笔记子页（在祷告页里）：筛选面板 + 搜索 + 新增，下面是历史上的今天、月份翻页、列表 */
 function viewNotes(){
-  if (S.nt.error === "missing") return `<div class="empty">${t("数据库还没有笔记表。")}<br>${t("请在 Supabase 执行")} <code>docs/016_shepherd_notes.sql</code>${t("，然后刷新。")}</div>`;
+  if (S.nt.error === "missing") return `<div class="empty">${t("数据库还没有笔记表。")}<br>${t("请在 Supabase 执行")} <code>baby-log/supabase/migrations/016_shepherd_notes.sql</code>${t("，然后刷新。")}</div>`;
   if (S.nt.error || !S.nt.loaded) return `<div class="empty">${S.nt.error ? t("读取笔记失败，请刷新重试。") : t("正在读取…")}</div>`;
   const ui = S.ntUi, base = current(), tags = tagCounts(base);
   const opt = (k, v, label, count) => ({ label, attrs: `data-ntf="${k}" data-v="${esc(v)}"`, on: ui[k] === v, count });

@@ -195,7 +195,7 @@ const EN = {
   "空": "empty",
   "管理分类": "Manage categories",
   "范围": "Range",
-  "请在 Supabase 执行 docs/015_shepherd_tasks.sql（仓库里有），然后刷新。": "Run docs/015_shepherd_tasks.sql (in the repo) in Supabase, then refresh.",
+  "请在 Supabase 执行 baby-log/supabase/migrations/015_shepherd_tasks.sql，然后刷新。": "Run baby-log/supabase/migrations/015_shepherd_tasks.sql in Supabase, then refresh.",
   "请填名字": "Please enter a name",
   "请填标题": "Please enter a title",
   "还没有完成的任务。": "No finished tasks yet.",

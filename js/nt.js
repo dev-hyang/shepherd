@@ -6,7 +6,7 @@ import { byNewest, parseTags } from "./notes-lib.js";
 import * as wb from "./wb.js";
 
 /* ============ 灵修笔记数据层（在线优先）============
-   wb_notes 表由 docs/016_shepherd_notes.sql 建立；表不存在时 S.nt.error = "missing"，只有笔记页提示，其余照常。
+   wb_notes 表由 baby-log/supabase/migrations/016_shepherd_notes.sql 建立；表不存在时 S.nt.error = "missing"，只有笔记页提示，其余照常。
    mine = 自己的笔记；shared = 家人分享给我的（只读，shared_with 里有我）。
    默认只有自己看得到；shared_with 里列出的家人只读。拍照识字的原图不保存，只存选定的文字。 */
 S.nt = { loaded: false, error: null, mine: [], shared: [] };
