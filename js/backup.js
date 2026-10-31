@@ -56,10 +56,14 @@ const isDue = (s = settings()) => { const n = nextDue(s); return !!n && n.getTim
 /* ---- 打包 ---- */
 const stamp = () => { const d = new Date(), p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; };
 const fileName = () => `${CFG.app}-${stamp()}.json`;
+/* 分页必须按主键排序，否则 Postgres 每页的顺序可能不同，跨页会漏行 / 重复。没列的表按 id（wb_* 是 user_id + id） */
+const PK_ORDER = { hs_family: ["family_id"], hs_scripture_progress: ["scripture_id", "child_id"], hs_devotions: ["date"], wb_profile: ["user_id"] };
+const orderCols = (tb) => PK_ORDER[tb] || (tb.startsWith("wb_") ? ["user_id", "id"] : ["id"]);
 async function readAll(table) {
   const out = [];
   for (let from = 0; ; from += PAGE) {
-    const { data, error } = await SB.client.from(table).select("*").eq(CFG.col, CFG.scopeId()).range(from, from + PAGE - 1);
+    let q = SB.client.from(table).select("*").eq(CFG.col, CFG.scopeId()); for (const c of orderCols(table)) q = q.order(c);
+    const { data, error } = await q.range(from, from + PAGE - 1);
     if (error) { if (/does not exist|schema cache/i.test(error.message)) return out; throw new Error(`${table}: ${error.message}`); }   // 还没建的表：当作空
     out.push(...(data || [])); if (!data || data.length < PAGE) return out;
   }
