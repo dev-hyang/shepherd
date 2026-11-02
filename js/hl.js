@@ -9,9 +9,12 @@ import { readPaged, toast } from "./core/util.js";
    数据量小（一家人一年几十次就诊、几百条化验和测量）：登录后整批读进内存（readPaged，不被 1000 行截断），在内存里算走势和待办。
    孩子：列表读小月亮的 children 表（没有就读 families.settings.children），身高体重读 entries 里 type = 'baby' 的记录，只读。
    这里不和爱家小助手关联：那是另一个 Supabase 项目。 */
-S.hl = { loaded: false, error: null, profiles: [], visits: [], labs: [], measures: [], kids: [], growth: {} };
+S.hl = { loaded: false, error: null, profiles: [], visits: [], labs: [], measures: [], templates: [], activity: [], plansOk: false, kids: [], growth: {} };
 
 const TABLES = { profiles: "hl_profiles", visits: "hl_visits", labs: "hl_labs", measures: "hl_measures" };
+/* 阶段 2–4（迁移 027）：自建模版、训练 / 饮食记录。没建这两张表时 plansOk = false：内置模版照常能看，只是不能记录；026 的功能不受影响 */
+const PLAN_TABLES = { templates: "hl_templates", activity: "hl_activity" };
+const ALL_TABLES = { ...TABLES, ...PLAN_TABLES };
 const me = () => S.user.id;
 const missingTable = err => err && (err.code === "42P01" || err.code === "PGRST205" || /schema cache|does not exist/i.test(err.message || ""));
 async function run(p, msg){ const { data, error } = await p; if (error) { console.error(error); toast(t(msg || "云端保存失败") + (error.message ? "：" + String(error.message).slice(0, 80) : "")); throw error; } return data; }
@@ -26,6 +29,15 @@ async function loadHealth(){
   const bad = res.find(r => r.error);
   if (bad) { console.error(bad.error); S.hl.error = missingTable(bad.error) ? "missing" : "error"; S.hl.loaded = false; return; }
   Object.keys(TABLES).forEach((k, i) => { S.hl[k] = res[i].data || []; });
+  // 训练 / 饮食记录只读近 400 天（够算走势和本周），自建模版全读
+  const since = new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10);
+  const [tp, ac] = await Promise.all([
+    readPaged(() => scope(SB.client.from(PLAN_TABLES.templates).select("*")).order("name").order("id")),
+    readPaged(() => scope(SB.client.from(PLAN_TABLES.activity).select("*")).gte("day", since).order("day").order("id"))
+  ]);
+  S.hl.plansOk = !tp.error && !ac.error;
+  if (!S.hl.plansOk) console.warn("[health] 027 not applied?", (tp.error || ac.error).message);
+  S.hl.templates = tp.data || []; S.hl.activity = ac.data || [];
   await loadKids();
   S.hl.loaded = true;
 }
@@ -66,25 +78,26 @@ function dataOf(key){
   const kidId = key.startsWith("c:") ? key.slice(2) : null;
   return {
     visits: S.hl.visits.filter(x => x.subject === key), labs: S.hl.labs.filter(x => x.subject === key),
-    measures: S.hl.measures.filter(x => x.subject === key), growth: kidId ? S.hl.growth[kidId] || [] : []
+    measures: S.hl.measures.filter(x => x.subject === key), growth: kidId ? S.hl.growth[kidId] || [] : [],
+    activity: S.hl.activity.filter(x => x.subject === key)
   };
 }
 
 /* ---- 写：成功后更新内存 ---- */
 const put = (list, row) => { const i = list.findIndex(x => x.id === row.id); if (i >= 0) list[i] = row; else list.push(row); return row; };
 async function save(kind, row){
-  const tb = TABLES[kind], body = { ...row }; delete body.family_id; delete body.created_by; delete body.created_at; delete body.updated_at;
+  const tb = ALL_TABLES[kind], body = { ...row }; delete body.family_id; delete body.created_by; delete body.created_at; delete body.updated_at;
   const data = row.id ? await run(SB.client.from(tb).update(body).eq("id", row.id).select().single()) : await run(SB.client.from(tb).insert(body).select().single());
   return put(S.hl[kind], data);
 }
 async function saveMany(kind, rows){
   if (!rows.length) return [];
-  const data = await run(SB.client.from(TABLES[kind]).insert(rows).select());
+  const data = await run(SB.client.from(ALL_TABLES[kind]).insert(rows).select());
   for (const r of data || []) put(S.hl[kind], r);
   return data || [];
 }
 async function remove(kind, id){
-  await run(SB.client.from(TABLES[kind]).delete().eq("id", id), "删除失败");
+  await run(SB.client.from(ALL_TABLES[kind]).delete().eq("id", id), "删除失败");
   S.hl[kind] = S.hl[kind].filter(x => x.id !== id);
   if (kind === "visits") S.hl.labs = S.hl.labs.map(x => (x.visit_id === id ? { ...x, visit_id: null } : x));   // 和数据库的 on delete set null 一致
 }
@@ -95,7 +108,7 @@ async function saveProfile(key, data){
 
 /* ---- 实时：家人在别的设备上改了 ---- */
 function attachRealtime(ch, onChange){
-  for (const [k, tb] of Object.entries(TABLES)) ch.on("postgres_changes", { event: "*", schema: "public", table: tb }, payload => {
+  for (const [k, tb] of Object.entries(S.hl.plansOk ? ALL_TABLES : TABLES)) ch.on("postgres_changes", { event: "*", schema: "public", table: tb }, payload => {
     if (payload.eventType === "DELETE") { const o = payload.old || {}; S.hl[k] = S.hl[k].filter(x => x.id !== o.id); }
     else if (payload.new && payload.new.id) put(S.hl[k], payload.new);
     onChange();

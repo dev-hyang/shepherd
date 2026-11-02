@@ -6,6 +6,7 @@ import { esc, loadJSON, saveJSON, toast } from "./core/util.js";
 import { LABS, LAB_GROUPS, MEASURE_KINDS, VISIT_KINDS } from "./data/health-ref.js";
 import { EXTRACT_SYSTEM, ageYears, bmiOf, daysBetween, dueItems, fromShow, labFlag, labName, latest, metricFlag, metricsOf, parseExtract, series, toShow, unitOf } from "./health-lib.js";
 import * as hl from "./hl.js";
+import { dietHTML, planAct, planHTML, todayPlanHTML, workoutHTML } from "./health-plan-ui.js";
 import * as pg from "./pager.js";
 import { closeSheet, drawForm, getForm, openForm, readForm } from "./sheet.js";
 import { pageHead, secHead } from "./ui.js";
@@ -20,7 +21,7 @@ const UI = () => (S.hlUi ||= { who: null, view: "overview", metric: null });
 const UNIT_KEY = LS_PREFIX + ".units";
 const sys = () => loadJSON(UNIT_KEY, null) || (locale() === "en" ? "us" : "metric");
 const lang = () => (locale() === "en" ? "en" : "zh");
-const VIEWS = [["overview", "概览"], ["visits", "就诊"], ["labs", "化验"], ["measures", "测量"], ["profile", "档案"]];
+const VIEWS = [["overview", "概览"], ["plan", "计划"], ["workout", "训练"], ["diet", "饮食"], ["visits", "就诊"], ["labs", "化验"], ["measures", "测量"], ["profile", "档案"]];
 const fmtDay = d => (d ? d.replace(/-/g, "/") : "");
 
 /* ---- 指标的显示：名称、量纲、参考带 ---- */
@@ -50,7 +51,7 @@ function viewHealth(){
   const add = `<span class="hl-add">${["visit", "lab", "measure"].map(k => `<button class="chip" data-hl="new-${k}">＋ ${t({ visit: "就诊", lab: "化验", measure: "测量" }[k])}</button>`).join("")}</span>`;
   const chips = `<div class="chips hl-people" role="group" aria-label="${esc(t("看谁的"))}">${ppl.map(p => `<button class="chip" data-hl="who" data-key="${esc(p.key)}" aria-pressed="${p.key === ui.who}">${p.kid ? "🧒 " : ""}${esc(p.name)}${p.me ? ` <span class="cnt">${t("我")}</span>` : ""}</button>`).join("")}</div>`;
   const tabs = `<div class="chips hl-views" role="group" aria-label="${esc(t("健康内容"))}">${VIEWS.map(([k, l]) => `<button class="chip" data-hl="view" data-v="${k}" aria-pressed="${ui.view === k}">${t(l)}</button>`).join("")}</div>`;
-  const body = { overview: overviewHTML, visits: visitsHTML, labs: labsHTML, measures: measuresHTML, profile: profileHTML }[ui.view] || overviewHTML;
+  const body = { overview: overviewHTML, plan: planHTML, workout: workoutHTML, diet: dietHTML, visits: visitsHTML, labs: labsHTML, measures: measuresHTML, profile: profileHTML }[ui.view] || overviewHTML;
   return `${pageHead(t("家人健康"), add)}${chips}${tabs}${body(who)}
     <p class="small muted hl-foot">${t("这里只做记录和按公开指南的提醒，不是诊断；有疑问以医生意见为准。家里的人都看得到这家人的健康记录。")}</p>`;
 }
@@ -62,7 +63,7 @@ function overviewHTML(who){
   const metrics = metricsOf(data, { kid, heightCm });
   if (!metrics.includes(ui.metric)) ui.metric = metrics[0] || null;
   const due = dueItems({ data, today: S.day, kid });
-  const left = `${secHead(t("待办"))}${dueHTML(due, kid)}${lastVisitHTML(data)}${kid ? `<p class="small muted" style="margin-top:10px">${t("孩子的身高体重和体检日程以小月亮为准，这里只读。")} <a href="https://dev-hyang.github.io/baby-log/" target="_blank" rel="noopener">${t("去小月亮")} ↗</a></p>` : ""}`;
+  const left = `${todayPlanHTML(who)}${secHead(t("待办"))}${dueHTML(due, kid)}${lastVisitHTML(data)}${kid ? `<p class="small muted" style="margin-top:10px">${t("孩子的身高体重和体检日程以小月亮为准，这里只读。")} <a href="https://dev-hyang.github.io/baby-log/" target="_blank" rel="noopener">${t("去小月亮")} ↗</a></p>` : ""}`;
   if (!metrics.length) return `<div class="hl-grid"><div class="hl-col">${left}</div><div class="hl-col">${secHead(t("关键指标"))}<div class="panel empty">${t("还没有数字。记一次就诊（带体征）、一份化验或一次在家测量，这里就会出现走势。")}<br>
     <button class="btn primary" data-hl="new-visit">${t("记一次就诊")}</button> <button class="btn" data-hl="new-measure">${t("记一次测量")}</button></div></div></div>`;
   const cards = metrics.map(m => {
@@ -356,7 +357,7 @@ function aiRead(mode){
 async function hlAct(act, btn){
   const ui = UI(), d = btn.dataset;
   switch (act) {
-    case "who": ui.who = d.key; ui.metric = null; pg.reset("hlVisits", "hlMeasures"); render(); return;
+    case "who": ui.who = d.key; ui.metric = null; pg.reset("hlVisits", "hlMeasures", "hlWk"); render(); return;
     case "view": ui.view = d.v; render(); window.scrollTo(0, 0); return;
     case "metric": ui.metric = d.v; render(); return;
     case "lab-chart": ui.metric = d.v; ui.view = "overview"; render(); return;
@@ -371,6 +372,7 @@ async function hlAct(act, btn){
     case "ai-read": aiRead(d.v); return;
     case "ai-labs-clear": { readForm(); const f = getForm(); if (f) { f.draft._labs = []; drawForm(); } return; }
   }
+  await planAct(act, d);   // 计划 / 训练 / 饮食（js/health-plan-ui.js）
 }
 // 化验项目换了：单位和参考范围跟着换（只在没改过的时候）
 document.addEventListener("change", ev => {

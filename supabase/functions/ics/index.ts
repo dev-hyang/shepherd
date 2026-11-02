@@ -93,6 +93,21 @@ function followUpEvents(list: FollowUp[], names: Record<string, string>, T: Text
   return out;
 }
 
+/* ---- 家人健康的训练计划（hl_profiles.data.plan.workout，迁移 027）：我自己和孩子的，按星期几 + 时间点每周重复 ---- */
+type PlanRow = { subject: string; data: { plan?: { workout?: { tpl?: string; days?: number[]; time?: string; remind?: boolean } } } };
+function planEvents(rows: PlanRow[], names: Record<string, string>, T: Text, now: Date, workoutName: (tpl: string) => string): string[] {
+  const out: string[] = [], today = ymd(now);
+  for (const r of rows) {
+    const w = r.data?.plan?.workout; if (!w || !w.tpl || w.remind === false || !/^\d{2}:\d{2}$/.test(w.time || "")) continue;
+    const days = (Array.isArray(w.days) ? w.days : []).filter(d => d >= 0 && d <= 6); if (!days.length) continue;
+    const [h, m] = (w.time as string).split(":"), title = `🏃 ${[workoutName(w.tpl), r.subject.startsWith("c:") ? names[r.subject] : ""].filter(Boolean).join(" · ")}`;
+    out.push("BEGIN:VEVENT", `UID:${uid("hl-plan-" + r.subject)}`, `DTSTAMP:${stamp(now)}`, `DTSTART:${today}T${h}${m}00`, "DURATION:PT30M", `RRULE:FREQ=WEEKLY;BYDAY=${days.map(d => BYDAY[d]).join(",")}`,
+      `SUMMARY:${esc(title)}`, `DESCRIPTION:${esc(`${T.from} https://dev-hyang.github.io/shepherd/`)}`, "TRANSP:TRANSPARENT",
+      "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${esc(title)}`, "TRIGGER:PT0M", "END:VALARM", "END:VEVENT");
+  }
+  return out;
+}
+
 function build(p: Practice[], T: Text, tasks: Task[] = [], allDayAt = "09:00", extra: string[] = []): string {
   const now = new Date(), today = ymd(now), lines: string[] = [];
   lines.push("BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//dev-hyang//shepherd//ZH", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
@@ -150,15 +165,21 @@ Deno.serve(async (req) => {
     let q = sb.from("hl_visits").select("id, subject, follow_up, provider, reason").gte("follow_up", today).order("follow_up").limit(200);
     q = fam ? q.or(`family_id.eq.${fam},created_by.eq.${me}`) : q.eq("created_by", me);
     const hv = await q;
-    if (!hv.error && hv.data?.length) {
-      const names: Record<string, string> = {};
-      if (fam) {
-        const ms = await sb.from("family_members").select("user_id, display_name").eq("family_id", fam);
-        for (const m of ms.data ?? []) names["u:" + m.user_id] = m.display_name;
-        const ks = await sb.from("children").select("id, name").eq("family_id", fam);
-        for (const k of ks.data ?? []) names["c:" + k.id] = k.name;
-      }
-      health = followUpEvents(hv.data as FollowUp[], names, T, new Date(), allDayAt);
+    const names: Record<string, string> = {};
+    if (fam) {
+      const ms = await sb.from("family_members").select("user_id, display_name").eq("family_id", fam);
+      for (const m of ms.data ?? []) names["u:" + m.user_id] = m.display_name;
+      const ks = await sb.from("children").select("id, name").eq("family_id", fam);
+      for (const k of ks.data ?? []) names["c:" + k.id] = k.name;
+    }
+    if (!hv.error && hv.data?.length) health = followUpEvents(hv.data as FollowUp[], names, T, new Date(), allDayAt);
+    // 训练计划：我自己的 + 这家孩子的（配偶的计划进配偶自己的日历）
+    let pq = sb.from("hl_profiles").select("subject, data").limit(50);
+    pq = fam ? pq.or(`family_id.eq.${fam},created_by.eq.${me}`) : pq.eq("created_by", me);
+    const hp = await pq;
+    if (!hp.error && hp.data?.length) {
+      const rows = (hp.data as PlanRow[]).filter(r => r.subject === "u:" + me || r.subject.startsWith("c:"));
+      health.push(...planEvents(rows, names, T, new Date(), tpl => (rows.find(r => r.data?.plan?.workout?.tpl === tpl)?.data?.plan?.workout as Record<string, string> | undefined)?.name || T.kinds.exercise));
     }
   } catch (_e) { health = []; }
   const body = build((pr.data ?? []) as Practice[], T, tk.error ? [] : (tk.data ?? []) as Task[], allDayAt, health);
