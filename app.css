@@ -697,3 +697,82 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .hl-g.yes{color:var(--sage);font-weight:700}
 .hl-g.partly{color:var(--honey)}
 .hl-g.no{color:var(--rose)}
+
+/* ---- 健康页头部：宽屏芯片，手机下拉框 + 「＋ 记一笔」小菜单（2026-11-02） ---- */
+.hl-m{display:none !important}
+@media (max-width:640px){
+  .hl-d{display:none !important}
+  .hl-m{display:flex !important}
+}
+.hl-mhead{margin:8px 0 14px;display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.hl-mrow{display:flex;gap:8px;align-items:stretch}
+.hl-sel{flex:1;min-width:0;min-height:46px;border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:8px 36px 8px 12px;font-size:16px;font-weight:600;color:var(--ink)}
+.hl-sel-view{border-left:4px solid var(--slate)}
+.hl-addmenu{position:relative;flex:none}
+.hl-addmenu > summary{list-style:none;min-height:46px;display:flex;align-items:center;white-space:nowrap;cursor:pointer}
+.hl-addmenu > summary::-webkit-details-marker{display:none}
+.hl-addmenu-list{position:absolute;right:0;top:calc(100% + 6px);z-index:20;min-width:180px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 10px 28px rgba(0,0,0,.16);padding:6px;display:grid;gap:2px}
+.hl-addmenu-list button{all:unset;box-sizing:border-box;cursor:pointer;min-height:44px;padding:10px 12px;border-radius:var(--radius-sm);font-size:15px}
+.hl-addmenu-list button:hover,.hl-addmenu-list button:focus-visible{background:var(--bg);outline:none}
+
+/* ---- 化验结果：一行 = 名称 · 数值 · 范围条（绿段 = 参考范围，点 = 这次的值） ---- */
+.hl-labs-ov{padding:4px 14px}
+.hl-labs-bar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line)}
+.hl-labs-bar select{min-height:42px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--field);padding:6px 32px 6px 10px;font-size:15px;font-weight:600;max-width:100%}
+.linkbtn{all:unset;cursor:pointer;color:var(--slate);font-weight:600}
+.linkbtn:focus-visible{outline:3px solid var(--slate);outline-offset:2px;border-radius:4px}
+.hl-lr{border-bottom:1px solid var(--line);padding:2px 0}
+.hl-lr:last-child{border-bottom:0}
+.hl-lr-main{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:8px 2px;border-radius:var(--radius-sm)}
+.hl-lr-main:focus-visible{outline:3px solid var(--slate);outline-offset:-2px}
+.hl-lr.sel .hl-lr-main{background:var(--slate-soft)}
+.hl-lr-name{display:flex;flex-direction:column;min-width:0}
+.hl-lr-name b{font-weight:600;font-size:15px;overflow-wrap:anywhere}
+.hl-lr-name small{color:var(--muted);font-size:12px}
+.hl-lr-val{display:flex;align-items:center;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.hl-lr-val b{font-family:var(--f-num);font-size:18px;font-variant-numeric:tabular-nums}
+.hl-lr.flag-high .hl-lr-val b{color:var(--rose)}
+.hl-lr.flag-low .hl-lr-val b{color:#9a6a00}
+.hl-rbar{grid-column:1 / -1;position:relative;height:8px;border-radius:999px;background:var(--honey-soft);margin:2px 0 4px}
+.hl-rbar .ok{position:absolute;top:0;bottom:0;background:var(--sage);opacity:.55;border-radius:999px}
+.hl-rbar .at{position:absolute;top:-4px;width:4px;height:16px;margin-left:-2px;border-radius:2px;background:var(--ink)}
+.hl-lr.flag-high .hl-rbar .at,.hl-lr.flag-low .hl-rbar .at{background:var(--rose)}
+.hl-lr .hl-lab-hist{display:flex;gap:4px;flex-wrap:wrap;padding:0 2px 8px}
+
+/* ---- 录入化验的表 ---- */
+.hl-bt{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
+.hl-bt th,.hl-bt td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.hl-bt thead th{font-weight:500;color:var(--muted);font-size:12.5px}
+.hl-bt tbody th{font-weight:600;min-width:9em}
+.hl-bt-in{border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);min-height:40px;padding:6px 8px;font-size:15px;width:100%;min-width:0}
+.hl-bt-in.v{width:6.5em;font-weight:600}
+.hl-bt-in.u{width:6.5em;font-size:13px}
+.hl-bt-in.r{width:4.6em;font-size:13px}
+.hl-bt-in.n{width:100%}
+.hl-bt-rng{white-space:nowrap}
+.hl-bt-rng span{margin:0 3px;color:var(--muted)}
+.hl-bt tr.flag-high .hl-bt-in.v{border-color:var(--rose);background:var(--rose-soft)}
+.hl-bt tr.flag-low .hl-bt-in.v{border-color:var(--honey);background:var(--honey-soft)}
+.hl-paste{width:100%;min-height:140px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--field);padding:8px 10px;font-size:14px}
+.hl-ai .btn{min-height:42px}
+@media (max-width:640px){
+  /* 手机：录入表一行变一块（项目名一行，结果 / 单位 / 范围一行），不用横着滑 */
+  .hl-bt{min-width:0}
+  .hl-bt thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  .hl-bt tr{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+  .hl-bt th,.hl-bt td{border:0;padding:0}
+  .hl-bt tbody th{grid-column:1 / -1;min-width:0}
+  .hl-bt-in.v{width:5.5em}.hl-bt-in.u{width:5em}.hl-bt-in.r{width:4.2em}
+}
+/* 录入表的格子宽度要盖过 .field input 的 width:100% */
+.field .hl-bt .hl-bt-in{width:100%;min-height:40px;padding:6px 8px}
+.field .hl-bt td{min-width:0}
+.field .hl-bt .hl-bt-rng{display:flex;align-items:center;gap:2px}
+@media (min-width:641px){
+  .field .hl-bt td:nth-child(2){width:7.5em}.field .hl-bt td.hl-bt-unit{width:7em}.field .hl-bt td.hl-bt-rng{width:11em}
+}
+@media (max-width:640px){
+  .field .hl-bt tr{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.7fr) auto}
+  .field .hl-bt .hl-bt-in{font-size:15px;padding:6px}
+  .field .hl-bt .hl-bt-in.u,.field .hl-bt .hl-bt-in.r{font-size:13px}
+}

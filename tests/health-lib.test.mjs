@@ -70,3 +70,28 @@ test("parseExtract normalizes units and lab codes", () => {
   assert.equal(r.labs[0].ref_high, 100);
   assert.equal(parseExtract("not json"), null);
 });
+
+test("portal-style lab reports: aliases, one-sided ranges, report ranges win, dedupe across pages", async () => {
+  const { labCodeOf, rangeBar, rangeText, labGroupOf } = await import("../js/health-lib.js");
+  for (const [n, c] of [["Calculated LDL", "ldl"], ["Direct HDL", "hdl"], ["Cholesterol", "total_chol"], ["Risk Factor", "chol_hdl"], ["GFR CKD-EPI NO RACE", "egfr"],
+    ["Carbon Dioxide", "co2"], ["Blood Urea Nitrogen", "bun"], ["Bilirubin, Total", "bilirubin"], ["Platelet Count", "plt"], ["Hemoglobin", "hgb"], ["Hemoglobin A1c", "a1c"], ["Something else", ""]])
+    assert.equal(labCodeOf(n), c, n);
+  const r = parseExtract(JSON.stringify({ day: "2026-01-15", fasting: "Yes", labs: [
+    { name: "Calculated LDL", value: 110, unit: "mg/dL", ref_high: 130 },        // report range differs from the default (100)
+    { name: "Direct HDL", value: 38, unit: "mg/dL", ref_low: 40 },
+    { name: "Glucose", value: 88, unit: "mg/dL", ref_low: 74, ref_high: 109 },
+    { name: "Glucose", value: 88, unit: "mg/dL", ref_low: 74, ref_high: 109 },  // same item on two overlapping screenshots
+    { name: "Platelet Count", value: 200 } ] }));
+  assert.equal(r.fasting, true);
+  assert.equal(r.labs.length, 4);
+  const ldl = r.labs.find(x => x.code === "ldl");
+  assert.equal(ldl.ref_high, 130); assert.equal(ldl.ref_low, null);
+  assert.equal(labFlag(ldl), null);
+  assert.equal(labFlag(r.labs.find(x => x.code === "hdl")), "low");
+  const plt = r.labs.find(x => x.code === "plt");
+  assert.equal(plt.ref_low, 150);                                               // no range printed: default range
+  assert.equal(labGroupOf(plt), "cbc");
+  assert.equal(rangeText({ ref_high: 150 }), "≤ 150");
+  assert.equal(rangeText({ ref_low: 40 }), "≥ 40");
+  const b = rangeBar({ value: 110, ref_high: 130 }); assert.ok(b.at < b.hi);
+});

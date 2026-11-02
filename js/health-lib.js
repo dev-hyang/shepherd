@@ -154,31 +154,59 @@ function parseExtract(text){
   };
   Object.keys(vit).forEach(k => { if (vit[k] == null) delete vit[k]; });
   const kinds = ["annual", "regular", "urgent", "er", "specialist", "dental", "vision", "tele", "other"];
-  const codes = Object.keys(LABS);
-  const guessCode = (name, code) => {
-    if (code && codes.includes(code)) return code;
-    const n = String(name || "").toLowerCase();
-    const hit = codes.find(c => n === LABS[c].en.toLowerCase() || n === c || n.includes(LABS[c].en.toLowerCase()) || String(LABS[c].name).includes(name || "\u0000"));
-    return hit || "";
-  };
+  const guessCode = (name, code) => labCodeOf(name, code);
+  // 化验单上的范围就用单子上的（只写了一边就只有一边）；单子上完全没写范围才用默认的
+  const seen = new Set();
   const labs = (Array.isArray(o.labs) ? o.labs : []).map(x => {
     const value = num(x && x.value); if (value == null) return null;
     const code = guessCode(x.name, x.code), ref = code ? LABS[code] : null;
+    const lo = num(x.ref_low), hi = num(x.ref_high), given = lo != null || hi != null;
+    const k = (code || String(x.name || "").toLowerCase()) + "|" + value; if (seen.has(k)) return null; seen.add(k);   // 几张照片重叠的那一项只留一次
     return { code, name: String(x.name || (ref ? ref.en : "")).slice(0, 80), value, unit: String(x.unit || (ref ? ref.unit : "")).slice(0, 20),
-      ref_low: num(x.ref_low) ?? (ref ? ref.low : null), ref_high: num(x.ref_high) ?? (ref ? ref.high : null), day: DATE.test(x.day || "") ? x.day : null };
-  }).filter(Boolean).slice(0, 60);
+      ref_low: given ? lo : ref ? ref.low : null, ref_high: given ? hi : ref ? ref.high : null, day: DATE.test(x.day || "") ? x.day : null };
+  }).filter(Boolean).slice(0, 80);
   return {
     day: DATE.test(o.day || "") ? o.day : null, kind: kinds.includes(o.kind) ? o.kind : null,
     provider: String(o.provider || "").slice(0, 120), reason: String(o.reason || "").slice(0, 300),
     vitals: vit, diagnosis: String(o.diagnosis || "").slice(0, 2000), advice: String(o.advice || "").slice(0, 4000),
-    follow_up: DATE.test(o.follow_up || "") ? o.follow_up : null, labs
+    follow_up: DATE.test(o.follow_up || "") ? o.follow_up : null, labs, fasting: o.fasting === true || /^(yes|是|y)$/i.test(String(o.fasting || ""))
   };
 }
-const EXTRACT_SYSTEM = `You read photos of medical after-visit summaries and lab reports. Return ONLY JSON with this shape:
+const EXTRACT_SYSTEM = `You read photos (possibly several pages or screenshots of a patient portal such as MyChart) or pasted text of medical after-visit summaries and lab reports. Return ONLY JSON with this shape:
 {"day":"YYYY-MM-DD|null","kind":"annual|regular|urgent|er|specialist|dental|vision|tele|other|null","provider":"clinic or doctor","reason":"chief complaint",
 "vitals":{"weight_kg":n,"weight_lb":n,"height_cm":n,"height_in":n,"sys":n,"dia":n,"hr":n,"temp_c":n,"temp_f":n,"spo2":n},
 "diagnosis":"text","advice":"the doctor's instructions / plan, verbatim where possible","follow_up":"YYYY-MM-DD|null",
+"fasting":true|false|null,
 "labs":[{"name":"test name as printed","value":n,"unit":"unit","ref_low":n|null,"ref_high":n|null,"day":"YYYY-MM-DD|null"}]}
-Omit fields you cannot read. Never invent values. Do not include any patient names, dates of birth, addresses, phone numbers or ID numbers.`;
+Include every numeric result on every page (lipid panel, comprehensive metabolic panel, CBC, A1c, thyroid, vitamins...), each once. "day" is the collection date ("Collected on ...").
+Reference ranges: "74 - 109" -> ref_low 74, ref_high 109; "150 or below" / "below 5.0" / "<130" -> ref_high only; "40 or above" / ">=60" -> ref_low only; no range printed -> both null.
+Skip non-numeric results except "Patient Fasting?" which goes to "fasting". Omit fields you cannot read. Never invent values. Do not include any patient names, dates of birth, addresses, phone numbers or ID numbers.`;
 
+/* ---- 化验项目：名字对代码、套餐、范围 ---- */
+const norm = x => String(x || "").toLowerCase().replace(/[^a-z0-9一-鿿]+/g, " ").trim();
+/** 化验单上的名字 → 内置代码（先整名对：英文名、中文名、alias、代码；再按最长的 alias 包含）；对不上返回 "" */
+function labCodeOf(name, code){
+  if (code && LABS[code]) return code;
+  const n = norm(name); if (!n) return "";
+  const names = c => [c, LABS[c].en, LABS[c].name, ...(LABS[c].alias || [])].map(norm);
+  for (const c of Object.keys(LABS)) if (names(c).includes(n)) return c;
+  let best = "", len = 0;
+  for (const c of Object.keys(LABS)) for (const a of names(c)) if (a.length > 2 && a.length > len && (` ${n} `).includes(` ${a} `)) { best = c; len = a.length; }
+  return best;
+}
+const labGroupOf = x => (x && x.code && LABS[x.code] ? LABS[x.code].group : "other");
+const rangeText = x => (x.ref_low != null && x.ref_high != null ? `${+x.ref_low}–${+x.ref_high}` : x.ref_high != null ? `≤ ${+x.ref_high}` : x.ref_low != null ? `≥ ${+x.ref_low}` : "");
+/** 范围条上的位置：{ lo, hi, at }（0–100，正常段在 25–75；只有一边的，另一边按数值留出余量） */
+function rangeBar(x){
+  const v = num(x.value), lo = x.ref_low != null ? +x.ref_low : null, hi = x.ref_high != null ? +x.ref_high : null;
+  if (v == null || (lo == null && hi == null)) return null;
+  const a = lo != null ? lo : Math.min(0, v), b = hi != null ? hi : Math.max(lo * 2, v * 1.25);
+  const span = b - a || 1, left = a - span / 2, right = b + span / 2;
+  const pos = q => Math.max(0, Math.min(100, (q - left) / (right - left) * 100));
+  return { lo: lo != null ? pos(lo) : 0, hi: hi != null ? pos(hi) : 100, at: pos(v) };
+}
+/** 大人 / 孩子的体征指标（关键指标卡片），化验另外按套餐显示 */
+const vitalMetricsOf = (data, { kid = false, heightCm = null } = {}) => metricsOf(data, { kid, heightCm }).filter(m => !m.startsWith("lab:") && (m !== "glucose" || (data.measures || []).some(x => x.kind === "glucose")));   // 化验的血糖在化验结果里，卡片只放在家测的
+
+export { labCodeOf, labGroupOf, rangeText, rangeBar, vitalMetricsOf };
 export { UNITS, unitOf, toShow, fromShow, ageYears, bmiOf, labFlag, labName, series, metricsOf, latest, metricFlag, dueItems, parseExtract, EXTRACT_SYSTEM, daysBetween, addDays };

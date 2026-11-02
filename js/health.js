@@ -4,6 +4,7 @@ import { locale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc, loadJSON, saveJSON, toast } from "./core/util.js";
 import { LABS, LAB_GROUPS, MEASURE_KINDS, VISIT_KINDS } from "./data/health-ref.js";
+import { labCodeOf, labGroupOf, rangeBar, rangeText, vitalMetricsOf } from "./health-lib.js";
 import { EXTRACT_SYSTEM, ageYears, bmiOf, daysBetween, dueItems, fromShow, labFlag, labName, latest, metricFlag, metricsOf, parseExtract, series, toShow, unitOf } from "./health-lib.js";
 import * as hl from "./hl.js";
 import { dietHTML, planAct, planHTML, todayPlanHTML, workoutHTML } from "./health-plan-ui.js";
@@ -48,11 +49,18 @@ function viewHealth(){
   if (!ppl.some(p => p.key === ui.who)) ui.who = ppl[0] ? ppl[0].key : null;
   if (!ui.who) return `<div class="empty">${t("先登录。")}</div>`;
   const who = hl.person(ui.who);
-  const add = `<span class="hl-add">${["visit", "lab", "measure"].map(k => `<button class="chip" data-hl="new-${k}">＋ ${t({ visit: "就诊", lab: "化验", measure: "测量" }[k])}</button>`).join("")}</span>`;
-  const chips = `<div class="chips hl-people" role="group" aria-label="${esc(t("看谁的"))}">${ppl.map(p => `<button class="chip" data-hl="who" data-key="${esc(p.key)}" aria-pressed="${p.key === ui.who}">${p.kid ? "🧒 " : ""}${esc(p.name)}${p.me ? ` <span class="cnt">${t("我")}</span>` : ""}</button>`).join("")}</div>`;
-  const tabs = `<div class="chips hl-views" role="group" aria-label="${esc(t("健康内容"))}">${VIEWS.map(([k, l]) => `<button class="chip" data-hl="view" data-v="${k}" aria-pressed="${ui.view === k}">${t(l)}</button>`).join("")}</div>`;
+  // 头部（2026-11-02 重新设计）：宽屏 = 新建按钮一排 + 家人芯片 + 内容芯片；手机 = 一行「家人下拉框 + ＋ 记一笔（展开小菜单）」+ 一个内容下拉框，
+  // 八个芯片在手机上占三四行、要横着找；下拉框一眼看到当前是谁、哪一页。默认是当前登录的人（列表第一个）。不用浮动的 + 按钮：会挡住底部页签和列表最后一行
+  const NEW = [["visit", "就诊", "🩺"], ["lab", "化验", "🧪"], ["measure", "测量", "⚖"], ...(S.hl.plansOk ? [["workout", "训练", "🏃"]] : [])];
+  const newAct = k => (k === "workout" ? "wk-new" : "new-" + k);
+  const add = `<span class="hl-add hl-d">${NEW.map(([k, l]) => `<button class="chip" data-hl="${newAct(k)}">＋ ${t(l)}</button>`).join("")}</span>`;
+  const addMenu = `<details class="hl-addmenu"><summary class="btn primary">＋ ${t("记一笔")}</summary><div class="hl-addmenu-list" role="menu">${NEW.map(([k, l, ic]) => `<button role="menuitem" data-hl="${newAct(k)}"><span aria-hidden="true">${ic}</span> ${t(l)}</button>`).join("")}</div></details>`;
+  const chips = `<div class="chips hl-people hl-d" role="group" aria-label="${esc(t("看谁的"))}">${ppl.map(p => `<button class="chip" data-hl="who" data-key="${esc(p.key)}" aria-pressed="${p.key === ui.who}">${p.kid ? "🧒 " : ""}${esc(p.name)}${p.me ? ` <span class="cnt">${t("我")}</span>` : ""}</button>`).join("")}</div>`;
+  const tabs = `<div class="chips hl-views hl-d" role="group" aria-label="${esc(t("健康内容"))}">${VIEWS.map(([k, l]) => `<button class="chip" data-hl="view" data-v="${k}" aria-pressed="${ui.view === k}">${t(l)}</button>`).join("")}</div>`;
+  const mobile = `<div class="hl-mhead hl-m"><div class="hl-mrow"><label class="sr-only" for="hlWho">${t("看谁的")}</label><select id="hlWho" class="hl-sel">${ppl.map(p => `<option value="${esc(p.key)}" ${p.key === ui.who ? "selected" : ""}>${p.kid ? "🧒 " : "👤 "}${esc(p.name)}${p.me ? ` (${t("我")})` : ""}</option>`).join("")}</select>${addMenu}</div>
+    <label class="sr-only" for="hlView">${t("健康内容")}</label><select id="hlView" class="hl-sel hl-sel-view">${VIEWS.map(([k, l]) => `<option value="${k}" ${ui.view === k ? "selected" : ""}>${t(l)}</option>`).join("")}</select></div>`;
   const body = { overview: overviewHTML, plan: planHTML, workout: workoutHTML, diet: dietHTML, visits: visitsHTML, labs: labsHTML, measures: measuresHTML, profile: profileHTML }[ui.view] || overviewHTML;
-  return `${pageHead(t("家人健康"), add)}${chips}${tabs}${body(who)}
+  return `${pageHead(t("家人健康"), add)}${mobile}${chips}${tabs}${body(who)}
     <p class="small muted hl-foot">${t("这里只做记录和按公开指南的提醒，不是诊断；有疑问以医生意见为准。家里的人都看得到这家人的健康记录。")}</p>`;
 }
 
@@ -66,7 +74,8 @@ function overviewHTML(who){
   const left = `${todayPlanHTML(who)}${secHead(t("待办"))}${dueHTML(due, kid)}${lastVisitHTML(data)}${kid ? `<p class="small muted" style="margin-top:10px">${t("孩子的身高体重和体检日程以小月亮为准，这里只读。")} <a href="https://dev-hyang.github.io/baby-log/" target="_blank" rel="noopener">${t("去小月亮")} ↗</a></p>` : ""}`;
   if (!metrics.length) return `<div class="hl-grid"><div class="hl-col">${left}</div><div class="hl-col">${secHead(t("关键指标"))}<div class="panel empty">${t("还没有数字。记一次就诊（带体征）、一份化验或一次在家测量，这里就会出现走势。")}<br>
     <button class="btn primary" data-hl="new-visit">${t("记一次就诊")}</button> <button class="btn" data-hl="new-measure">${t("记一次测量")}</button></div></div></div>`;
-  const cards = metrics.map(m => {
+  const vitals = vitalMetricsOf(data, { kid, heightCm });
+  const cards = vitals.map(m => {
     const meta = metricMeta(m, data), s = series(m, data, { heightCm }), l = latest(s), f = metricFlag(m, l, data, { kid });
     const delta = l && l.delta != null && m !== "bp" ? `<span class="d">${l.delta > 0 ? "↑" : l.delta < 0 ? "↓" : "→"} ${Math.abs(meta.dim ? toShow(meta.dim, Math.abs(l.delta), sys()) : l.delta)}</span>` : "";
     return `<button class="kpi hl-kpi ${ui.metric === m ? "sel" : ""}" data-hl="metric" data-v="${esc(m)}" aria-pressed="${ui.metric === m}">
@@ -74,7 +83,9 @@ function overviewHTML(who){
       <span class="hl-kpi-foot">${f ? `<span class="pill ${f.level === "high" ? "hi" : "lo"}">${esc(t(f.text))}</span>` : `<span class="small muted">${fmtDay(l.day)}</span>`}${delta}</span>
       ${spark(s)}</button>`;
   }).join("");
-  const right = `${secHead(t("关键指标"))}<div class="kpis hl-kpis">${cards}</div>${ui.metric ? chartPanel(ui.metric, data, { heightCm, kid }) : ""}`;
+  // 右栏：体征卡片（体重 / BMI / 血压 / 心率…）→ 化验结果（按套餐，下拉框切换，范围条）→ 选中那一项的走势图
+  const right = `${secHead(t("关键指标"))}${vitals.length ? `<div class="kpis hl-kpis">${cards}</div>` : `<div class="panel small muted">${t("还没有体征。")}</div>`}
+    ${labOverviewHTML(data)}${ui.metric ? chartPanel(ui.metric, data, { heightCm, kid }) : ""}`;
   return `<div class="hl-grid"><div class="hl-col">${left}</div><div class="hl-col">${right}</div></div>`;
 }
 function dueHTML(due, kid){
@@ -145,6 +156,8 @@ function chartPanel(m, data, { heightCm, kid }){
   const table = `<details class="hl-table"><summary>${t("看数据（{n} 条）", { n: s.length })}</summary><div class="scroll-x"><table><thead><tr><th scope="col">${t("日期")}</th><th scope="col">${esc(meta.name)}${meta.unit ? ` (${esc(meta.unit)})` : ""}</th><th scope="col">${t("来源")}</th></tr></thead>
     <tbody>${[...s].reverse().map(p => `<tr><td>${fmtDay(p.day)}</td><td class="num">${showPoint(m, meta, p)}</td><td>${esc(src[p.src] || "")}</td></tr>`).join("")}</tbody></table></div></details>`;
   const legend = `<span class="small muted">${band && !kid ? `<span class="hl-sw band"></span>${t("参考范围")} · ` : ""}<span class="hl-sw dot"></span>${t("在家 / 化验")} · <span class="hl-sw ring"></span>${t("就诊")}${m === "bp" ? ` · <span class="hl-sw sky"></span>${t("舒张压")}` : ""}</span>`;
+  // 只有一个点：画不出走势，直接说清楚（化验一般一年一次，下一次记了就有线）
+  if (s.length < 2) return `<div class="panel hl-chart"><div class="hl-chart-head"><b>${esc(meta.name)}</b></div><p class="small muted" style="margin:0">${t("目前只有 {d} 这一次（{v}），再记一次就能看到走势。", { d: fmtDay(s[0].day), v: `${showPoint(m, meta, s[0])}${meta.unit ? " " + meta.unit : ""}` })}</p>${table}</div>`;
   return `<div class="panel hl-chart"><div class="hl-chart-head"><b>${esc(meta.name)}</b>${legend}</div>${svg(560, 230, "hl-w")}${svg(360, 220, "hl-n")}${table}</div>`;
 }
 /** 卡片里的小走势线 */
@@ -155,26 +168,55 @@ function spark(s){
   return `<svg class="hl-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`;
 }
 
+/* ---- 化验结果：每项最新一次，按套餐分组；一行 = 名称 · 数值 · 范围条（绿 = 正常段，点 = 这次的值）· 偏高 / 偏低 · 和上次比 ---- */
+function latestLabs(data){
+  const by = new Map();
+  for (const x of [...data.labs].sort((a, b) => a.day.localeCompare(b.day))) { const k = x.code || x.name; by.set(k, { x, prev: by.get(k) ? by.get(k).x : null, n: (by.get(k) ? by.get(k).n : 0) + 1 }); }
+  return [...by.entries()].map(([k, v]) => ({ k, ...v, group: labGroupOf(v.x), flag: labFlag(v.x) }));
+}
+const ORDER = Object.keys(LABS);
+const byOrder = (a, b) => (ORDER.indexOf(a.x.code) + 1 || 999) - (ORDER.indexOf(b.x.code) + 1 || 999) || String(a.k).localeCompare(String(b.k));
+function labLine(r, { metric = null, hist = false } = {}){
+  const x = r.x, bar = rangeBar(x), m = "lab:" + r.k, d = r.prev ? +(+x.value - +r.prev.value).toFixed(2) : null;
+  return `<div class="hl-lr ${r.flag ? "flag-" + r.flag : ""} ${metric === m ? "sel" : ""}">
+    <button class="hl-lr-main" data-hl="metric" data-v="${esc(m)}" aria-pressed="${metric === m}">
+      <span class="hl-lr-name"><b>${esc(labName(x, lang()))}</b><small>${t("参考 {r}", { r: rangeText(x) || "—" })}${x.unit ? ` ${esc(x.unit)}` : ""}</small></span>
+      <span class="hl-lr-val"><b class="num">${esc(+(+x.value).toFixed(2))}</b>${r.flag ? `<span class="pill ${r.flag === "high" ? "hi" : "lo"}">${t(r.flag === "high" ? "偏高" : "偏低")}</span>` : ""}${d ? `<small class="muted">${d > 0 ? "↑" : "↓"} ${Math.abs(d)}</small>` : ""}</span>
+      ${bar ? `<span class="hl-rbar" aria-hidden="true"><i class="ok" style="left:${bar.lo.toFixed(1)}%;width:${(bar.hi - bar.lo).toFixed(1)}%"></i><i class="at" style="left:${bar.at.toFixed(1)}%"></i></span>` : ""}
+    </button>
+    ${hist ? `<span class="hl-lab-hist">${S.hl.labs.filter(y => (y.code || y.name) === r.k && y.subject === x.subject).sort((a, b) => b.day.localeCompare(a.day)).slice(0, 4).map(y => `<button class="hl-lab-v ${labFlag(y) ? "flag-" + labFlag(y) : ""}" data-hl="edit-lab" data-id="${esc(y.id)}" title="${esc(t("改这一条"))}"><b class="num">${esc(+(+y.value).toFixed(2))}</b><small>${fmtDay(y.day).slice(2)}</small></button>`).join("")}</span>` : ""}
+  </div>`;
+}
+/** 概览里的化验：下拉框选套餐（默认「需要留意」：有偏高 / 偏低的；都正常时选最近一次化验的那一套） */
+function labOverviewHTML(data){
+  const ui = UI(), rows = latestLabs(data);
+  if (!rows.length) return `${secHead(t("化验结果"), `<button class="chip" data-hl="new-lab">＋ ${t("录入化验")}</button>`)}<div class="panel small muted">${t("还没有化验。拍化验单 / 截图（可多张），或按套餐一次填一整份。")}</div>`;
+  const groups = Object.keys(LAB_GROUPS).filter(g => rows.some(r => r.group === g)), flagged = rows.filter(r => r.flag);
+  const newest = rows.reduce((a, r) => (r.x.day > a.x.day ? r : a), rows[0]);
+  const opts = [...(flagged.length ? [["flag", t("需要留意（{n}）", { n: flagged.length })]] : []), ...groups.map(g => [g, `${t(LAB_GROUPS[g])}（${rows.filter(r => r.group === g).length}）`]), ["all", t("全部（{n}）", { n: rows.length })]];
+  if (!opts.some(([v]) => v === ui.labGroup)) ui.labGroup = flagged.length ? "flag" : newest.group;
+  const shown = (ui.labGroup === "flag" ? flagged : ui.labGroup === "all" ? rows : rows.filter(r => r.group === ui.labGroup)).sort(byOrder);
+  const last = shown.reduce((a, r) => (r.x.day > a ? r.x.day : a), "");
+  return `${secHead(t("化验结果"), `<button class="chip" data-hl="new-lab">＋ ${t("录入化验")}</button>`)}
+    <div class="panel hl-labs-ov"><div class="hl-labs-bar"><label class="sr-only" for="hlLabGroup">${t("选套餐")}</label><select id="hlLabGroup">${opts.map(([v, l]) => `<option value="${v}" ${ui.labGroup === v ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>
+      <span class="small muted">${last ? t("最近 {d}", { d: fmtDay(last) }) : ""} · <button class="linkbtn" data-hl="view" data-v="labs">${t("全部化验")} ›</button></span></div>
+      ${shown.map(r => labLine(r, { metric: ui.metric })).join("")}</div>`;
+}
+
 /* 就诊：时间倒序，分页 */
 function visitsHTML(who){
   const data = hl.dataOf(who.key), list = [...data.visits].sort((a, b) => b.day.localeCompare(a.day));
   if (!list.length) return `<div class="panel empty">${t("还没有就诊记录。")}<br><button class="btn primary" data-hl="new-visit">${t("记一次就诊")}</button></div>`;
   return `<div class="hl-list">${pg.page("hlVisits", list).map(v => visitCard(v, data)).join("")}</div>${pg.moreBtn("hlVisits", list.length)}`;
 }
-/* 化验：按项目分组，每项最新值 + 历史 */
+/* 化验：按套餐分组（血脂 / 代谢综合 / 血常规…），每项最新值 + 范围条 + 最近 4 次（点一次改那一条） */
 function labsHTML(who){
-  const data = hl.dataOf(who.key);
-  if (!data.labs.length) return `<div class="panel empty">${t("还没有化验记录。")}<br><button class="btn primary" data-hl="new-lab">${t("记一份化验")}</button></div>`;
-  const by = new Map(); for (const x of [...data.labs].sort((a, b) => b.day.localeCompare(a.day))) { const k = x.code || x.name; if (!by.has(k)) by.set(k, []); by.get(k).push(x); }
-  const groupOf = k => (LABS[k] ? LABS[k].group : "other");
-  const groups = Object.keys(LAB_GROUPS).filter(g => [...by.keys()].some(k => groupOf(k) === g));
-  return groups.map(g => `${secHead(t(LAB_GROUPS[g]))}<div class="panel mlist">${[...by].filter(([k]) => groupOf(k) === g).map(([k, rows]) => {
-    const x = rows[0], f = labFlag(x), range = x.ref_low != null && x.ref_high != null ? `${x.ref_low}–${x.ref_high}` : x.ref_high != null ? `< ${x.ref_high}` : x.ref_low != null ? `> ${x.ref_low}` : "";
-    return `<div class="hl-lab"><button class="hl-lab-main" data-hl="lab-chart" data-v="${esc("lab:" + k)}"><b>${esc(labName(x, lang()))}</b>
-        <small>${t("参考 {r}", { r: range || "—" })} · ${t("{n} 次", { n: rows.length })}</small></button>
-      <span class="hl-lab-hist">${rows.slice(0, 4).map(r => `<button class="hl-lab-v ${labFlag(r) ? "flag-" + labFlag(r) : ""}" data-hl="edit-lab" data-id="${esc(r.id)}" title="${esc(fmtDay(r.day))}"><b class="num">${esc(+(+r.value).toFixed(2))}</b><small>${fmtDay(r.day).slice(2)}</small></button>`).join("")}</span>
-      <span class="hl-lab-unit small muted">${esc(x.unit || "")}${f ? ` <span class="pill ${f === "high" ? "hi" : "lo"}">${t(f === "high" ? "偏高" : "偏低")}</span>` : ""}</span></div>`;
-  }).join("")}</div>`).join("");
+  const data = hl.dataOf(who.key), rows = latestLabs(data);
+  if (!rows.length) return `<div class="panel empty">${t("还没有化验记录。")}<br><button class="btn primary" data-hl="new-lab">${t("录入化验")}</button></div>`;
+  return `<div class="btns" style="margin-top:0"><button class="btn primary" data-hl="new-lab">＋ ${t("录入化验")}</button></div>` + Object.keys(LAB_GROUPS).filter(g => rows.some(r => r.group === g)).map(g => {
+    const list = rows.filter(r => r.group === g).sort(byOrder), n = list.filter(r => r.flag).length;
+    return `${secHead(t(LAB_GROUPS[g]), "", n ? t("{n} 项超出范围", { n }) : t("都在范围内"))}<div class="panel hl-labs-ov">${list.map(r => labLine(r, { hist: true })).join("")}</div>`;
+  }).join("") + `<p class="small muted">${t("点名字看走势，点下面的数字改那一次。范围以化验单为准，各家化验室不完全一样。")}</p>`;
 }
 /* 测量：时间倒序 */
 function measuresHTML(who){
@@ -272,6 +314,74 @@ function openLab(x){
     closeSheet(); toast(t("已保存"));
   }, x ? async () => { if (!confirm(t("删除这一项化验？"))) return; await hl.remove("labs", x.id); closeSheet(); toast(t("已删除")); } : null);
 }
+/* ---- 录入一整份化验（2026-11-02）：按套餐列出全部项目一次填；或者拍化验单 / 门户截图（可多张）、粘贴文字，让 AI 把所有套餐一起填好 ----
+   draft.vals = { code: { value, unit, ref_low, ref_high } }；对不上内置项目的放 draft.extra = [{ name, value, unit, ref_low, ref_high }]。
+   表里改的数字马上记进 draft（input 事件），切换套餐 / 重画不会丢。保存时只存填了数字的。 */
+const filledVal = v => v && v.value !== "" && v.value != null && Number.isFinite(+v.value);
+function batchCount(d, g){ return Object.entries(d.vals || {}).filter(([c, v]) => filledVal(v) && LABS[c] && LABS[c].group === g).length + (g === "other" ? (d.extra || []).filter(filledVal).length : 0); }
+function batchTable(d){
+  const g = d.panel || "lipid", items = Object.entries(LABS).filter(([, x]) => x.group === g);
+  const cell = (key, k, v, w = "") => `<input class="hl-bt-in ${w}" data-bt="${esc(key)}" data-k="${k}" type="${k === "unit" || k === "name" ? "text" : "number"}" ${k === "unit" || k === "name" ? "" : 'inputmode="decimal" step="any"'} value="${esc(v ?? "")}" placeholder="${esc(t({ value: "结果", unit: "单位", ref_low: "下限", ref_high: "上限", name: "项目名称" }[k]))}" aria-label="${esc(t({ value: "结果", unit: "单位", ref_low: "参考下限", ref_high: "参考上限", name: "项目名称" }[k]))}">`;
+  const row = (key, label, v, def) => {
+    const x = { value: v.value, ref_low: v.ref_low !== undefined ? v.ref_low : def.low, ref_high: v.ref_high !== undefined ? v.ref_high : def.high }, f = filledVal(v) ? labFlag(x) : null;
+    return `<tr class="${f ? "flag-" + f : ""}"><th scope="row">${label}</th><td>${cell(key, "value", v.value, "v")}</td><td class="hl-bt-unit">${cell(key, "unit", v.unit ?? def.unit, "u")}</td>
+      <td class="hl-bt-rng">${cell(key, "ref_low", x.ref_low, "r")}<span aria-hidden="true">–</span>${cell(key, "ref_high", x.ref_high, "r")}</td>
+      <td class="hl-bt-f">${f ? `<span class="pill ${f === "high" ? "hi" : "lo"}">${t(f === "high" ? "偏高" : "偏低")}</span>` : ""}</td></tr>`;
+  };
+  const rows = items.map(([c, x]) => row(c, esc(lang() === "en" ? x.en : x.name), (d.vals || {})[c] || {}, x)).join("")
+    + (g === "other" ? (d.extra || []).map((v, i) => row("x" + i, cell("x" + i, "name", v.name, "n"), v, { unit: "", low: null, high: null })).join("") : "");
+  return `<div class="scroll-x"><table class="hl-bt"><thead><tr><th scope="col">${t("项目")}</th><th scope="col">${t("结果")}</th><th scope="col">${t("单位")}</th><th scope="col">${t("参考范围")}</th><th scope="col"><span class="sr-only">${t("提示")}</span></th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${g === "other" ? `<button type="button" class="chip" data-hl="bt-extra">＋ ${t("加一项（单子上别的项目）")}</button>` : ""}`;
+}
+function openLabBatch(init = {}){
+  const who = UI().who;
+  const draft = { subject: who, day: today(), panel: "lipid", vals: {}, extra: [], visit_id: "", ...init };
+  if (!draft.visit_id) { const v = S.hl.visits.filter(x => x.subject === draft.subject && Math.abs(daysBetween(x.day, draft.day)) <= 45).sort((a, b) => b.day.localeCompare(a.day))[0]; if (v) draft.visit_id = v.id; }
+  openForm("录入化验", [
+    { k: "h_ai", type: "html", html: d => `<div class="hl-ai"><button type="button" class="btn" data-hl="ai-read" data-v="labs">📷 ${t("拍照 / 截图读取（可多张）")}</button><button type="button" class="btn" data-hl="bt-paste">📋 ${t("粘贴文字")}</button>
+      <span class="small muted">${d._aiBusy ? t("正在读取…") : d.ai_used ? t("已经用 AI 读过，保存前请核对。") : t("门户（MyChart 等）每个套餐截一张图，或者把结果页的文字复制过来；AI 会把每一项填进下面的表，范围按单子上的。")}</span>
+      ${d._paste ? `<textarea id="hlPaste" class="hl-paste" placeholder="${esc(t("把化验结果页的文字粘贴在这里"))}">${esc(d._pasteText || "")}</textarea><button type="button" class="btn primary" data-hl="bt-paste-read">${t("读取粘贴的文字")}</button>` : ""}</div>` },
+    { k: "subject", label: "谁", type: "seg", optsFn: peopleOpts, raw: true },
+    { k: "day", label: "采样日期", type: "date" },
+    { k: "visit_id", type: "html", html: d => { const vs = S.hl.visits.filter(x => x.subject === d.subject).sort((a, b) => b.day.localeCompare(a.day)).slice(0, 12);
+      return vs.length ? `<div class="field" style="margin:0"><label for="f_visit">${t("挂在哪次就诊上（可不选）")}</label><select id="f_visit" data-f="visit_id"><option value="">${t("不挂")}</option>${vs.map(v => `<option value="${esc(v.id)}" ${d.visit_id === v.id ? "selected" : ""}>${esc(fmtDay(v.day))} · ${esc(t((VISIT_KINDS[v.kind] || VISIT_KINDS.other).label))}${v.provider ? " · " + esc(v.provider) : ""}</option>`).join("")}</select></div>` : ""; } },
+    { k: "panel", label: "套餐", type: "seg", optsFn: d => Object.entries(LAB_GROUPS).map(([g, l]) => [g, `${t(l)}${batchCount(d, g) ? ` · ${batchCount(d, g)}` : ""}`]), raw: true },
+    { k: "h_tbl", type: "html", html: d => batchTable(d) },
+    { k: "fasting", label: "空腹采血", type: "check" },
+    { k: "h_sum", type: "html", html: d => { const n = Object.keys(LAB_GROUPS).reduce((a, g) => a + batchCount(d, g), 0); return `<p class="small muted" style="margin:0">${n ? t("将保存 {n} 项（只存填了结果的）。", { n }) : t("填了结果的项目才会保存。")}</p>`; } }
+  ], draft, async d => {
+    if (!d.day) { toast(t("请填日期")); return; }
+    const out = [], num2 = v => (v === "" || v == null ? null : +v);
+    for (const [c, v] of Object.entries(d.vals || {})) if (filledVal(v) && LABS[c]) out.push({ code: c, value: +v.value, unit: v.unit ?? LABS[c].unit, ref_low: v.ref_low !== undefined ? v.ref_low : LABS[c].low, ref_high: v.ref_high !== undefined ? v.ref_high : LABS[c].high });
+    for (const v of d.extra || []) if (filledVal(v) && v.name) out.push({ code: "", name: v.name, value: +v.value, unit: v.unit || "", ref_low: v.ref_low ?? null, ref_high: v.ref_high ?? null });
+    if (!out.length) { toast(t("请至少填一项结果")); return; }
+    await hl.saveMany("labs", out.map(x => labRow({ ...x, ref_low: num2(x.ref_low), ref_high: num2(x.ref_high), day: d.day, notes: d.fasting ? t("空腹") : "" }, d.subject, d.visit_id || null, !!d.ai_used)));
+    UI().labGroup = null; closeSheet(); toast(t("已保存 {n} 项化验", { n: out.length }));
+  });
+}
+/** AI 读出来的化验 → 填进表（对上的按代码，对不上的放「其他」）；切到项目最多的那一套 */
+function fillBatch(d, labs, extra = {}){
+  d.vals ||= {}; d.extra ||= [];
+  for (const x of labs) {
+    if (x.code) d.vals[x.code] = { value: x.value, unit: x.unit || LABS[x.code].unit, ref_low: x.ref_low, ref_high: x.ref_high };
+    else d.extra.push({ name: x.name, value: x.value, unit: x.unit, ref_low: x.ref_low, ref_high: x.ref_high });
+  }
+  if (extra.day) d.day = extra.day;
+  if (extra.fasting) d.fasting = true;
+  const counts = Object.keys(LAB_GROUPS).map(g => [g, batchCount(d, g)]).sort((a, b) => b[1] - a[1]);
+  if (counts[0][1]) d.panel = counts[0][0];
+  d.ai_used = true;
+}
+// 表里改数字：马上记进 draft（不重画，光标不跳）；离开结果格子时重画一次，偏高 / 偏低跟着变
+document.addEventListener("input", ev => {
+  const el = ev.target; if (!el || !el.dataset || el.dataset.bt === undefined) return;
+  const f = getForm(); if (!f) return;
+  const key = el.dataset.bt, k = el.dataset.k, v = el.value.trim(), val = k === "unit" || k === "name" ? v : v === "" ? (k === "value" ? "" : null) : +v;
+  if (key.startsWith("x")) { const i = +key.slice(1); (f.draft.extra[i] ||= {})[k] = val; }
+  else ((f.draft.vals ||= {})[key] ||= {})[k] = val;
+});
+document.addEventListener("change", ev => { const el = ev.target; if (el && el.dataset && el.dataset.bt !== undefined && el.dataset.k === "value") { readForm(); drawForm(); } });
+
 function openMeasure(m){
   const s = sys();
   const init = m ? { ...m, value: m.kind === "bp" ? m.value : toShow(MEASURE_KINDS[m.kind].dim, m.value, s) } : { subject: UI().who, day: today(), kind: "weight" };
@@ -330,12 +440,12 @@ function aiRead(mode){
   }
   const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.multiple = true;
   inp.onchange = async () => {
-    const files = [...inp.files].slice(0, 4); if (!files.length) return;
+    const files = [...inp.files].slice(0, 6); if (!files.length) return;   // 代谢综合常常要截 3 张
     readForm(); const f = getForm(); if (!f) return;
     f.draft._aiBusy = true; drawForm();
     try {
       const images = []; for (const x of files) images.push(await shrink(x));
-      const r = parseExtract(await askText(EXTRACT_SYSTEM, mode === "visit" ? "Read this after-visit summary (and any lab results on it)." : "Read the lab results in this report.", { json: true, images, maxTokens: 3000 }));
+      const r = parseExtract(await askText(EXTRACT_SYSTEM, mode === "visit" ? "Read this after-visit summary (and any lab results on it)." : "Read every lab result on these pages.", { json: true, images, maxTokens: 4000 }));
       if (!r) throw new Error(t("没读出内容，换一张清楚点的照片试试"));
       const d = getForm().draft;
       if (r.day) d.day = r.day;
@@ -345,12 +455,30 @@ function aiRead(mode){
           v_weight: v.weight_kg != null ? toShow("weight", v.weight_kg, s) : d.v_weight, v_height: v.height_cm != null ? toShow("length", v.height_cm, s) : d.v_height, v_sys: v.sys ?? d.v_sys, v_dia: v.dia ?? d.v_dia,
           v_hr: v.hr ?? d.v_hr, v_temp: v.temp_c != null ? toShow("temp", v.temp_c, s) : d.v_temp, v_spo2: v.spo2 ?? d.v_spo2 });
       }
-      d._labs = r.labs; d.ai_used = true;
+      if (mode === "labs") { readForm(); fillBatch(getForm().draft, r.labs, r); }
+      else { d._labs = r.labs; d.ai_used = true; }
       toast(r.labs.length ? t("读出 {n} 项化验，请核对", { n: r.labs.length }) : t("已读出，请核对"));
     } catch (e) { toast(t("读取失败：{msg}", { msg: String(e.message || e).slice(0, 100) })); }
     finally { const g = getForm(); if (g) { g.draft._aiBusy = false; drawForm(); } }
   };
   inp.click();
+}
+
+/** 粘贴的化验结果文字 → AI 读成 JSON → 填进表（只发文字；第一次问一下） */
+async function pasteRead(){
+  readForm(); const f = getForm(); if (!f) return;
+  const text = (document.getElementById("hlPaste") || {}).value || ""; f.draft._pasteText = text;
+  if (!text.trim()) { toast(t("先粘贴文字")); return; }
+  if (!aiReady()) { toast(t("先在 我的 → 咩咩咩 → AI 设置 里填一个 API key")); return; }
+  if (!loadJSON(AI_OK, false)) { if (!confirm(t("粘贴的文字会发给你自己设置的 AI 服务商来整理（提示里要求它不要读姓名、生日、地址）。继续吗？"))) return; saveJSON(AI_OK, true); }
+  f.draft._aiBusy = true; drawForm();
+  try {
+    const r = parseExtract(await askText(EXTRACT_SYSTEM, "Read every lab result in this text:" + String.fromCharCode(10) + text.slice(0, 20000), { json: true, maxTokens: 4000 }));
+    if (!r || !r.labs.length) throw new Error(t("没读出化验结果"));
+    fillBatch(getForm().draft, r.labs, r); getForm().draft._paste = false;
+    toast(t("读出 {n} 项化验，请核对", { n: r.labs.length }));
+  } catch (e) { toast(t("读取失败：{msg}", { msg: String(e.message || e).slice(0, 100) })); }
+  finally { const g = getForm(); if (g) { g.draft._aiBusy = false; drawForm(); } }
 }
 
 /* ---- 事件（events.js 把 data-hl 的按钮交给这里） ---- */
@@ -359,11 +487,14 @@ async function hlAct(act, btn){
   switch (act) {
     case "who": ui.who = d.key; ui.metric = null; pg.reset("hlVisits", "hlMeasures", "hlWk"); render(); return;
     case "view": ui.view = d.v; render(); window.scrollTo(0, 0); return;
-    case "metric": ui.metric = d.v; render(); return;
+    case "metric": ui.metric = d.v; if (ui.view === "labs") ui.view = "overview"; render(); if (ui.view === "overview") requestAnimationFrame(() => document.querySelector(".hl-chart")?.scrollIntoView({ block: "nearest", behavior: "smooth" })); return;
     case "lab-chart": ui.metric = d.v; ui.view = "overview"; render(); return;
     case "units": saveJSON(UNIT_KEY, d.v); render(); return;
     case "new-visit": openVisit(null); return;
-    case "new-lab": openLab(null); return;
+    case "new-lab": openLabBatch(); return;
+    case "bt-extra": { readForm(); const f = getForm(); if (f) { f.draft.extra.push({ name: "", value: "", unit: "" }); f.draft.panel = "other"; drawForm(); } return; }
+    case "bt-paste": { readForm(); const f = getForm(); if (f) { f.draft._paste = !f.draft._paste; drawForm(); requestAnimationFrame(() => document.getElementById("hlPaste")?.focus()); } return; }
+    case "bt-paste-read": await pasteRead(); return;
     case "new-measure": openMeasure(null); return;
     case "edit-visit": { const v = S.hl.visits.find(x => x.id === d.id); if (v) openVisit(v); return; }
     case "edit-lab": { const x = S.hl.labs.find(y => y.id === d.id); if (x) openLab(x); return; }
@@ -375,6 +506,15 @@ async function hlAct(act, btn){
   await planAct(act, d);   // 计划 / 训练 / 饮食（js/health-plan-ui.js）
 }
 // 化验项目换了：单位和参考范围跟着换（只在没改过的时候）
+document.addEventListener("change", ev => { if (ev.target && ev.target.id === "hlLabGroup") { UI().labGroup = ev.target.value; render(); } });
+// 手机头部的两个下拉框：换人、换页
+document.addEventListener("change", ev => {
+  const id = ev.target && ev.target.id; if (id !== "hlWho" && id !== "hlView") return;
+  const ui = UI(); if (id === "hlWho") { ui.who = ev.target.value; ui.metric = null; ui.labGroup = null; pg.reset("hlVisits", "hlMeasures", "hlWk"); } else ui.view = ev.target.value;
+  render(); window.scrollTo(0, 0);
+});
+// 「＋ 记一笔」小菜单：点了一项就收起
+document.addEventListener("click", ev => { const m = ev.target.closest && ev.target.closest(".hl-addmenu"); document.querySelectorAll(".hl-addmenu[open]").forEach(d => { if (d !== m || ev.target.closest("[data-hl]")) d.open = false; }); });
 document.addEventListener("change", ev => {
   if (!ev.target || ev.target.id !== "f_code") return;
   readForm(); const f = getForm(); if (!f) return;
