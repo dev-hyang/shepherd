@@ -12,14 +12,14 @@ const GOOGLE_CLIENT_ID = "";   // Google Cloud Console → OAuth 2.0 客户端�
 const GOOGLE_API_KEY = "";     // Google Cloud Console → 凭据 → API 密钥（限制为 Google Picker API）；用于「在 Drive 里选文件夹」，留空就只能填路径
 const DROPBOX_APP_KEY = "";    // Dropbox App Console → App key；Access type 选 App folder；Redirect URI 填站点地址（带结尾的 /）
 const LS_PREFIX = "shepherd.v1";              // 本设备偏好的 localStorage 前缀
-const APP_VERSION = "2026-10-31.2";
+const APP_VERSION = "2026-11-02.1";
 const BABY_LOG_URL = "https://dev-hyang.github.io/baby-log/";
 // 四个姊妹站点同一个账号同一个家庭；标题旁的左右箭头在它们之间切换（按这里的顺序环绕）
 const SISTER_APPS = [
   { id: "baby-log", name: "小月亮", short: "小月亮", url: BABY_LOG_URL, desc: "宝宝记录：喂奶、睡眠、尿布、成长曲线。家庭、家人和孩子在这里维护。" },
   { id: "homeschool", name: "家庭学堂", short: "学堂", url: "https://dev-hyang.github.io/homeschool/", desc: "在家教育：每日敬拜、经文背诵、课程、任务与报告。" },
   { id: "home-pantry", name: "爱家小助手", short: "小助手", url: "https://dev-hyang.github.io/home-pantry/", desc: "家庭库存与采购清单、按库存推荐三餐、房屋维护与装备清单。" },
-  { id: "shepherd", name: "牧羊人", short: "牧羊人", url: "https://dev-hyang.github.io/shepherd/", desc: "大人自己的身心灵记录：读经、祷告、锻炼、饮食、屏幕时长、用药与保健品，提醒与趋势。" }
+  { id: "shepherd", name: "牧羊人", short: "牧羊人", url: "https://dev-hyang.github.io/shepherd/", desc: "身心灵 · 家人健康：读经、祷告、锻炼、饮食、用药与保健品；家人的就诊、化验、体征走势与复诊提醒。" }
 ];
 const THIS_APP = "shepherd";
 

@@ -6,6 +6,7 @@ import { attachRealtime, loadAll } from "../wb.js";
 import { runScheduled } from "../backup.js";
 import { attachRealtime as attachTaskRealtime, loadTasks } from "../tk.js";
 import { attachRealtime as attachNoteRealtime, loadNotes } from "../nt.js";
+import { attachRealtime as attachHealthRealtime, loadHealth } from "../hl.js";
 import { refreshSettingsIfOpen, render } from "../views.js";
 
 /* ============ 登录与家庭（与小月亮共用同一套表） ============
@@ -71,7 +72,8 @@ async function loadData(){
   await Promise.all([
     loadAll().catch(e => console.error(e)),
     loadTasks().catch(e => console.error(e)),
-    loadNotes().catch(e => console.error(e))
+    loadNotes().catch(e => console.error(e)),
+    loadHealth().catch(e => console.error(e))   // 家人健康（迁移 026）：表没建时只有健康页提示
   ]);
   if (S.wb.loaded) S.loadedAt = Date.now();
 }
@@ -107,6 +109,7 @@ function setupRealtime(){
   attachRealtime(SB.channel, () => { if (!$("#sheet").open) render(); });
   if (S.tk.loaded) attachTaskRealtime(SB.channel, () => { if (!$("#sheet").open) render(); });   // 任务表没建（迁移 015）时不订阅，免得整个频道订阅失败
   if (S.nt.loaded) attachNoteRealtime(SB.channel, () => { if (!$("#sheet").open) render(); });   // 同上：表没建（迁移 016）不订阅
+  if (S.hl.loaded) attachHealthRealtime(SB.channel, () => { if (!$("#sheet").open) render(); });   // 同上：表没建（迁移 026）不订阅
   SB.channel.subscribe();
 }
 const isOwner = () => !!(S.user && S.members[S.user.id] && S.members[S.user.id].role === "owner");

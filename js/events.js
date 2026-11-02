@@ -16,6 +16,7 @@ import * as tkm from "./tk.js";
 import * as nts from "./notes.js";
 import * as pg from "./pager.js";
 import { closePop, togglePop } from "./ui.js";
+import { hlAct } from "./health.js";
 import { editCat, openCats, openMit, openTaskForm, resetCats, shiftPlan, startTidy } from "./tasks.js";
 
 /* ============ 事件分发 ============
@@ -84,6 +85,7 @@ document.addEventListener("click", async ev => {
   if (d.range) { S.review.range = d.range; render(); return; }
   if (d.metric) { S.review.metric = d.metric; render(); return; }
 
+  if (d.hl) { try { await hlAct(d.hl, btn); } catch (e) { console.error(e); } return; }   // 健康页（js/health.js）
   if (d.act && d.act.startsWith("bk-")) { await bkAct(d.act, btn); return; }   // 备份与恢复（js/backup.js）
   if (d.act && d.act.startsWith("ask-")) { await askAct(d.act, btn); return; }  // 咩咩咩（js/ask.js）
   try {

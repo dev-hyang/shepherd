@@ -17,14 +17,14 @@ const KIND_ICON: Record<string, string> = { scripture: "📖", prayer: "🕊", e
 const BYDAY = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 
 /* 三种语言的文字；名字留空的习惯按种类显示 */
-type Text = { cal: string; desc: string; kinds: Record<string, string>; dose: string; minutes: (m: number) => string; from: string; refill: string; left: (d: number, s: number, dose: string) => string };
+type Text = { cal: string; desc: string; kinds: Record<string, string>; dose: string; minutes: (m: number) => string; from: string; refill: string; left: (d: number, s: number, dose: string) => string; followup: string };
 const TEXT: Record<string, Text> = {
   "zh-CN": { cal: "牧羊人", desc: "牧羊人 · 身心灵记录的提醒", kinds: { scripture: "读经", prayer: "祷告", exercise: "锻炼", diet: "健康饮食", screen: "屏幕时长", sleep: "睡眠", med: "用药", supplement: "保健品", focus: "专注", custom: "习惯" },
-    dose: "剂量：", minutes: m => `约 ${m} 分钟`, from: "来自牧羊人", refill: "补货：", left: (d, s, dose) => `还剩约 ${d} 天的量（${s}${dose ? " × " + dose : ""}）` },
+    dose: "剂量：", minutes: m => `约 ${m} 分钟`, from: "来自牧羊人", refill: "补货：", left: (d, s, dose) => `还剩约 ${d} 天的量（${s}${dose ? " × " + dose : ""}）`, followup: "复诊" },
   "zh-TW": { cal: "牧羊人", desc: "牧羊人 · 身心靈記錄的提醒", kinds: { scripture: "讀經", prayer: "禱告", exercise: "鍛鍊", diet: "健康飲食", screen: "螢幕時長", sleep: "睡眠", med: "用藥", supplement: "保健品", focus: "專注", custom: "習慣" },
-    dose: "劑量：", minutes: m => `約 ${m} 分鐘`, from: "來自牧羊人", refill: "補貨：", left: (d, s, dose) => `還剩約 ${d} 天的量（${s}${dose ? " × " + dose : ""}）` },
+    dose: "劑量：", minutes: m => `約 ${m} 分鐘`, from: "來自牧羊人", refill: "補貨：", left: (d, s, dose) => `還剩約 ${d} 天的量（${s}${dose ? " × " + dose : ""}）`, followup: "複診" },
   "en": { cal: "Shepherd", desc: "Shepherd · body, mind & spirit reminders", kinds: { scripture: "Bible", prayer: "Prayer", exercise: "Exercise", diet: "Healthy eating", screen: "Screen time", sleep: "Sleep", med: "Medication", supplement: "Supplement", focus: "Focus", custom: "Habit" },
-    dose: "Dose: ", minutes: m => `about ${m} min`, from: "From Shepherd", refill: "Restock: ", left: (d, s, dose) => `About ${d} days left (${s}${dose ? " × " + dose : ""})` }
+    dose: "Dose: ", minutes: m => `about ${m} min`, from: "From Shepherd", refill: "Restock: ", left: (d, s, dose) => `About ${d} days left (${s}${dose ? " × " + dose : ""})`, followup: "Follow-up visit" }
 };
 const textFor = (lang: unknown) => TEXT[typeof lang === "string" && lang in TEXT ? lang : "zh-CN"];
 
@@ -79,7 +79,21 @@ function taskEvents(tasks: Task[], T: Text, now: Date, allDayAt: string): string
   return out;
 }
 
-function build(p: Practice[], T: Text, tasks: Task[] = [], allDayAt = "09:00"): string {
+/* ---- 家人健康（hl_visits，迁移 026）：填了复诊日期、还没到的就诊 → 全天事件，当天和前一天 allDayAt 各响一次 ---- */
+type FollowUp = { id: string; subject: string; follow_up: string; provider: string; reason: string };
+function followUpEvents(list: FollowUp[], names: Record<string, string>, T: Text, now: Date, allDayAt: string): string[] {
+  const out: string[] = [], [ah, am] = /^\d{2}:\d{2}$/.test(allDayAt) ? allDayAt.split(":").map(Number) : [9, 0];
+  for (const v of list) {
+    const title = `🩺 ${T.followup} · ${[names[v.subject], v.provider].filter(Boolean).join(" · ")}`;
+    out.push("BEGIN:VEVENT", `UID:${uid("hl-followup-" + v.id)}`, `DTSTAMP:${stamp(now)}`, `DTSTART;VALUE=DATE:${v.follow_up.replace(/-/g, "")}`,
+      `SUMMARY:${esc(title)}`, `DESCRIPTION:${esc([v.reason, `${T.from} https://dev-hyang.github.io/shepherd/`].filter(Boolean).join("\n"))}`, "TRANSP:TRANSPARENT");
+    for (const trig of [`PT${ah}H${am}M`, `-PT${24 - ah - (am ? 1 : 0)}H${am ? 60 - am : 0}M`]) out.push("BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${esc(title)}`, `TRIGGER:${trig}`, "END:VALARM");
+    out.push("END:VEVENT");
+  }
+  return out;
+}
+
+function build(p: Practice[], T: Text, tasks: Task[] = [], allDayAt = "09:00", extra: string[] = []): string {
   const now = new Date(), today = ymd(now), lines: string[] = [];
   lines.push("BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//dev-hyang//shepherd//ZH", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
     `X-WR-CALNAME:${esc(T.cal)}`, `X-WR-CALDESC:${esc(T.desc)}`, "REFRESH-INTERVAL;VALUE=DURATION:PT4H", "X-PUBLISHED-TTL:PT4H");
@@ -111,6 +125,7 @@ function build(p: Practice[], T: Text, tasks: Task[] = [], allDayAt = "09:00"): 
     }
   }
   lines.push(...taskEvents(tasks, T, now, allDayAt));
+  lines.push(...extra);
   lines.push("END:VCALENDAR");
   return lines.map(fold).join("\r\n") + "\r\n";
 }
@@ -125,6 +140,27 @@ Deno.serve(async (req) => {
   // 任务表（迁移 015）还没建、或查询失败时只是少了任务，习惯照常
   const tk = await sb.from("wb_tasks").select("id, kind, title, note, period, due, start_time, dur, recur, remind, nag").eq("user_id", prof.data.user_id).eq("status", "open").not("due", "is", null);
   const st = (prof.data.settings ?? {}) as Record<string, unknown>, nudge = (st.nudge ?? {}) as Record<string, unknown>;
-  const body = build((pr.data ?? []) as Practice[], textFor(st.lang), tk.error ? [] : (tk.data ?? []) as Task[], typeof nudge.allDayAt === "string" ? nudge.allDayAt : "09:00");
+  const allDayAt = typeof nudge.allDayAt === "string" ? nudge.allDayAt : "09:00", T = textFor(st.lang);
+  // 家人健康的复诊（迁移 026 没建时跳过）：service role 看得到全部行，所以按「我所在的家庭，或我自己记的」过滤；家人之间全部可见（用户 2026-11-02 定）
+  let health: string[] = [];
+  try {
+    const me = prof.data.user_id as string;
+    const fm = await sb.from("family_members").select("family_id").eq("user_id", me).eq("status", "active").limit(1).maybeSingle();
+    const fam = fm.data?.family_id as string | undefined, today = new Date().toISOString().slice(0, 10);
+    let q = sb.from("hl_visits").select("id, subject, follow_up, provider, reason").gte("follow_up", today).order("follow_up").limit(200);
+    q = fam ? q.or(`family_id.eq.${fam},created_by.eq.${me}`) : q.eq("created_by", me);
+    const hv = await q;
+    if (!hv.error && hv.data?.length) {
+      const names: Record<string, string> = {};
+      if (fam) {
+        const ms = await sb.from("family_members").select("user_id, display_name").eq("family_id", fam);
+        for (const m of ms.data ?? []) names["u:" + m.user_id] = m.display_name;
+        const ks = await sb.from("children").select("id, name").eq("family_id", fam);
+        for (const k of ks.data ?? []) names["c:" + k.id] = k.name;
+      }
+      health = followUpEvents(hv.data as FollowUp[], names, T, new Date(), allDayAt);
+    }
+  } catch (_e) { health = []; }
+  const body = build((pr.data ?? []) as Practice[], T, tk.error ? [] : (tk.data ?? []) as Task[], allDayAt, health);
   return new Response(body, { status: 200, headers: { "content-type": "text/calendar; charset=utf-8", "content-disposition": 'inline; filename="shepherd.ics"', "cache-control": "private, max-age=600" } });
 });

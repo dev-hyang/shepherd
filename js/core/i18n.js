@@ -36,7 +36,7 @@ function t(key, vars){
 const tc = text => cur === "zh-TW" ? s2t(text) : String(text ?? "");
 function locale(){ return cur; }
 function setLocale(l){ if (!LOCALES.some(x => x[0] === l)) return; cur = l; try { localStorage.setItem(KEY, l); } catch (e) {} applyLang(); }
-function applyLang(){ document.documentElement.lang = cur; document.title = t("牧羊人") + " · " + t("身心灵记录"); }
+function applyLang(){ document.documentElement.lang = cur; document.title = t("牧羊人") + " · " + t("身心灵 · 家人健康"); }
 applyLang();
 
 export { LOCALES, t, tc, locale, setLocale, s2t };

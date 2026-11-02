@@ -19,6 +19,7 @@ function viewMe(){
   ${ready ? `<div class="msec">${t("每天要做的")}</div>
   <div class="panel mlist">
     ${mrow('data-act="habits"', t("习惯与提醒"), t("读经、祷告、锻炼、饮食、屏幕……目标、日子、时间点、家人可见"), "✦", habits || "")}
+    ${mrow('data-tab="health"', t("家人健康"), t("就诊、化验、在家测量、走势图；复诊、年度体检、复查提醒"), "♥")}
     ${mrow('data-act="meds"', t("用药与保健品"), t("剂量、时间点、库存与补货提醒"), "💊", meds || "")}
     ${mrow('data-act="focus"', t("专注计时"), t("番茄工作法，每 20 分钟提醒看远处 20 秒护眼；完成的段自动记录"), "🍅")}
     ${mrow('data-act="notes"', t("灵修笔记"), t("读书心得、读经领受、问题与感动：拍照识字、搜索、导出打印、分享给家人"), "✎", S.nt && S.nt.loaded && S.nt.stats ? S.nt.stats.mine || "" : "")}

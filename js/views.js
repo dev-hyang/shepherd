@@ -11,12 +11,13 @@ import { viewPrayer } from "./prayer.js";
 import { viewReview } from "./review.js";
 import { openSettings } from "./sheet.js";
 import { viewToday } from "./today.js";
+import { viewHealth } from "./health.js";
 import { viewTasks } from "./tasks.js";
 import { pendingCount } from "./tk.js";
 
 /* ============ 渲染 ============ */
-const TAB_LABELS = { today: "今天", tasks: "任务", prayer: "祷告", review: "回顾", me: "我的" };
-const VIEWS = { today: viewToday, tasks: viewTasks, prayer: viewPrayer, review: viewReview, me: viewMe };
+const TAB_LABELS = { today: "今天", tasks: "任务", health: "健康", prayer: "祷告", review: "回顾", me: "我的" };
+const VIEWS = { today: viewToday, tasks: viewTasks, health: viewHealth, prayer: viewPrayer, review: viewReview, me: viewMe };
 /* 子页：挂在某个底部页签下面，顶部显示完整路径（像爱家小助手）：‹ 我的 / 咩咩咩。parent 也可以是另一个子页，路径一路显示到底部页签 */
 const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk } };
 function crumbParts(tab){
@@ -66,7 +67,7 @@ function renderStatus(){
   $("#status").innerHTML = `<span class="dot ${st[0]}"></span>${esc(st[1])}`;
   $("#bname").textContent = t("牧羊人");
   const d = new Date();
-  $("#bsub").textContent = S.cloud === "ready" ? `${esc(myName())} · ${S.day.slice(5).replace("-", "/")} ${t("周{d}", { d: t(WEEKDAY[d.getDay()]) })}` : t("身心灵记录");
+  $("#bsub").textContent = S.cloud === "ready" ? `${esc(myName())} · ${S.day.slice(5).replace("-", "/")} ${t("周{d}", { d: t(WEEKDAY[d.getDay()]) })}` : t("身心灵 · 家人健康");
   renderAppSwitch();
   renderLangSwitch();
   document.querySelectorAll("nav.tabs button").forEach(b => { const k = TAB_LABELS[b.dataset.tab]; if (!k) return; const txt = [...b.childNodes].find(x => x.nodeType === 3); if (txt) txt.nodeValue = t(k); else b.append(t(k)); });
@@ -78,7 +79,7 @@ function render(){
   const sub = SUB[S.tab], cur = sub ? sub.parent : S.tab;   // 子页时底部仍高亮它所属的页签
   document.querySelectorAll("nav.tabs button").forEach(b => { if (b.dataset.tab === cur) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
-  $("#main").className = S.tab === "today" ? "wide" : "narrow";
+  $("#main").className = S.tab === "today" || S.tab === "health" ? "wide" : "narrow";   // 今天、健康在宽屏用两栏
   const crumb = sub ? crumbNav(crumbParts(S.tab)) : "";
   $("#main").innerHTML = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩 没登录也能看
   updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : "", t("回到顶部"));
