@@ -3,6 +3,9 @@
    云端（Supabase Storage 的 backups 桶，路径 user/<我的id>/…，baby-log 仓库迁移 017）、这台电脑的文件夹（File System Access，桌面 Chrome / Edge）、或下载。
    云端和文件夹只留 60 天。网页没法在关着时跑：到期后下次打开应用时在后台做一次。
    恢复：登录后选备份文件 → 预览 → 按表 upsert 回我的账号（同主键覆盖，其余新增）；换了账号也能导（user_id 一律换成现在的）。
+   家人健康 hl_*（迁移 026 / 027）：按家庭共享、没有 user_id，读的是 RLS 给我的全部（我记的 + 全家的）；恢复时 created_by 换成我（守卫只许本人新增），
+   subject 里导出者自己的 'u:<旧id>' 换成 'u:<我>'，family_id 由守卫按我现在的家庭填。
+   以后每加一张表都要想一下要不要进 CFG.tables（以及 小月亮 js/backup.js、baby-log 迁移 029 的 backup_family / restore_family）。
    四个应用各有一份这个模块，CFG 不同（表、过滤列、云端前缀）。 */
 import { SB, myName } from "./core/auth.js";
 import { S } from "./core/state.js";
@@ -16,14 +19,19 @@ import { render } from "./views.js";
 
 const CFG = {
   app: "shepherd", title: "牧羊人", key: "shepherd.backup",
-  tables: ["wb_profile", "wb_practices", "wb_logs", "wb_prayers", "wb_tasks", "wb_notes"],   // 恢复顺序：被引用的在前（打卡引用习惯）
+  tables: ["wb_profile", "wb_practices", "wb_logs", "wb_prayers", "wb_tasks", "wb_notes",   // 恢复顺序：被引用的在前（打卡引用习惯；化验引用就诊）
+    "hl_profiles", "hl_templates", "hl_visits", "hl_labs", "hl_measures", "hl_activity"],
   extraTables: [],
   col: "user_id",
+  colOf: (tb) => (tb.startsWith("hl_") ? null : "user_id"),   // hl_*：不按人过滤，RLS 给什么拿什么
   ready: () => S.cloud === "ready" && !!S.user,
   scopeId: () => S.user.id,
   scopeName: () => myName() || "",
   prefix: () => `user/${S.user.id}`,
-  remap: (row) => ({ ...row, user_id: S.user.id, ...("family_id" in row ? { family_id: S.family ? S.family.id : null } : {}) }),   // 全部归到现在登录的人；家庭可见的项挂到现在的家庭
+  remap: (row, tb, from) => {
+    if (tb.startsWith("hl_")) { const { family_id, ...r } = row; return { ...r, created_by: S.user.id, ...(from && r.subject === `u:${from}` ? { subject: `u:${S.user.id}` } : {}) }; }   // family_id 交给守卫填
+    return { ...row, user_id: S.user.id, ...("family_id" in row ? { family_id: S.family ? S.family.id : null } : {}) };   // 全部归到现在登录的人；家庭可见的项挂到现在的家庭
+  },
   afterRestore: async () => { await loadAll(); render(); },
 };
 const KEEP_DAYS = 60, PAGE = 1000, FORMAT = 2;
@@ -62,7 +70,7 @@ const orderCols = (tb) => PK_ORDER[tb] || (tb.startsWith("wb_") ? ["user_id", "i
 async function readAll(table) {
   const out = [];
   for (let from = 0; ; from += PAGE) {
-    let q = SB.client.from(table).select("*").eq(CFG.col, CFG.scopeId()); for (const c of orderCols(table)) q = q.order(c);
+    let q = SB.client.from(table).select("*"); const col = CFG.colOf(table); if (col) q = q.eq(col, CFG.scopeId()); for (const c of orderCols(table)) q = q.order(c);
     const { data, error } = await q.range(from, from + PAGE - 1);
     if (error) { if (/does not exist|schema cache/i.test(error.message)) return out; throw new Error(`${table}: ${error.message}`); }   // 还没建的表：当作空
     out.push(...(data || [])); if (!data || data.length < PAGE) return out;
@@ -190,9 +198,11 @@ async function restore(d, onProgress = () => {}) {
   d = unwrap(d);
   const done = {}, errors = [];
   for (const tb of CFG.tables) {
-    const rows = (d.tables[tb] || []).map(CFG.remap); if (!rows.length) continue;
+    const from = d.exporter || d.scope?.id || null, rows = (d.tables[tb] || []).map((r) => CFG.remap(r, tb, from)); if (!rows.length) continue;
     onProgress(tb); let n = 0;
-    for (const part of chunks(rows, 200)) { const { error } = await SB.client.from(tb).upsert(part, { ignoreDuplicates: true }); /* 只补缺的：已有同主键的不动 */ if (error) { errors.push([tb, error.message]); break; } n += part.length; }
+    // hl_profiles 每人一份（家庭 + subject 唯一）：现在已经有这个人的档案（id 不同）时那一行跳过，所以一行一行写、唯一冲突（23505）不算错
+    const size = tb === "hl_profiles" ? 1 : 200;
+    for (const part of chunks(rows, size)) { const { error } = await SB.client.from(tb).upsert(part, { ignoreDuplicates: true }); /* 只补缺的：已有同主键的不动 */ if (error) { if (size === 1 && error.code === "23505") continue; errors.push([tb, error.message]); break; } n += part.length; }
     done[tb] = n;
   }
   return { done, errors };
