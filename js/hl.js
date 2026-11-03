@@ -87,7 +87,15 @@ function dataOf(key){
 const put = (list, row) => { const i = list.findIndex(x => x.id === row.id); if (i >= 0) list[i] = row; else list.push(row); return row; };
 async function save(kind, row){
   const tb = ALL_TABLES[kind], body = { ...row }; delete body.family_id; delete body.created_by; delete body.created_at; delete body.updated_at;
-  const data = row.id ? await run(SB.client.from(tb).update(body).eq("id", row.id).select().single()) : await run(SB.client.from(tb).insert(body).select().single());
+  // 迁移 028 没执行时就诊表没有 place / location / ai 三列：去掉再存一次（只是这三项不保存），并提示一次
+  const go = b => (row.id ? SB.client.from(tb).update(b).eq("id", row.id).select().single() : SB.client.from(tb).insert(b).select().single());
+  let r = await go(body);
+  if (r.error && kind === "visits" && /place|location|ai|column/i.test(r.error.message || "") && ("place" in body || "location" in body || "ai" in body)) {
+    const b2 = { ...body }; delete b2.place; delete b2.location; delete b2.ai;
+    r = await go(b2);
+    if (!r.error && !S.hl.warned028) { S.hl.warned028 = true; toast(t("地点和 AI 解读没存上：请在 Supabase 执行 baby-log 的 028_shepherd_visit_place_ai.sql")); }
+  }
+  const data = await run(Promise.resolve(r));
   return put(S.hl[kind], data);
 }
 async function saveMany(kind, rows){

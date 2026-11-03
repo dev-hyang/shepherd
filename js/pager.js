@@ -7,7 +7,7 @@ import { loadJSON, saveJSON } from "./core/util.js";
    灵修笔记不在内存里分批：每次“继续加载”向数据库要下一页（js/nt.js，键集分页），只借用这里的 pageSize()。
    每页几条是整个应用一个设置，记在本机（设置 → 显示）；没设过时手机 10 条、电脑 20 条。
    换筛选 / 搜索 / 子页、从别处跳进来时 reset(key)，回到第一页。 */
-const SIZES = [5, 10, 20, 50];
+const SIZES = [5, 10, 15, 20, 50];
 const KEY = LS_PREFIX + ".pageSize";
 const shown = {};   // key → 现在画了几条；没有 = 一页
 

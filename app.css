@@ -776,3 +776,54 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
   .field .hl-bt .hl-bt-in{font-size:15px;padding:6px}
   .field .hl-bt .hl-bt-in.u,.field .hl-bt .hl-bt-in.r{font-size:13px}
 }
+
+/* ---- 2026-11-03：手机头部收小一点，和全页的按钮 / 输入框一个尺寸 ---- */
+.hl-sel{min-height:40px;padding:6px 32px 6px 10px;font-size:15px;font-weight:600;border-radius:var(--radius-sm)}
+.hl-sel-view{border-left-width:3px}
+.hl-mhead{gap:6px;margin:6px 0 12px;padding-bottom:10px}
+.hl-addmenu > summary.btn{flex:none;min-height:40px;padding:6px 14px;font-size:14.5px;font-weight:600}
+/* 表单里的下拉框（谁、类型、地点…）：和头部同一个样式 */
+.field .hl-fsel{width:100%;min-height:42px;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:6px 32px 6px 10px;font-size:15px;color:var(--ink)}
+.field > label[for^="f_"]{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
+/* 就诊列表 */
+.hl-count{margin:6px 0 8px}
+.hl-vrows .mrow .mt small + small{margin-top:1px}
+.hl-bad{color:var(--rose);font-weight:600}
+.hl-tl{list-style:none;margin:0;padding:0 0 0 6px;position:relative}
+.hl-tl::before{content:"";position:absolute;left:21px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.hl-tl-month{font-size:13px;font-weight:700;color:var(--muted);margin:14px 0 6px 42px}
+.hl-tl-month:first-child{margin-top:2px}
+.hl-tl-item{display:flex;gap:10px;align-items:flex-start;margin:0 0 10px;position:relative}
+.hl-tl-dot{flex:none;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--slate);display:inline-flex;align-items:center;justify-content:center;font-size:15px;z-index:1}
+.hl-tl-dot.flag-high,.hl-tl-dot.flag-low{border-color:var(--rose)}
+.hl-tl-card{all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px}
+.hl-tl-card:hover{border-color:var(--slate)}
+.hl-tl-card:focus-visible{outline:3px solid var(--slate);outline-offset:2px}
+.hl-tl-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hl-tl-adv{background:var(--slate-soft);border-radius:var(--radius-sm);padding:6px 8px;font-size:14px}
+/* 详情页（单次就诊 / 单个化验项目） */
+.hl-detail-nav{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
+.hl-vd-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.hl-vd-head h2{margin:0}
+.hl-vd-lab{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:2px 10px;align-items:center;padding:9px 2px;border-bottom:1px solid var(--line)}
+.hl-vd-lab:last-child{border-bottom:0}
+.hl-vd-lab small{grid-column:1 / -1}
+.hl-vd-lab.flag-high b,.hl-vd-lab.flag-low b{color:var(--rose)}
+.hl-li-head h2{margin:0 0 4px}
+.hl-li-now{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.hl-li-now b{font-family:var(--f-num);font-size:30px;line-height:1.1}
+.hl-li-head.flag-high .hl-li-now b,.hl-li-head.flag-low .hl-li-now b{color:var(--rose)}
+.hl-rbar.big{height:10px;display:block;margin-top:6px}
+.hl-ai-panel{margin-bottom:10px}
+.hl-ai-panel > summary{cursor:pointer;min-height:36px;display:flex;align-items:center;gap:8px;font-weight:600}
+.seg.mini button{min-height:34px}
+.hl-listbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:6px 0 8px}
+.hl-listbar .hl-count{margin:0}
+.hl-fextra{margin-top:4px}
+.fpop-foot{flex-wrap:wrap}
+/* 走势图在整页宽的详情页里不要放得太大（字会跟着变大）：最宽 680px，居中 */
+.hl-chart svg.hl-w{max-width:680px;margin:0 auto}
+/* 手机头部：下拉框和「＋ 记一笔」同高 38px、同字号；按钮用描边样式（主色字），不再是一大块深色 */
+.hl-sel{min-height:38px;font-size:14.5px}
+.hl-addmenu > summary.hl-addbtn{min-height:38px;padding:4px 14px;font-size:14.5px;font-weight:600;color:var(--slate);border-color:var(--slate);background:var(--surface)}
+.hl-addmenu[open] > summary.hl-addbtn{background:var(--slate-soft)}

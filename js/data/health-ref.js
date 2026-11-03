@@ -16,6 +16,18 @@ const VISIT_KINDS = {
   other:      { label: "其他", icon: "📋" }
 };
 
+/* 就诊地点的类型（迁移 028 的 hl_visits.place）；地点名字 / 地址另存 location */
+const PLACES = {
+  clinic:   { label: "诊所", icon: "🏥" },
+  hospital: { label: "医院", icon: "🏨" },
+  urgent:   { label: "急诊中心（Urgent care）", icon: "⚡" },
+  er:       { label: "医院急诊", icon: "🚑" },
+  lab:      { label: "化验站", icon: "🧪" },
+  home:     { label: "上门", icon: "🏠" },
+  online:   { label: "线上", icon: "💻" },
+  other:    { label: "其他", icon: "📍" }
+};
+
 /* 在家测量：dim = 显示时要换算的量纲（见 health-lib.js 的 toShow / fromShow） */
 const MEASURE_KINDS = {
   weight:  { label: "体重", icon: "⚖", dim: "weight" },
@@ -92,4 +104,4 @@ const VITAL_RULES = {
   bmi: v => v >= 30 ? { level: "high", text: "BMI 偏高（肥胖）" } : v >= 25 ? { level: "high", text: "BMI 偏高（超重）" } : v && v < 18.5 ? { level: "low", text: "BMI 偏低" } : null
 };
 
-export { VISIT_KINDS, MEASURE_KINDS, LAB_GROUPS, LABS, YEARLY_LABS, VITAL_RULES };
+export { VISIT_KINDS, PLACES, MEASURE_KINDS, LAB_GROUPS, LABS, YEARLY_LABS, VITAL_RULES };

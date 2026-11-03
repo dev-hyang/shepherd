@@ -3,11 +3,13 @@ import { LS_PREFIX } from "./core/config.js";
 import { locale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc, loadJSON, saveJSON, toast } from "./core/util.js";
-import { LABS, LAB_GROUPS, MEASURE_KINDS, VISIT_KINDS } from "./data/health-ref.js";
+import { LABS, LAB_GROUPS, MEASURE_KINDS, PLACES, VISIT_KINDS } from "./data/health-ref.js";
 import { labCodeOf, labGroupOf, rangeBar, rangeText, vitalMetricsOf } from "./health-lib.js";
 import { EXTRACT_SYSTEM, ageYears, bmiOf, daysBetween, dueItems, fromShow, labFlag, labName, latest, metricFlag, metricsOf, parseExtract, series, toShow, unitOf } from "./health-lib.js";
 import * as hl from "./hl.js";
 import { dietHTML, planAct, planHTML, todayPlanHTML, workoutHTML } from "./health-plan-ui.js";
+import { visitAct, visitDetailHTML, visitsListHTML } from "./health-visits.js";
+import { labAct, labItemHTML, panelAiHTML } from "./health-labs.js";
 import * as pg from "./pager.js";
 import { closeSheet, drawForm, getForm, openForm, readForm } from "./sheet.js";
 import { pageHead, secHead } from "./ui.js";
@@ -24,6 +26,7 @@ const sys = () => loadJSON(UNIT_KEY, null) || (locale() === "en" ? "us" : "metri
 const lang = () => (locale() === "en" ? "en" : "zh");
 const VIEWS = [["overview", "概览"], ["plan", "计划"], ["workout", "训练"], ["diet", "饮食"], ["visits", "就诊"], ["labs", "化验"], ["measures", "测量"], ["profile", "档案"]];
 const fmtDay = d => (d ? d.replace(/-/g, "/") : "");
+const parentView = v => ({ visit: "visits", lab: "labs" }[v] || v);
 
 /* ---- 指标的显示：名称、量纲、参考带 ---- */
 const MDIM = { weight: "weight", height: "length", waist: "length", temp: "temp", glucose: "glucose", bp: "mmhg", hr: "bpm", spo2: "pct", bmi: "bmi" };
@@ -40,6 +43,7 @@ function metricMeta(m, data){
 const show = (meta, v) => (v == null ? "–" : meta.dim ? toShow(meta.dim, v, sys()) : +(+v).toFixed(2));
 const showPoint = (m, meta, p) => (m === "bp" ? `${Math.round(p.v)}/${p.v2 != null ? Math.round(p.v2) : "–"}` : show(meta, p.v));
 
+const profileData0 = key => (hl.profileOf(key) || {}).data || {};
 /* ---- 页面 ---- */
 function viewHealth(){
   if (S.hl.error === "missing") return `<div class="empty">${t("数据库还没有健康的表。")}<br>${t("请在 Supabase 执行 baby-log 仓库本地的")} <code>supabase/migrations/026_shepherd_health.sql</code>${t("，然后刷新。")}</div>`;
@@ -54,12 +58,13 @@ function viewHealth(){
   const NEW = [["visit", "就诊", "🩺"], ["lab", "化验", "🧪"], ["measure", "测量", "⚖"], ...(S.hl.plansOk ? [["workout", "训练", "🏃"]] : [])];
   const newAct = k => (k === "workout" ? "wk-new" : "new-" + k);
   const add = `<span class="hl-add hl-d">${NEW.map(([k, l]) => `<button class="chip" data-hl="${newAct(k)}">＋ ${t(l)}</button>`).join("")}</span>`;
-  const addMenu = `<details class="hl-addmenu"><summary class="btn primary">＋ ${t("记一笔")}</summary><div class="hl-addmenu-list" role="menu">${NEW.map(([k, l, ic]) => `<button role="menuitem" data-hl="${newAct(k)}"><span aria-hidden="true">${ic}</span> ${t(l)}</button>`).join("")}</div></details>`;
+  const addMenu = `<details class="hl-addmenu"><summary class="btn hl-addbtn">＋ ${t("记一笔")}</summary><div class="hl-addmenu-list" role="menu">${NEW.map(([k, l, ic]) => `<button role="menuitem" data-hl="${newAct(k)}"><span aria-hidden="true">${ic}</span> ${t(l)}</button>`).join("")}</div></details>`;
   const chips = `<div class="chips hl-people hl-d" role="group" aria-label="${esc(t("看谁的"))}">${ppl.map(p => `<button class="chip" data-hl="who" data-key="${esc(p.key)}" aria-pressed="${p.key === ui.who}">${p.kid ? "🧒 " : ""}${esc(p.name)}${p.me ? ` <span class="cnt">${t("我")}</span>` : ""}</button>`).join("")}</div>`;
-  const tabs = `<div class="chips hl-views hl-d" role="group" aria-label="${esc(t("健康内容"))}">${VIEWS.map(([k, l]) => `<button class="chip" data-hl="view" data-v="${k}" aria-pressed="${ui.view === k}">${t(l)}</button>`).join("")}</div>`;
+  const tabs = `<div class="chips hl-views hl-d" role="group" aria-label="${esc(t("健康内容"))}">${VIEWS.map(([k, l]) => `<button class="chip" data-hl="view" data-v="${k}" aria-pressed="${parentView(ui.view) === k}">${t(l)}</button>`).join("")}</div>`;
   const mobile = `<div class="hl-mhead hl-m"><div class="hl-mrow"><label class="sr-only" for="hlWho">${t("看谁的")}</label><select id="hlWho" class="hl-sel">${ppl.map(p => `<option value="${esc(p.key)}" ${p.key === ui.who ? "selected" : ""}>${p.kid ? "🧒 " : "👤 "}${esc(p.name)}${p.me ? ` (${t("我")})` : ""}</option>`).join("")}</select>${addMenu}</div>
-    <label class="sr-only" for="hlView">${t("健康内容")}</label><select id="hlView" class="hl-sel hl-sel-view">${VIEWS.map(([k, l]) => `<option value="${k}" ${ui.view === k ? "selected" : ""}>${t(l)}</option>`).join("")}</select></div>`;
-  const body = { overview: overviewHTML, plan: planHTML, workout: workoutHTML, diet: dietHTML, visits: visitsHTML, labs: labsHTML, measures: measuresHTML, profile: profileHTML }[ui.view] || overviewHTML;
+    <label class="sr-only" for="hlView">${t("健康内容")}</label><select id="hlView" class="hl-sel hl-sel-view">${VIEWS.map(([k, l]) => `<option value="${k}" ${parentView(ui.view) === k ? "selected" : ""}>${t(l)}</option>`).join("")}</select></div>`;
+  // 详情页（单次就诊、单个化验项目）不在下拉框里：选中的是它们的上一级
+  const body = { overview: overviewHTML, plan: planHTML, workout: workoutHTML, diet: dietHTML, visits: visitsListHTML, visit: visitDetailHTML, labs: labsHTML, lab: labItemHTML, measures: measuresHTML, profile: profileHTML }[ui.view] || overviewHTML;
   return `${pageHead(t("家人健康"), add)}${mobile}${chips}${tabs}${body(who)}
     <p class="small muted hl-foot">${t("这里只做记录和按公开指南的提醒，不是诊断；有疑问以医生意见为准。家里的人都看得到这家人的健康记录。")}</p>`;
 }
@@ -69,7 +74,9 @@ function overviewHTML(who){
   const ui = UI(), data = hl.dataOf(who.key), prof = (hl.profileOf(who.key) || {}).data || {};
   const heightCm = prof.height_cm || null, kid = who.kid;
   const metrics = metricsOf(data, { kid, heightCm });
-  if (!metrics.includes(ui.metric)) ui.metric = metrics[0] || null;
+  // 走势图只给体征（卡片）；化验项目点开是单独的一页（health-labs.js）。以前点化验的血糖会被这里当成「不在列表里」换回体重
+  const vitals0 = vitalMetricsOf(data, { kid, heightCm });
+  if (!vitals0.includes(ui.metric)) ui.metric = vitals0[0] || null;
   const due = dueItems({ data, today: S.day, kid });
   const left = `${todayPlanHTML(who)}${secHead(t("待办"))}${dueHTML(due, kid)}${lastVisitHTML(data)}${kid ? `<p class="small muted" style="margin-top:10px">${t("孩子的身高体重和体检日程以小月亮为准，这里只读。")} <a href="https://dev-hyang.github.io/baby-log/" target="_blank" rel="noopener">${t("去小月亮")} ↗</a></p>` : ""}`;
   if (!metrics.length) return `<div class="hl-grid"><div class="hl-col">${left}</div><div class="hl-col">${secHead(t("关键指标"))}<div class="panel empty">${t("还没有数字。记一次就诊（带体征）、一份化验或一次在家测量，这里就会出现走势。")}<br>
@@ -115,7 +122,7 @@ const vitalsText = vt => {
 function visitCard(v, data, { full = false } = {}){
   const k = VISIT_KINDS[v.kind] || VISIT_KINDS.other, labs = data.labs.filter(x => x.visit_id === v.id), vt = vitalsText(v.vitals || {});
   const fu = v.follow_up ? `<span class="pill ${daysBetween(S.day, v.follow_up) <= 14 && v.follow_up >= S.day ? "soon" : "cat"}">${t("复诊 {d}", { d: fmtDay(v.follow_up) })}</span>` : "";
-  return `<button class="panel hl-visit" data-hl="edit-visit" data-id="${esc(v.id)}">
+  return `<button class="panel hl-visit" data-hl="open-visit" data-id="${esc(v.id)}">
     <span class="hl-visit-top"><b>${k.icon} ${esc(t(k.label))}</b><span class="num">${fmtDay(v.day)}</span>${fu}${v.ai_used ? `<span class="pill cat">AI</span>` : ""}</span>
     ${v.provider || v.reason ? `<span class="hl-line">${esc([v.provider, v.reason].filter(Boolean).join(" · "))}</span>` : ""}
     ${vt ? `<span class="hl-line small muted">${esc(vt)}</span>` : ""}
@@ -179,7 +186,7 @@ const byOrder = (a, b) => (ORDER.indexOf(a.x.code) + 1 || 999) - (ORDER.indexOf(
 function labLine(r, { metric = null, hist = false } = {}){
   const x = r.x, bar = rangeBar(x), m = "lab:" + r.k, d = r.prev ? +(+x.value - +r.prev.value).toFixed(2) : null;
   return `<div class="hl-lr ${r.flag ? "flag-" + r.flag : ""} ${metric === m ? "sel" : ""}">
-    <button class="hl-lr-main" data-hl="metric" data-v="${esc(m)}" aria-pressed="${metric === m}">
+    <button class="hl-lr-main" data-hl="lab-open" data-v="${esc(r.k)}" aria-label="${esc(t("看 {n} 的走势和每次记录", { n: labName(x, lang()) }))}">
       <span class="hl-lr-name"><b>${esc(labName(x, lang()))}</b><small>${t("参考 {r}", { r: rangeText(x) || "—" })}${x.unit ? ` ${esc(x.unit)}` : ""}</small></span>
       <span class="hl-lr-val"><b class="num">${esc(+(+x.value).toFixed(2))}</b>${r.flag ? `<span class="pill ${r.flag === "high" ? "hi" : "lo"}">${t(r.flag === "high" ? "偏高" : "偏低")}</span>` : ""}${d ? `<small class="muted">${d > 0 ? "↑" : "↓"} ${Math.abs(d)}</small>` : ""}</span>
       ${bar ? `<span class="hl-rbar" aria-hidden="true"><i class="ok" style="left:${bar.lo.toFixed(1)}%;width:${(bar.hi - bar.lo).toFixed(1)}%"></i><i class="at" style="left:${bar.at.toFixed(1)}%"></i></span>` : ""}
@@ -215,7 +222,8 @@ function labsHTML(who){
   if (!rows.length) return `<div class="panel empty">${t("还没有化验记录。")}<br><button class="btn primary" data-hl="new-lab">${t("录入化验")}</button></div>`;
   return `<div class="btns" style="margin-top:0"><button class="btn primary" data-hl="new-lab">＋ ${t("录入化验")}</button></div>` + Object.keys(LAB_GROUPS).filter(g => rows.some(r => r.group === g)).map(g => {
     const list = rows.filter(r => r.group === g).sort(byOrder), n = list.filter(r => r.flag).length;
-    return `${secHead(t(LAB_GROUPS[g]), "", n ? t("{n} 项超出范围", { n }) : t("都在范围内"))}<div class="panel hl-labs-ov">${list.map(r => labLine(r, { hist: true })).join("")}</div>`;
+    return `${secHead(t(LAB_GROUPS[g]), `<button class="chip" data-hl="ai-panel" data-v="${g}" ${S.hlAiBusy === "panel:" + g ? "disabled" : ""}>✦ ${S.hlAiBusy === "panel:" + g ? t("分析中…") : t("AI 解读这一套")}</button>`, n ? t("{n} 项超出范围", { n }) : t("都在范围内"))}
+      ${panelAiHTML(who, g)}<div class="panel hl-labs-ov">${list.map(r => labLine(r, { hist: true })).join("")}</div>`;
   }).join("") + `<p class="small muted">${t("点名字看走势，点下面的数字改那一次。范围以化验单为准，各家化验室不完全一样。")}</p>`;
 }
 /* 测量：时间倒序 */
@@ -246,6 +254,9 @@ function profileHTML(who){
 
 /* ---- 表单 ---- */
 const peopleOpts = () => hl.people().map(p => [p.key, p.name]);
+/** 表单里的「谁」：和健康页头部同一个样式的下拉框（以前是一排按钮）；换人时重画（就诊列表、单位跟着这个人） */
+const whoField = (label = "谁") => ({ k: "subject", type: "html", html: d => `<div class="field" style="margin:0"><label for="f_subject">${t(label)}</label><select id="f_subject" data-f="subject" class="hl-fsel">${hl.people().map(p => `<option value="${esc(p.key)}" ${p.key === d.subject ? "selected" : ""}>${p.kid ? "🧒 " : "👤 "}${esc(p.name)}${p.me ? ` (${t("我")})` : ""}</option>`).join("")}</select></div>` });
+const selectField = (k, label, opts) => ({ k, type: "html", html: d => `<div class="field" style="margin:0"><label for="f_${k}">${t(label)}</label><select id="f_${k}" data-f="${k}" class="hl-fsel">${opts().map(([v, l]) => `<option value="${esc(v)}" ${String(d[k] ?? "") === String(v) ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div>` });
 const fh = title => `<div class="fh">${t(title)}</div>`;
 const today = () => S.day;
 const aiBtn = (mode, d) => `<div class="hl-ai"><button type="button" class="btn" data-hl="ai-read" data-v="${mode}">📷 ${t(mode === "visit" ? "从就诊小结读取" : "从化验单读取")}</button>
@@ -259,10 +270,12 @@ function openVisit(v){
     : { subject: UI().who, day: today(), kind: "regular" };
   openForm(v ? "编辑就诊" : "记一次就诊", [
     { k: "h_ai", type: "html", html: d => aiBtn("visit", d) },
-    { k: "subject", label: "谁", type: "seg", optsFn: peopleOpts, raw: true },
+    whoField(),
     { k: "day", label: "日期", type: "date" },
-    { k: "kind", label: "类型", type: "seg", opts: Object.entries(VISIT_KINDS).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`]), raw: true },
-    { k: "provider", label: "医院 / 医生", type: "text", ph: "例如 Dr. Lee · 家庭医生" },
+    selectField("kind", "类型", () => Object.entries(VISIT_KINDS).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`])),
+    selectField("place", "地点", () => [["", t("（不填）")], ...Object.entries(PLACES).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`])]),
+    { k: "location", label: "地点名称 / 地址", type: "text", ph: "例如 Duly Health · Naperville", list: [...new Set(S.hl.visits.map(x => x.location).filter(Boolean))].slice(0, 30) },
+    { k: "provider", label: "医生 / 科室", type: "text", ph: "例如 Dr. Lee · 家庭医生" },
     { k: "reason", label: "就诊原因", type: "text", ph: "年度体检 / 咳嗽一周 / 复查血脂" },
     { k: "h_v", type: "html", html: () => fh("体征（可不填）") },
     { k: "v_weight", label: t("体重（{u}）", { u: unitOf("weight", s) }), type: "num", step: .1 },
@@ -282,11 +295,11 @@ function openVisit(v){
     if (!d.day) { toast(t("请填日期")); return; }
     const vitals = { weight_kg: fromShow("weight", d.v_weight, s), height_cm: fromShow("length", d.v_height, s), sys: d.v_sys, dia: d.v_dia, hr: d.v_hr, temp_c: fromShow("temp", d.v_temp, s), spo2: d.v_spo2 };
     Object.keys(vitals).forEach(k => { if (vitals[k] == null || vitals[k] === "") delete vitals[k]; });
-    const row = { ...(v ? { id: v.id } : {}), subject: d.subject, day: d.day, kind: d.kind || "regular", provider: d.provider || "", reason: d.reason || "", vitals, diagnosis: d.diagnosis || "", advice: d.advice || "", follow_up: d.follow_up || null, notes: d.notes || "", ai_used: !!d.ai_used };
+    const row = { ...(v ? { id: v.id } : {}), subject: d.subject, day: d.day, kind: d.kind || "regular", place: d.place || "", location: d.location || "", provider: d.provider || "", reason: d.reason || "", vitals, diagnosis: d.diagnosis || "", advice: d.advice || "", follow_up: d.follow_up || null, notes: d.notes || "", ai_used: !!d.ai_used };
     const saved = await hl.save("visits", row);
     if (d._labs && d._labs.length) await hl.saveMany("labs", d._labs.map(x => labRow({ ...x, day: x.day || d.day }, d.subject, saved.id, true)));
     closeSheet(); toast(d._labs && d._labs.length ? t("已保存，另存了 {n} 项化验", { n: d._labs.length }) : t("已保存"));
-  }, v ? async () => { if (!confirm(t("删除这次就诊？挂在上面的化验会保留。"))) return; await hl.remove("visits", v.id); closeSheet(); toast(t("已删除")); } : null);
+  }, v ? async () => { if (!confirm(t("删除这次就诊？挂在上面的化验会保留。"))) return; await hl.remove("visits", v.id); if (UI().view === "visit") UI().view = "visits"; closeSheet(); toast(t("已删除")); } : null);
 }
 const labRow = (x, subject, visitId = null, ai = false) => ({ subject, day: x.day, visit_id: visitId, code: x.code || "", name: x.code ? "" : String(x.name || "").slice(0, 80), value: +x.value, unit: x.unit || "", ref_low: x.ref_low ?? null, ref_high: x.ref_high ?? null, notes: x.notes || "", ai_used: ai });
 const codeSelect = d => `<div class="field" style="margin:0"><label for="f_code">${t("项目")}</label><select id="f_code" data-f="code">
@@ -296,7 +309,7 @@ function openLab(x){
   const init = x ? { ...x } : { subject: UI().who, day: today(), code: "ldl", unit: LABS.ldl.unit, ref_low: LABS.ldl.low, ref_high: LABS.ldl.high };
   openForm(x ? "编辑化验" : "记一份化验", [
     ...(x ? [] : [{ k: "h_ai", type: "html", html: d => aiBtn("lab", d) }]),
-    { k: "subject", label: "谁", type: "seg", optsFn: peopleOpts, raw: true },
+    whoField(),
     { k: "day", label: "日期", type: "date" },
     { k: "h_labs", type: "html", html: d => labsPreview(d) },
     { k: "code", type: "html", html: d => (d._labs && d._labs.length ? "" : codeSelect(d)) },
@@ -341,7 +354,7 @@ function openLabBatch(init = {}){
     { k: "h_ai", type: "html", html: d => `<div class="hl-ai"><button type="button" class="btn" data-hl="ai-read" data-v="labs">📷 ${t("拍照 / 截图读取（可多张）")}</button><button type="button" class="btn" data-hl="bt-paste">📋 ${t("粘贴文字")}</button>
       <span class="small muted">${d._aiBusy ? t("正在读取…") : d.ai_used ? t("已经用 AI 读过，保存前请核对。") : t("门户（MyChart 等）每个套餐截一张图，或者把结果页的文字复制过来；AI 会把每一项填进下面的表，范围按单子上的。")}</span>
       ${d._paste ? `<textarea id="hlPaste" class="hl-paste" placeholder="${esc(t("把化验结果页的文字粘贴在这里"))}">${esc(d._pasteText || "")}</textarea><button type="button" class="btn primary" data-hl="bt-paste-read">${t("读取粘贴的文字")}</button>` : ""}</div>` },
-    { k: "subject", label: "谁", type: "seg", optsFn: peopleOpts, raw: true },
+    whoField(),
     { k: "day", label: "采样日期", type: "date" },
     { k: "visit_id", type: "html", html: d => { const vs = S.hl.visits.filter(x => x.subject === d.subject).sort((a, b) => b.day.localeCompare(a.day)).slice(0, 12);
       return vs.length ? `<div class="field" style="margin:0"><label for="f_visit">${t("挂在哪次就诊上（可不选）")}</label><select id="f_visit" data-f="visit_id"><option value="">${t("不挂")}</option>${vs.map(v => `<option value="${esc(v.id)}" ${d.visit_id === v.id ? "selected" : ""}>${esc(fmtDay(v.day))} · ${esc(t((VISIT_KINDS[v.kind] || VISIT_KINDS.other).label))}${v.provider ? " · " + esc(v.provider) : ""}</option>`).join("")}</select></div>` : ""; } },
@@ -387,7 +400,7 @@ function openMeasure(m){
   const init = m ? { ...m, value: m.kind === "bp" ? m.value : toShow(MEASURE_KINDS[m.kind].dim, m.value, s) } : { subject: UI().who, day: today(), kind: "weight" };
   const unitL = d => (d.kind === "bp" ? "mmHg" : unitOf(MEASURE_KINDS[d.kind || "weight"].dim, s));
   openForm(m ? "编辑测量" : "记一次测量", [
-    { k: "subject", label: "谁", type: "seg", optsFn: peopleOpts, raw: true },
+    whoField(),
     { k: "day", label: "日期", type: "date" },
     { k: "kind", label: "测什么", type: "seg", opts: Object.entries(MEASURE_KINDS).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`]), raw: true },
     { k: "h_u", type: "html", html: d => `<div class="small muted">${t("单位：{u}", { u: unitL(d) })}</div>` },
@@ -487,7 +500,9 @@ async function hlAct(act, btn){
   switch (act) {
     case "who": ui.who = d.key; ui.metric = null; pg.reset("hlVisits", "hlMeasures", "hlWk"); render(); return;
     case "view": ui.view = d.v; render(); window.scrollTo(0, 0); return;
-    case "metric": ui.metric = d.v; if (ui.view === "labs") ui.view = "overview"; render(); if (ui.view === "overview") requestAnimationFrame(() => document.querySelector(".hl-chart")?.scrollIntoView({ block: "nearest", behavior: "smooth" })); return;
+    case "metric": ui.metric = d.v; render(); requestAnimationFrame(() => document.querySelector(".hl-chart")?.scrollIntoView({ block: "nearest", behavior: "smooth" })); return;
+    case "lab-open": ui.labKey = d.v; ui.back = ui.view; ui.view = "lab"; pg.reset("hlLabRec"); render(); window.scrollTo(0, 0); return;
+    case "back": ui.view = ui.back && ui.back !== ui.view ? ui.back : parentView(ui.view) === ui.view ? "overview" : parentView(ui.view); ui.back = null; render(); window.scrollTo(0, 0); return;
     case "lab-chart": ui.metric = d.v; ui.view = "overview"; render(); return;
     case "units": saveJSON(UNIT_KEY, d.v); render(); return;
     case "new-visit": openVisit(null); return;
@@ -497,16 +512,20 @@ async function hlAct(act, btn){
     case "bt-paste-read": await pasteRead(); return;
     case "new-measure": openMeasure(null); return;
     case "edit-visit": { const v = S.hl.visits.find(x => x.id === d.id); if (v) openVisit(v); return; }
+    case "open-visit": ui.visitId = d.id; ui.back = ui.view; ui.view = "visit"; render(); window.scrollTo(0, 0); return;
     case "edit-lab": { const x = S.hl.labs.find(y => y.id === d.id); if (x) openLab(x); return; }
     case "edit-measure": { const m = S.hl.measures.find(y => y.id === d.id); if (m) openMeasure(m); return; }
     case "edit-profile": openProfile(); return;
     case "ai-read": aiRead(d.v); return;
     case "ai-labs-clear": { readForm(); const f = getForm(); if (f) { f.draft._labs = []; drawForm(); } return; }
   }
+  if (await visitAct(act, d)) return;   // 就诊列表 / 详情 / AI（js/health-visits.js）
+  if (await labAct(act, d)) return;     // 化验单项页 / 套餐 AI（js/health-labs.js）
   await planAct(act, d);   // 计划 / 训练 / 饮食（js/health-plan-ui.js）
 }
 // 化验项目换了：单位和参考范围跟着换（只在没改过的时候）
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "hlLabGroup") { UI().labGroup = ev.target.value; render(); } });
+document.addEventListener("change", ev => { if (ev.target && ev.target.id === "f_subject" && getForm()) { readForm(); drawForm(); } });
 // 手机头部的两个下拉框：换人、换页
 document.addEventListener("change", ev => {
   const id = ev.target && ev.target.id; if (id !== "hlWho" && id !== "hlView") return;
@@ -525,4 +544,4 @@ document.addEventListener("change", ev => {
 /** 给咩咩咩 / 今天页用：这个人最要紧的几条待办（以后用） */
 const healthDue = key => dueItems({ data: hl.dataOf(key), today: S.day, kid: key.startsWith("c:") });
 
-export { viewHealth, hlAct, healthDue };
+export { viewHealth, hlAct, healthDue, UI, sys, lang, fmtDay, metricMeta, chartPanel, visitCard, vitalsText, latestLabs, labLine, byOrder, openVisit, openLab, openLabBatch, profileData0 as profileData };
