@@ -8,6 +8,7 @@ import * as wb from "./wb.js";
 import { kindLabel, otdHTML } from "./notes.js";
 import { noteHeading } from "./notes-lib.js";
 import { askEntryHTML } from "./ask.js";
+import { releaseBadgeHTML } from "./releases-ui.js";
 import { chipBtn, secHead } from "./ui.js";
 import { familyTasks, mitBlock, nudgeBar, tasksBlock } from "./tasks.js";
 
@@ -31,7 +32,7 @@ function viewToday(){
   const colA = [sec("habits", 3, habitsHTML(day, list)), sec("family", 6, familyHTML(day))].join("");
   const colB = [sec("reading", 1, readingHTML()), sec("tasks", 2, mitBlock() + tasksBlock()), sec("notes", 4, notesHTML()), sec("famtasks", 7, familyTasks(day))].join("");
   const joinNote = isOwner() && S.pending.length ? `<div class="nudge"><b>${t("{n} 人申请加入家庭", { n: S.pending.length })}</b> <button class="chip" data-act="settings">${t("去批准")}</button></div>` : "";
-  return `${hero}${joinNote}${nudgeBar()}${kpisHTML(day, list)}${askEntryHTML()}<div class="tgrid"><div class="tcol tcol-a">${colA}</div><div class="tcol tcol-b">${colB}</div></div>`;
+  return `${hero}${releaseBadgeHTML()}${joinNote}${nudgeBar()}${kpisHTML(day, list)}${askEntryHTML()}<div class="tgrid"><div class="tcol tcol-a">${colA}</div><div class="tcol tcol-b">${colB}</div></div>`;
 }
 
 /* 统计卡：数字（完成/总数）+ 进度条 + 一行说明（还剩什么 / 全部完成 / 逾期）。全部做完变绿 */

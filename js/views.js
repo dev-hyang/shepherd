@@ -1,11 +1,12 @@
 import { updateMiniBar } from "./minibar.js";
 import { myName } from "./core/auth.js";
-import { SISTER_APPS, THIS_APP } from "./core/config.js";
+import { APP_VERSION, SISTER_APPS, THIS_APP } from "./core/config.js";
 import { LOCALES, locale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { $, esc } from "./core/util.js";
 import { WEEKDAY } from "./data/kinds.js";
 import { viewAsk } from "./ask.js";
+import { releasePageHTML } from "./releases-ui.js";
 import { viewMe } from "./me.js";
 import { viewPrayer } from "./prayer.js";
 import { viewReview } from "./review.js";
@@ -19,7 +20,7 @@ import { pendingCount } from "./tk.js";
 const TAB_LABELS = { today: "今天", tasks: "任务", health: "健康", prayer: "祷告", review: "回顾", me: "我的" };
 const VIEWS = { today: viewToday, tasks: viewTasks, health: viewHealth, prayer: viewPrayer, review: viewReview, me: viewMe };
 /* 子页：挂在某个底部页签下面，顶部显示完整路径（像爱家小助手）：‹ 我的 / 咩咩咩。parent 也可以是另一个子页，路径一路显示到底部页签 */
-const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk } };
+const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk }, releases: { parent: "me", label: "发布日志", view: releasePageHTML } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
 function crumbParts(tab){
   const parts = [{ label: SUB[tab].label }]; let p = SUB[tab].parent;
   while (p) { parts.unshift({ tab: p, label: SUB[p] ? SUB[p].label : TAB_LABELS[p] }); p = SUB[p] ? SUB[p].parent : null; }
@@ -68,6 +69,7 @@ function renderStatus(){
   $("#bname").textContent = t("牧羊人");
   const d = new Date();
   $("#bsub").textContent = S.cloud === "ready" ? `${esc(myName())} · ${S.day.slice(5).replace("-", "/")} ${t("周{d}", { d: t(WEEKDAY[d.getDay()]) })}` : t("身心灵 · 家人健康");
+  { const v = $("#appver"); if (v) { v.setAttribute("aria-label", `${t("发布日志")} · ${t("版本")} ${APP_VERSION}`); v.title = t("发布日志"); } }   // 顶栏版本号点一下打开发布日志
   renderAppSwitch();
   renderLangSwitch();
   document.querySelectorAll("nav.tabs button").forEach(b => { const k = TAB_LABELS[b.dataset.tab]; if (!k) return; const txt = [...b.childNodes].find(x => x.nodeType === 3); if (txt) txt.nodeValue = t(k); else b.append(t(k)); });
@@ -81,7 +83,7 @@ function render(){
   const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
   $("#main").className = S.tab === "today" || S.tab === "health" ? "wide" : "narrow";   // 今天、健康在宽屏用两栏
   const crumb = sub ? crumbNav(crumbParts(S.tab)) : "";
-  $("#main").innerHTML = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩 没登录也能看
+  $("#main").innerHTML = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩、发布日志 没登录也能看
   updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : "", t("回到顶部"));
 }
 function refreshSettingsIfOpen(){ if ($("#sheet").open && $("#sheetTitle") && $("#sheetTitle").textContent === t("设置")) openSettings(); }

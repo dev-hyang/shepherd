@@ -1,7 +1,7 @@
 /* ============ boot ============
    模块顺序：core/config → core/util → core/state → wb ↔ core/auth ↔ views ↔ sheet → events。
    跨模块调用都在函数体内，循环引用是安全的。 */
-import { t } from "./core/i18n.js";
+import { locale, t } from "./core/i18n.js";
 import { initSwipeRows } from "./swipe-rows.js";
 import "./events.js";
 import { initSupabase } from "./core/auth.js";
@@ -10,10 +10,12 @@ import { APP_VERSION } from "./core/config.js";
 import { S } from "./core/state.js";
 import { dayKey } from "./core/util.js";
 import { render } from "./views.js";
+import { initReleases } from "./releases-ui.js";
+import { RELEASES } from "./data/releases.js";
 
 /* 发布后的头几分钟，浏览器可能把新的 index.html 和缓存里的旧模块混在一起（内部 import 没有版本号）。
    index.html 里的 meta 版本与 config.js 不一致时，强制重新抓取所有模块并刷新一次。 */
-const MODULES = ["app", "backup", "cloud-drives", "events", "views", "minibar", "swipe-rows", "sheet", "today", "prayer", "review", "me", "ask", "about", "wb", "focus", "tk", "tasks", "recur", "nt", "notes", "notes-lib", "hl", "health", "health-lib", "health-plan-lib", "health-plan-ui", "health-visits", "health-labs", "data/health-ref", "data/health-plans", "markdown", "ui", "ai", "data/taskcats",
+const MODULES = ["app", "backup", "cloud-drives", "events", "views", "minibar", "swipe-rows", "sheet", "today", "prayer", "review", "me", "ask", "about", "wb", "focus", "tk", "tasks", "recur", "nt", "notes", "notes-lib", "hl", "health", "health-lib", "health-plan-lib", "health-plan-ui", "health-visits", "health-labs", "data/health-ref", "data/health-plans", "markdown", "ui", "ai", "data/taskcats", "releases-ui", "data/releases",
   "core/config", "core/util", "core/state", "core/auth", "core/i18n", "data/s2t", "data/i18n-en", "data/bible", "data/plans", "data/kinds", "data/about"].map(m => `js/${m}.js`);
 async function healStaleModules(){
   const want = (document.querySelector('meta[name="app-version"]') || {}).content;
@@ -27,6 +29,8 @@ async function healStaleModules(){
 if (!(await healStaleModules())) {
   { const v = document.getElementById("appver"); if (v) v.textContent = "v" + APP_VERSION; } // 顶栏版本号：不用翻到最后一页就能对照有没有更新
   initSwipeRows({ kinds: ["log", "dropped-task", "extra-read"], del: () => t("删除"), release: () => t("松手删除") });   // 行记录左滑删除（js/swipe-rows.js）
+  // 发布日志：今天页顶上的新版本提示（每个新版本最多 5 次）+ 我的 → 发布日志（js/releases-ui.js）
+  initReleases({ version: APP_VERSION, releases: RELEASES, lang: locale, accent: "var(--slate)", appId: "shepherd", open: 'data-tab="releases"' });
   render();          // 先画出"连接中"的壳
   initSupabase();    // 加载 supabase-js，登录状态回调里再渲染一次
   initProviders();   // 从 Dropbox 授权页跳回来时把 ?code= 换成令牌（js/backup.js）

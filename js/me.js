@@ -32,12 +32,13 @@ function viewMe(){
     ${mrow('data-act="settings"', t("设置"), t("账号与家庭、语言、显示"), "⚙")}
     ${mrow('data-act="bk-open"', t("备份与恢复"), t("定时备份到云端 / 电脑文件夹 / 下载；换手机或重建数据库时导回来"), "🛟")}
     ${mrow('data-act="about"', t("介绍"), t("为什么叫牧羊人、每页怎么用、数据与隐私"), "✎")}
+    ${mrow('data-tab="releases"', t("发布日志"), t("每次更新了什么"), "📰")}
   </div>
 
   <h2>${t("姊妹应用")}</h2>
   <div class="panel mlist">${SISTER_APPS.filter(a => a.id !== THIS_APP).map(link).join("")}</div>
   <p class="small muted">${t("同一个账号、同一个家庭，四个站点互通。")}</p>
-  <p class="small muted" style="margin-top:24px">${t("牧羊人")} · ${t("版本")} ${APP_VERSION}</p>`;
+  <p class="small muted" style="margin-top:24px">${t("牧羊人")} · <button type="button" class="vlink" data-tab="releases" aria-label="${t("发布日志")} · ${t("版本")} ${APP_VERSION}">${t("版本")} ${APP_VERSION}</button></p>`;
 }
 
 export { viewMe, mrow };

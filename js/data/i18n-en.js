@@ -372,7 +372,7 @@ const EN = {
   "预览": "Preview",
   "打印 / 存成 PDF": "Print / save as PDF",
   "共 {n} 条": "{n} notes",
-  "返回": "Back",
+  "返回": "Back", "发布日志": "Release notes", "每次更新了什么": "What changed in each update",
   "会把选中的 {n} 条笔记的文字发给你设置的 AI 服务商来整理。继续吗？": "The text of the {n} selected notes will be sent to your AI provider to compile. Continue?",
   "整理中，请稍等…": "Compiling, one moment…",
   "AI 写的草稿，请逐句核对后再用；笔记原文没有的内容不要照搬。": "An AI-written draft: check it line by line before use, and don't keep anything the notes don't say.",

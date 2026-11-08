@@ -41,6 +41,7 @@
 | `js/data/plans.js` | 内置读经计划（按章自动生成）与导入解析 |
 | `js/data/bible.js` | 书卷表、出处解析、经文抓取（和学堂同源，加了整章抓取） |
 | `js/data/i18n-en.js` `s2t.js` | 英文字典、简繁字表 |
+| `js/releases-ui.js` `js/data/releases.js` | 发布日志：四个姊妹应用共用的页面 + 今天页新版本提示；本应用每个版本的说明（见「版本号 / 发布」） |
 
 ## 数据库
 
@@ -62,13 +63,15 @@ Edge Function 源码在本仓库 `supabase/functions/ics/index.ts`（不含密�
 supabase functions deploy ics --project-ref <项目 ref> --no-verify-jwt
 ```
 
-本机的 CLI 装在同级目录 `supabase-cli/node_modules/.bin/supabase.cmd`（npm 包）；换电脑时重新 `npm install supabase --save-dev --registry https://registry.npmjs.org/` 并 `supabase login` 即可。
+本机的 CLI 装在用户目录 `%USERPROFILE%\.supabase-cli`（npm 包，`node_modules\.bin` 已加入用户 PATH，直接用 `supabase`）；换电脑时在该目录重新 `npm install supabase --save-dev --registry https://registry.npmjs.org/`，把 `%USERPROFILE%\.supabase-cli\node_modules\.bin` 加进用户 PATH，再 `supabase login` 即可。不要在 repos 目录里装。
 
 网页 → 我的 → 日历订阅提醒 里拿链接，手机日历订阅即可；钥匙可随时换。
 
-## 版本号
+## 版本号 / 发布
 
 每次推送都升一个版本号，格式 日期.当天第几次（如 2026-11-02.1）：改 `js/core/config.js` 的 `APP_VERSION` 和 `index.html` 里的 `app-version` meta、两个 `?v=`，四处要一致（不一致时页面会强制刷新一次模块缓存）。顶栏右上角显示版本号，推送后刷新对一下就知道新版本有没有生效。
+
+每次推送除了升版本号，还要在 `js/data/releases.js` 的最前面加一条给家人看的说明：`v` 和 `APP_VERSION` 完全一样，一句话标题（title），1–4 条要点（items，每条一句，`k` 是 new 新功能 / better 改进 / fix 修复），不写技术词，中英文都写。应用在 我的 → 发布日志 里列出全部版本（可按类型、时间筛选，列表或时间线），顶栏和 我的 页底部的版本号点一下也能打开；新版本在每台设备上从第一次打开起，今天页顶上会出现一条提示，最多 5 次（点开或按 ✕ 后不再出现）。页面和样式在 `js/releases-ui.js`，四个姊妹应用共用同一份，不要单独改。
 
 ## 本地预览
 

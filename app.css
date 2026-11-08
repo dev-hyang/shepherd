@@ -232,6 +232,13 @@ svg text{font-family:var(--f-num);font-size:11px;fill:var(--muted)}
 /* app version next to the sync status (the same line in all four sister apps), so an update can be checked without scrolling to the About page */
 .hdr-line{display:inline-flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:2px 8px}
 .appver{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* 版本号可以点：打开 我的 → 发布日志（外观不变，悬停加下划线，键盘有焦点框） */
+button.appver,.vlink{background:none;border:0;margin:-2px -4px;padding:2px 4px;border-radius:6px;font:inherit;color:inherit;cursor:pointer;text-underline-offset:3px}
+button.appver{font-size:11px;color:var(--muted)}
+button.appver:hover,.vlink:hover{text-decoration:underline;color:var(--ink)}
+button.appver:focus-visible,.vlink:focus-visible{outline:2px solid var(--slate);outline-offset:1px;text-decoration:underline}
+/* 发布日志：今天页大卡片下面的新版本提示，和下面的提醒、统计卡同样间距 */
+#main .rl-badge{margin:12px 0 0}
 /* version vs sync status: stacked on a phone (status on top, version under it), side by side once there is room */
 .hdr-line{flex-direction:column;align-items:flex-end;gap:0}
 @media (min-width:600px){.hdr-line{flex-direction:row;align-items:center;gap:0 8px}}
