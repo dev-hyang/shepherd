@@ -9,7 +9,7 @@ import { UI, chartPanel, fmtDay, lang, latestLabs, openLab, profileData } from "
 import * as hl from "./hl.js";
 import * as pg from "./pager.js";
 import { secHead } from "./ui.js";
-import { render } from "./views.js";
+import { render, renderBg } from "./views.js";
 
 /* ============ 健康 · 化验单项页 + 套餐 AI（2026-11-03） ============
    以前点一个化验项目，是在概览底部弹出它的走势；现在是单独的一页：
@@ -69,7 +69,7 @@ async function aiItem(){
     await saveAi(key, "ai_labs", k, { at: new Date().toISOString(), meaning: String(o.meaning || "").slice(0, 1200), trend: String(o.trend || ""), trend_text: String(o.trend_text || "").slice(0, 400), tips: arr(o.tips), ask: arr(o.ask), n: rows.length });
     toast(t("分析好了"));
   } catch (e) { toast(t("分析失败：{msg}", { msg: String(e.message || e).slice(0, 100) })); }
-  finally { S.hlAiBusy = null; render(); }
+  finally { S.hlAiBusy = null; renderBg(); }
 }
 async function aiPanel(g){
   const key = UI().who, rows = latestLabs(hl.dataOf(key)).filter(r => r.group === g);
@@ -80,7 +80,7 @@ async function aiPanel(g){
     await saveAi(key, "ai_panels", g, { at: new Date().toISOString(), summary: String(o.summary || "").slice(0, 1500), findings: arr(o.findings), tips: arr(o.tips), ask: arr(o.ask), day: rows.reduce((a, r) => (r.x.day > a ? r.x.day : a), "") });
     toast(t("分析好了"));
   } catch (e) { toast(t("分析失败：{msg}", { msg: String(e.message || e).slice(0, 100) })); }
-  finally { S.hlAiBusy = null; render(); }
+  finally { S.hlAiBusy = null; renderBg(); }
 }
 const list = (title, a) => (a && a.length ? `<b>${t(title)}</b><ul>${a.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "");
 const TREND = { rising: "↑ 上升", falling: "↓ 下降", stable: "→ 平稳", single: "只有一次" };

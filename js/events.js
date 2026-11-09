@@ -10,7 +10,7 @@ import { openAbout } from "./about.js";
 import { askAct } from "./ask.js";
 import * as fz from "./focus.js";
 import { closeSheet, drawForm, getForm, head, openCalendar, openForm, openHabits, openInfo, openPlan, openPractice, openSettings, readForm, showSheet } from "./sheet.js";
-import { backTo, render } from "./views.js";
+import { backTo, render, renderBg } from "./views.js";
 import * as wb from "./wb.js";
 import * as tkm from "./tk.js";
 import * as nts from "./notes.js";
@@ -248,7 +248,7 @@ const RELOAD_GAP = 60e3;
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState !== "visible" || S.cloud !== "ready" || !S.wb.loaded || $("#sheet").open) return;
   if (S.loadedAt && Date.now() - S.loadedAt < RELOAD_GAP) return;
-  await loadData(); render();
+  await loadData(); if (!$("#sheet").open) renderBg();   // 读的这几秒里打开了表单就先不画，关上时会重画
 });
 export { showSheet, head, kindOf, RATINGS };
 

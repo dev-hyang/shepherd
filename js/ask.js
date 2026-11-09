@@ -7,7 +7,7 @@ import { mdToHtml } from "./markdown.js";
 import { openAiSettings } from "./notes.js";
 import { summarize } from "./review.js";
 import { chipBtn, pageHead } from "./ui.js";
-import { render } from "./views.js";
+import { render, renderBg } from "./views.js";
 import * as tk from "./tk.js";
 import * as wb from "./wb.js";
 
@@ -163,7 +163,7 @@ async function askAct(act, el){
       a.busy = true; a.error = null; render();
       try { a.answer = await askText(systemPrompt(), userPrompt(a), { maxTokens: 1800, temperature: 0.5 }); }
       catch (e) { a.error = String(e.message || e); }
-      a.busy = false; render();
+      a.busy = false; renderBg();   // 等回答时改了问题，别被冲掉
       const box = document.querySelector(".ask-answer"); if (box) box.scrollIntoView({ behavior: "smooth", block: "start" });
       break; }
     default: return false;

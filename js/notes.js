@@ -8,7 +8,7 @@ import { PROVIDERS, aiReady, aiSettings, askText, providerOf, saveAiSettings, te
 import { NOTE_KINDS, OCR_SYSTEM, OCR_USER, PURPOSES, compilePrompt, effMonth, filtersOn as isFiltered, groupNotes, joinQuote, meta, noteHeading, parseOcr, parseTags, toMarkdown } from "./notes-lib.js";
 import * as nt from "./nt.js";
 import { chipBtn, fbar } from "./ui.js";
-import { render } from "./views.js";
+import { render, renderBg } from "./views.js";
 import { closeSheet, drawForm, getForm, head, openForm, openInfo, readForm, showSheet } from "./sheet.js";
 import * as wb from "./wb.js";
 
@@ -94,8 +94,8 @@ function openNotes(){
 /** 换了筛选：向数据库重读统计 + 第一页，回来再画（whole = 整页重画，否则只画列表区，搜索框不丢光标） */
 async function requery(whole){
   const p = nt.refresh(); if (whole) render(); else redrawBody();
-  if (await p) { if (whole) render(); else redrawBody(); }
-  else if (S.nt.error) render();
+  if (await p) { if (whole) renderBg(); else redrawBody(); }   // 读回来再画：这时可能已经在搜索框里打字了
+  else if (S.nt.error) renderBg();
 }
 const redrawBody = () => { const b = $("#ntBody"); if (b) b.innerHTML = bodyHTML(); };
 /** 点筛选：scope / kind / tag / month */

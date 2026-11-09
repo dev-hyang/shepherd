@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-09.1", title: { zh: "填表时没保存的内容不会再被自动刷新冲掉", en: "Unsaved typing no longer gets wiped by auto-refresh" }, items: [
+    { k: "fix", zh: "家人那边有更新、切回页面或过了午夜时，正在输入的文字和光标位置都会保留", en: "When family updates arrive, you return to the app or it passes midnight, what you're typing and the cursor stay put" },
+    { k: "fix", zh: "专注计时到点换阶段时，“在做什么”输入框不再丢失光标", en: "The focus timer's \"what are you working on\" box keeps the cursor when a phase ends" }
+  ] },
   { v: "2026-11-08.2", title: { zh: "发布日志可以按天或按版本分组，补上了早期的更新记录", en: "Group release notes by day or version, plus the full early history" }, items: [
     { k: "new", zh: "发布日志新增「分组」：按版本或按天，记住你的选择", en: "Release notes can be grouped by version or by day, and remember your choice" },
     { k: "better", zh: "补上了从上线第一天起的更新记录", en: "Every update since day one is now in the release notes" }

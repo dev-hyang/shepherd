@@ -7,7 +7,7 @@ import { runScheduled } from "../backup.js";
 import { attachRealtime as attachTaskRealtime, loadTasks } from "../tk.js";
 import { attachRealtime as attachNoteRealtime, loadNotes } from "../nt.js";
 import { attachRealtime as attachHealthRealtime, loadHealth } from "../hl.js";
-import { refreshSettingsIfOpen, render } from "../views.js";
+import { refreshSettingsIfOpen, render, renderBg } from "../views.js";
 
 /* ============ 登录与家庭（与小月亮共用同一套表） ============
    小月亮负责创建家庭、邀请家人；这里读同一份家庭和成员。
@@ -48,10 +48,10 @@ function initSupabase(){
 }
 async function afterAuth(){
   teardownRealtime(); clearInterval(SB.waitTimer); S.family = null; S.members = {}; S.pending = []; S.waiting = null;
-  if (!S.user) { S.cloud = "signedout"; render(); refreshSettingsIfOpen(); return; }
-  if (S.user.is_anonymous) { S.cloud = "anon"; render(); refreshSettingsIfOpen(); return; }
+  if (!S.user) { S.cloud = "signedout"; renderBg(); refreshSettingsIfOpen(); return; }
+  if (S.user.is_anonymous) { S.cloud = "anon"; renderBg(); refreshSettingsIfOpen(); return; }
   const { rows, error } = await myMemberships();
-  if (error) { S.cloud = "offline"; toast(t("连接云端失败，请稍后刷新")); render(); refreshSettingsIfOpen(); return; }
+  if (error) { S.cloud = "offline"; toast(t("连接云端失败，请稍后刷新")); renderBg(); refreshSettingsIfOpen(); return; }
   const active = rows.find(r => (r.status || "active") === "active" && r.families);
   const pend = rows.find(r => r.status === "pending");
   S.family = active ? active.families : null;
@@ -60,11 +60,11 @@ async function afterAuth(){
   if (S.family) await loadMembers();
   if (S.waiting) SB.waitTimer = setInterval(recheckWaiting, 20000);
   S.cloud = "ready";
-  render();
+  renderBg();
   await loadData();
   runScheduled();   // 定时备份到期了就在后台做一次
   setupRealtime();
-  render(); refreshSettingsIfOpen();
+  renderBg(); refreshSettingsIfOpen();
 }
 /** 读全部数据：习惯 / 打卡 / 祷告、任务、笔记三块互不依赖，同时读（以前是一块读完再读下一块）。
     任务表（迁移 015）、笔记表（迁移 016）没建时只影响各自的页。成功后记下时间，切回前台时据此决定要不要重读（events.js） */
@@ -105,11 +105,11 @@ function setupRealtime(){
   teardownRealtime();
   SB.channel = SB.client.channel("shepherd-" + S.user.id);
   const fid = S.family ? S.family.id : S.waiting && S.waiting.family_id;
-  if (fid) SB.channel.on("postgres_changes", { event: "*", schema: "public", table: "family_members", filter: "family_id=eq." + fid }, async () => { if (S.waiting) { await recheckWaiting(); return; } await loadMembers(); if (!S.family) return; if (!$("#sheet").open) render(); else refreshSettingsIfOpen(); });
-  attachRealtime(SB.channel, () => { if (!$("#sheet").open) render(); });
-  if (S.tk.loaded) attachTaskRealtime(SB.channel, () => { if (!$("#sheet").open) render(); });   // 任务表没建（迁移 015）时不订阅，免得整个频道订阅失败
-  if (S.nt.loaded) attachNoteRealtime(SB.channel, () => { if (!$("#sheet").open) render(); });   // 同上：表没建（迁移 016）不订阅
-  if (S.hl.loaded) attachHealthRealtime(SB.channel, () => { if (!$("#sheet").open) render(); });   // 同上：表没建（迁移 026）不订阅
+  if (fid) SB.channel.on("postgres_changes", { event: "*", schema: "public", table: "family_members", filter: "family_id=eq." + fid }, async () => { if (S.waiting) { await recheckWaiting(); return; } await loadMembers(); if (!S.family) return; if (!$("#sheet").open) renderBg(); else refreshSettingsIfOpen(); });
+  attachRealtime(SB.channel, () => { if (!$("#sheet").open) renderBg(); });
+  if (S.tk.loaded) attachTaskRealtime(SB.channel, () => { if (!$("#sheet").open) renderBg(); });   // 任务表没建（迁移 015）时不订阅，免得整个频道订阅失败
+  if (S.nt.loaded) attachNoteRealtime(SB.channel, () => { if (!$("#sheet").open) renderBg(); });   // 同上：表没建（迁移 016）不订阅
+  if (S.hl.loaded) attachHealthRealtime(SB.channel, () => { if (!$("#sheet").open) renderBg(); });   // 同上：表没建（迁移 026）不订阅
   SB.channel.subscribe();
 }
 const isOwner = () => !!(S.user && S.members[S.user.id] && S.members[S.user.id].role === "owner");

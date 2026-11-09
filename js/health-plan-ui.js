@@ -11,7 +11,7 @@ import * as hl from "./hl.js";
 import * as pg from "./pager.js";
 import { closeSheet, drawForm, getForm, openForm, openInfo, readForm } from "./sheet.js";
 import { secHead } from "./ui.js";
-import { render } from "./views.js";
+import { render, renderBg } from "./views.js";
 import * as wb from "./wb.js";
 
 /* ============ 健康 · 计划 / 训练 / 饮食（阶段 2–4） ============
@@ -256,7 +256,7 @@ async function aiPlan(){
     await hl.saveProfile(key, { ...profileData(key), ai: { ...out, at: new Date().toISOString() } });
     toast(t("分析好了"));
   } catch (e) { toast(t("分析失败：{msg}", { msg: String(e.message || e).slice(0, 100) })); }
-  finally { S.hlAiBusy = false; render(); }
+  finally { S.hlAiBusy = false; renderBg(); }
 }
 
 /* ---- 事件（health.js 的 hlAct 把这些转过来）；返回 true = 处理了 ---- */

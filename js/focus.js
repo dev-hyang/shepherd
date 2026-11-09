@@ -1,9 +1,9 @@
 import { LS_PREFIX } from "./core/config.js";
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
-import { $, esc, loadJSON, saveJSON, toast } from "./core/util.js";
+import { $, esc, loadJSON, saveJSON, toast, keepForms } from "./core/util.js";
 import { head, showSheet } from "./sheet.js";
-import { render } from "./views.js";
+import { render, renderBg } from "./views.js";
 import * as wb from "./wb.js";
 
 /* ============ 专注计时：番茄工作法 + 护眼 ============
@@ -68,7 +68,7 @@ async function complete(){
     const long = T.n % c.every === 0, mins = long ? c.longBrk : c.brk;
     T.phase = "break"; T.long = long; T.total = mins * 60e3; T.endAt = now() + T.total; T.eyeAt = null; save();
     beep("done"); notify(t("专注完成，休息 {n} 分钟", { n: mins }), long ? t("第 {n} 段 · 长休息：起来走走、喝口水", { n: T.n }) : t("第 {n} 段 · 离开屏幕几分钟", { n: T.n }));
-    paint(); render();
+    paint(); renderBg();   // 计时到点：后台重画，页面上正在填的不丢
   } else if (T.phase === "break") {
     T.phase = "ready"; save(); beep("back"); notify(t("休息结束"), t("准备好了就开始下一段"));
     if (c.autoNext) start(); else paint();
@@ -167,11 +167,11 @@ function paint(){
   const btns = T.phase === "idle" || T.phase === "ready"
     ? `<button class="btn primary" data-act="fz-start">${T.phase === "ready" ? t("开始下一段") : t("开始专注")}</button>${T.n ? `<button class="btn" data-act="fz-reset">${t("清零")}</button>` : ""}`
     : `${T.pausedLeft != null ? `<button class="btn primary" data-act="fz-resume">${t("继续")}</button>` : `<button class="btn" data-act="fz-pause">${t("暂停")}</button>`}${T.phase === "break" ? `<button class="btn" data-act="fz-skip">${t("跳过休息")}</button>` : T.phase === "eye" ? `<button class="btn" data-act="fz-skip">${t("好了，继续")}</button>` : ""}<button class="btn danger" data-act="fz-stop">${t("结束")}</button>`;
-  box.innerHTML = `<div class="fz-phase" id="fz-phase">${esc(phaseLabel())}${T.phase !== "idle" ? ` · ${t("第 {n} 段", { n: (T.n || 0) + (T.phase === "work" || T.phase === "eye" ? 1 : 0) })}` : ""}${T.pausedLeft != null ? ` · ${t("已暂停")}` : ""}</div>
+  keepForms(box, () => { box.innerHTML = `<div class="fz-phase" id="fz-phase">${esc(phaseLabel())}${T.phase !== "idle" ? ` · ${t("第 {n} 段", { n: (T.n || 0) + (T.phase === "work" || T.phase === "eye" ? 1 : 0) })}` : ""}${T.pausedLeft != null ? ` · ${t("已暂停")}` : ""}</div>
     <div class="fz-ring"><svg viewBox="0 0 120 120" width="100%" height="100%" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--line)" stroke-width="6"/><circle id="fz-arc" cx="60" cy="60" r="${R}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - frac)).toFixed(1)}" transform="rotate(-90 60 60)"/></svg><div class="fz-time num" id="fz-time">${T.phase === "idle" ? mmss(cfg().work * 60e3) : T.phase === "ready" ? mmss(cfg().work * 60e3) : mmss(left)}</div></div>
     <div class="field" style="margin:8px 0 0"><input id="fz-task" type="text" placeholder="${t("在做什么（可空）")}" value="${esc(T.task || "")}" autocomplete="off"></div>
     <div class="btns" style="justify-content:center">${btns}</div>
-    <p class="small muted" style="text-align:center;margin-top:6px">${T.n ? t("今天这轮已完成 {n} 段", { n: T.n }) : ""}${T.eyes ? ` · ${t("护眼 {n} 次", { n: T.eyes })}` : ""}</p>`;
+    <p class="small muted" style="text-align:center;margin-top:6px">${T.n ? t("今天这轮已完成 {n} 段", { n: T.n }) : ""}${T.eyes ? ` · ${t("护眼 {n} 次", { n: T.eyes })}` : ""}</p>`; });   // 计时到点换阶段也会重画：“在做什么”输入框的焦点和光标保住
 }
 function paintTime(){
   const el = $("#fz-time"); if (el) { el.textContent = mmss(leftMs()); const arc = $("#fz-arc"); if (arc) { const C = 2 * Math.PI * 54, frac = 1 - leftMs() / (T.total || 1); arc.setAttribute("stroke-dashoffset", (C * (1 - frac)).toFixed(1)); } }

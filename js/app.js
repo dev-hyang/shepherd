@@ -9,7 +9,7 @@ import { initProviders } from "./backup.js";
 import { APP_VERSION } from "./core/config.js";
 import { S } from "./core/state.js";
 import { dayKey } from "./core/util.js";
-import { render } from "./views.js";
+import { render, renderBg } from "./views.js";
 import { initReleases } from "./releases-ui.js";
 import { RELEASES } from "./data/releases.js";
 
@@ -35,5 +35,5 @@ if (!(await healStaleModules())) {
   initSupabase();    // 加载 supabase-js，登录状态回调里再渲染一次
   initProviders();   // 从 Dropbox 授权页跳回来时把 ?code= 换成令牌（js/backup.js）
   // 页面开着过了午夜：换到新的一天
-  setInterval(() => { const d = dayKey(Date.now()); if (d !== S.day) { S.day = d; if (S.pick === d) S.pick = null; if (!document.querySelector("#sheet").open) render(); } }, 60e3);
+  setInterval(() => { const d = dayKey(Date.now()); if (d !== S.day) { S.day = d; if (S.pick === d) S.pick = null; if (!document.querySelector("#sheet").open) renderBg(); } }, 60e3);
 }

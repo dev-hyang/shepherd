@@ -9,7 +9,7 @@ import { UI, fmtDay, lang, openVisit, profileData, visitCard, vitalsText } from 
 import * as hl from "./hl.js";
 import * as pg from "./pager.js";
 import { fbar, secHead } from "./ui.js";
-import { render } from "./views.js";
+import { render, renderBg } from "./views.js";
 
 /* ============ 健康 · 就诊（2026-11-03） ============
    列表两种视图：行（紧凑，一次就诊一行）和时间线（按年月分组，竖线串起来）。
@@ -126,7 +126,7 @@ async function aiVisit(id){
     if (!saved.ai) S.hl.visits = S.hl.visits.map(x => (x.id === id ? { ...x, ai } : x));   // 028 没执行：这次先显示，刷新后不在
     toast(t("分析好了"));
   } catch (e) { toast(t("分析失败：{msg}", { msg: String(e.message || e).slice(0, 100) })); }
-  finally { S.hlAiBusy = null; render(); }
+  finally { S.hlAiBusy = null; renderBg(); }
 }
 
 /* ---- 事件 ---- */

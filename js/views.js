@@ -3,7 +3,7 @@ import { myName } from "./core/auth.js";
 import { APP_VERSION, SISTER_APPS, THIS_APP } from "./core/config.js";
 import { LOCALES, locale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
-import { $, esc } from "./core/util.js";
+import { $, esc, keepForms } from "./core/util.js";
 import { WEEKDAY } from "./data/kinds.js";
 import { viewAsk } from "./ask.js";
 import { releasePageHTML } from "./releases-ui.js";
@@ -75,7 +75,9 @@ function renderStatus(){
   document.querySelectorAll("nav.tabs button").forEach(b => { const k = TAB_LABELS[b.dataset.tab]; if (!k) return; const txt = [...b.childNodes].find(x => x.nodeType === 3); if (txt) txt.nodeValue = t(k); else b.append(t(k)); });
   { const b = $("#tkBadge"); if (b) { const n = S.tk && S.tk.loaded ? pendingCount() : 0; b.textContent = n > 9 ? "9+" : String(n || ""); b.hidden = !n; } }   // 任务页签角标：逾期 + 今天到期
 }
-function render(){
+/** opts.bg = 后台触发的重画（实时同步、切回前台重读、过午夜、计时到点、AI 回来……）：
+    正在填的表单（没保存的输入、焦点和光标）原样保住，见 util.keepForms。用户自己点的操作照旧直接重画 */
+function render(opts){
   renderStatus();
   trackNav(S.tab);
   const sub = SUB[S.tab], cur = sub ? sub.parent : S.tab;   // 子页时底部仍高亮它所属的页签
@@ -83,10 +85,15 @@ function render(){
   const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
   $("#main").className = S.tab === "today" || S.tab === "health" ? "wide" : "narrow";   // 今天、健康在宽屏用两栏
   const crumb = sub ? crumbNav(crumbParts(S.tab)) : "";
-  $("#main").innerHTML = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩、发布日志 没登录也能看
+  const html = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩、发布日志 没登录也能看
+  if (opts && opts.bg) keepForms($("#main"), () => { $("#main").innerHTML = html; });
+  else $("#main").innerHTML = html;
   updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : "", t("回到顶部"));
 }
-function refreshSettingsIfOpen(){ if ($("#sheet").open && $("#sheetTitle") && $("#sheetTitle").textContent === t("设置")) openSettings(); }
+/** 后台重画 = render({ bg: true }) */
+const renderBg = () => render({ bg: true });
+// 设置页开着时跟着账号 / 家庭变化重画；登录、邀请码这些输入框里没提交的字保住
+function refreshSettingsIfOpen(){ if ($("#sheet").open && $("#sheetTitle") && $("#sheetTitle").textContent === t("设置")) keepForms($("#sheetIn"), openSettings); }
 
 /* 没登录 / 匿名 / 表没建时，每个页面都先把路指清楚 */
 function gateHTML(){
@@ -100,4 +107,4 @@ function gateHTML(){
   return "";
 }
 
-export { backTo, renderStatus, render, refreshSettingsIfOpen, gateHTML, crumbNav, SUB };
+export { backTo, renderStatus, render, renderBg, refreshSettingsIfOpen, gateHTML, crumbNav, SUB };
