@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-09.2", title: { zh: "记录的日期不能选到未来", en: "Record dates can no longer be in the future" }, items: [
+    { k: "better", zh: "就诊、化验、测量、训练记录和笔记的日期：晚于今天的变灰、不能选", en: "Dates for visits, labs, measurements, workouts and notes: anything after today is greyed out" },
+    { k: "better", zh: "待办日期、复诊日期、提醒时间不受影响，照样能选未来", en: "Task dates, follow-up dates and reminder times are unchanged and can still be in the future" }
+  ] },
   { v: "2026-11-09.1", title: { zh: "填表时没保存的内容不会再被自动刷新冲掉", en: "Unsaved typing no longer gets wiped by auto-refresh" }, items: [
     { k: "fix", zh: "家人那边有更新、切回页面或过了午夜时，正在输入的文字和光标位置都会保留", en: "When family updates arrive, you return to the app or it passes midnight, what you're typing and the cursor stay put" },
     { k: "fix", zh: "专注计时到点换阶段时，“在做什么”输入框不再丢失光标", en: "The focus timer's \"what are you working on\" box keeps the cursor when a phase ends" }

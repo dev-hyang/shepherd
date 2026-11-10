@@ -380,7 +380,7 @@ const EN = {
   "申请 key": "Get a key",
   "这里用的是你在爱家小助手里填的 key。": "This uses the key you entered in Home Helper.",
   "测试连接": "Test connection",
-  "已保存": "Saved",
+  "已保存": "Saved", "日期不能晚于今天": "The date can't be later than today",
   "测试中…": "Testing…",
   "连接成功 ✓": "Connected ✓",
   "记一条笔记": "New note",

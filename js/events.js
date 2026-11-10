@@ -233,7 +233,11 @@ document.addEventListener("click", async ev => {
       case "ai-test": await nts.runAiTest(); break;
 
       /* 表单 */
-      case "form-save": { readForm(); const f = getForm(); await f.onSave(f.draft); break; }
+      case "form-save": { readForm();
+        // 记录性质的日期（字段带 past）不能晚于今天：选择器里已经灰掉，手动输入的在这里拦住
+        const late = [...document.querySelectorAll('#sheetIn input[type="date"][max]')].find(el => el.validity.rangeOverflow);
+        if (late) { toast(t("日期不能晚于今天")); late.focus(); return; }
+        const f = getForm(); await f.onSave(f.draft); break; }
       case "form-delete": { const f = getForm(); if (f.onDelete) await f.onDelete(); break; }
     }
   } catch (e) { console.error(e); /* run() already toasted; keep the page usable */ }

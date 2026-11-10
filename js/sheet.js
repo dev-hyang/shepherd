@@ -3,7 +3,7 @@ import { aiReady, aiSettings, providerOf } from "./ai.js";
 import { APP_VERSION, ICS_FUNCTION, LS_PREFIX, SISTER_APPS, THIS_APP } from "./core/config.js";
 import { LOCALES, locale, t, tc } from "./core/i18n.js";
 import { S } from "./core/state.js";
-import { $, esc } from "./core/util.js";
+import { $, dayKey, esc } from "./core/util.js";
 import { ALL_DAYS, KINDS, WEEKDAY, kindOf, modeOf } from "./data/kinds.js";
 import { PLANS } from "./data/plans.js";
 import { SIZES as PAGE_SIZES, pageSize } from "./pager.js";
@@ -57,7 +57,7 @@ function drawForm(){
     if (f.type === "area") return `<div class="field"><label for="${id}">${label}</label><textarea id="${id}" data-f="${f.k}" placeholder="${ph}" ${f.rows ? `style="min-height:${f.rows * 24}px"` : ""}>${esc(v || "")}</textarea>${hint}</div>`;
     if (f.type === "num") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="number" inputmode="decimal" min="0" step="${f.step || 1}" data-f="${f.k}" value="${v ?? ""}" placeholder="${ph}">${hint}</div>`;
     if (f.type === "time") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="time" data-f="${f.k}" value="${esc(v || "")}">${hint}</div>`;
-    if (f.type === "date") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="date" data-f="${f.k}" value="${esc(v || "")}">${hint}</div>`;
+    if (f.type === "date") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="date" data-f="${f.k}"${f.past ? ` max="${dayKey(Date.now())}"` : ""} value="${esc(v || "")}">${hint}</div>`; // past：记录性质，不能选未来
     if (f.type === "password") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="password" data-f="${f.k}" value="${esc(v || "")}" placeholder="${ph}" autocomplete="off" autocapitalize="off" spellcheck="false">${hint}</div>`;
     if (f.type === "check") return `<div class="field"><label class="check"><input type="checkbox" data-f="${f.k}" ${v ? "checked" : ""}>${label}</label>${hint}</div>`;
     if (f.type === "html") return `<div class="field">${typeof f.html === "function" ? f.html(draft) : f.html}</div>`;

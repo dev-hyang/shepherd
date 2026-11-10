@@ -204,7 +204,7 @@ function openWorkoutLog(a){
   const key = UI().who, plan = planOf(key), refs = libFor("workout", (hl.person(key) || {}).kid);
   const init = a ? { day: a.day, template: a.template, minutes: a.minutes, note: (a.data || {}).note || "" } : { day: S.day, template: (plan.workout || {}).tpl || refs[0], minutes: null, note: "" };
   openForm(a ? "编辑训练" : "记一次训练", [
-    { k: "day", label: "日期", type: "date" },
+    { k: "day", label: "日期", type: "date", past: true },
     { k: "template", type: "html", html: d => `<div class="field" style="margin:0"><label for="f_tpl">${t("模版")}</label><select id="f_tpl" data-f="template"><option value="" ${!d.template ? "selected" : ""}>${t("自由训练（不按模版）")}</option>${refs.map(r => { const tp = tpl(r, "workout"); return `<option value="${esc(r)}" ${d.template === r ? "selected" : ""}>${esc(L(tp.x))}</option>`; }).join("")}</select></div>` },
     { k: "minutes", label: "多少分钟", type: "num", ph: "30", hint: "不填就按模版的分钟数" },
     { k: "note", label: "备注", type: "text", ph: "跑了 3 公里 / 膝盖有点疼" }

@@ -271,7 +271,7 @@ function openVisit(v){
   openForm(v ? "编辑就诊" : "记一次就诊", [
     { k: "h_ai", type: "html", html: d => aiBtn("visit", d) },
     whoField(),
-    { k: "day", label: "日期", type: "date" },
+    { k: "day", label: "日期", type: "date", past: true },
     selectField("kind", "类型", () => Object.entries(VISIT_KINDS).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`])),
     selectField("place", "地点", () => [["", t("（不填）")], ...Object.entries(PLACES).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`])]),
     { k: "location", label: "地点名称 / 地址", type: "text", ph: "例如 Duly Health · Naperville", list: [...new Set(S.hl.visits.map(x => x.location).filter(Boolean))].slice(0, 30) },
@@ -310,7 +310,7 @@ function openLab(x){
   openForm(x ? "编辑化验" : "记一份化验", [
     ...(x ? [] : [{ k: "h_ai", type: "html", html: d => aiBtn("lab", d) }]),
     whoField(),
-    { k: "day", label: "日期", type: "date" },
+    { k: "day", label: "日期", type: "date", past: true },
     { k: "h_labs", type: "html", html: d => labsPreview(d) },
     { k: "code", type: "html", html: d => (d._labs && d._labs.length ? "" : codeSelect(d)) },
     { k: "name", label: "项目名称", type: "text", when: d => !d.code && !(d._labs && d._labs.length) },
@@ -355,7 +355,7 @@ function openLabBatch(init = {}){
       <span class="small muted">${d._aiBusy ? t("正在读取…") : d.ai_used ? t("已经用 AI 读过，保存前请核对。") : t("门户（MyChart 等）每个套餐截一张图，或者把结果页的文字复制过来；AI 会把每一项填进下面的表，范围按单子上的。")}</span>
       ${d._paste ? `<textarea id="hlPaste" class="hl-paste" placeholder="${esc(t("把化验结果页的文字粘贴在这里"))}">${esc(d._pasteText || "")}</textarea><button type="button" class="btn primary" data-hl="bt-paste-read">${t("读取粘贴的文字")}</button>` : ""}</div>` },
     whoField(),
-    { k: "day", label: "采样日期", type: "date" },
+    { k: "day", label: "采样日期", type: "date", past: true },
     { k: "visit_id", type: "html", html: d => { const vs = S.hl.visits.filter(x => x.subject === d.subject).sort((a, b) => b.day.localeCompare(a.day)).slice(0, 12);
       return vs.length ? `<div class="field" style="margin:0"><label for="f_visit">${t("挂在哪次就诊上（可不选）")}</label><select id="f_visit" data-f="visit_id"><option value="">${t("不挂")}</option>${vs.map(v => `<option value="${esc(v.id)}" ${d.visit_id === v.id ? "selected" : ""}>${esc(fmtDay(v.day))} · ${esc(t((VISIT_KINDS[v.kind] || VISIT_KINDS.other).label))}${v.provider ? " · " + esc(v.provider) : ""}</option>`).join("")}</select></div>` : ""; } },
     { k: "panel", label: "套餐", type: "seg", optsFn: d => Object.entries(LAB_GROUPS).map(([g, l]) => [g, `${t(l)}${batchCount(d, g) ? ` · ${batchCount(d, g)}` : ""}`]), raw: true },
@@ -401,7 +401,7 @@ function openMeasure(m){
   const unitL = d => (d.kind === "bp" ? "mmHg" : unitOf(MEASURE_KINDS[d.kind || "weight"].dim, s));
   openForm(m ? "编辑测量" : "记一次测量", [
     whoField(),
-    { k: "day", label: "日期", type: "date" },
+    { k: "day", label: "日期", type: "date", past: true },
     { k: "kind", label: "测什么", type: "seg", opts: Object.entries(MEASURE_KINDS).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`]), raw: true },
     { k: "h_u", type: "html", html: d => `<div class="small muted">${t("单位：{u}", { u: unitL(d) })}</div>` },
     { k: "value", label: "数值", type: "num", step: .1, when: d => d.kind !== "bp" },
@@ -418,7 +418,7 @@ function openMeasure(m){
 function openProfile(){
   const ui = UI(), who = hl.person(ui.who), s = sys(), p = (hl.profileOf(ui.who) || {}).data || {};
   openForm(t("{name} 的健康档案", { name: who.name }), [
-    ...(who.kid ? [] : [{ k: "birth", label: "出生日期", type: "date" }]),
+    ...(who.kid ? [] : [{ k: "birth", label: "出生日期", type: "date", past: true }]),
     { k: "sex", label: "性别", type: "seg", opts: [["f", "女"], ["m", "男"], ["o", "其他"]] },
     ...(who.kid ? [] : [{ k: "height", label: t("身高（{u}）", { u: unitOf("length", s) }), type: "num", step: .1, hint: "算 BMI 用；就诊记了身高就以最近一次为准" }]),
     { k: "allergies", label: "过敏", type: "text", ph: "青霉素、花生……" },

@@ -138,7 +138,7 @@ function noteFields(){
     { k: "reflection", type: "html", html: mdEditorHTML },
     { k: "tags", label: "标签（逗号分隔，可空）", type: "text", ph: "信心, 祷告, 管教孩子" },
     { k: "tagsug", type: "html", html: () => { const tg = (st().mytags || []).slice(0, 12); return tg.length ? `<div class="chips" style="margin:0">${tg.map(([x]) => `<button type="button" class="chip" data-act="nt-tag" data-tag="${esc(x)}">#${esc(x)}</button>`).join("")}</div>` : ""; } },
-    { k: "day", label: "日期", type: "date" },
+    { k: "day", label: "日期", type: "date", past: true },
     ...(fam.length ? [{ k: "shared_with", label: "分享给（不选 = 只有自己看得到）", type: "multi", raw: true, opts: fam.map(([u, m]) => [u, m.name]), hint: "对方只能看，不能改。随时可以取消。" }]
       : [{ k: "noshare", type: "html", html: () => `<div class="small muted">${S.family ? t("家里没有其他成员，暂时没人可分享。") : t("加入家庭后，可以把某一条分享给指定的家人。")}</div>` }])
   ];
