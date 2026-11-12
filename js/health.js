@@ -15,6 +15,7 @@ import * as pg from "./pager.js";
 import { closeSheet, drawForm, getForm, openForm, readForm } from "./sheet.js";
 import { pageHead, secHead } from "./ui.js";
 import { render } from "./views.js";
+import { attachHTML, attachPayload, attachReset } from "./attach.js";
 
 /* ============ 健康页签（家人健康 · 阶段 1） ============
    一个人一个人地看：概览（待办、AI 健康分析、最近一次就诊、关键指标、走势图）· 就诊 · 化验 · 测量 · 档案。
@@ -260,17 +261,23 @@ const whoField = (label = "谁") => ({ k: "subject", type: "html", html: d => `<
 const selectField = (k, label, opts) => ({ k, type: "html", html: d => `<div class="field" style="margin:0"><label for="f_${k}">${t(label)}</label><select id="f_${k}" data-f="${k}" class="hl-fsel">${opts().map(([v, l]) => `<option value="${esc(v)}" ${String(d[k] ?? "") === String(v) ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div>` });
 const fh = title => `<div class="fh">${t(title)}</div>`;
 const today = () => S.day;
-const aiBtn = (mode, d) => `<div class="hl-ai"><button type="button" class="btn" data-hl="ai-read" data-v="${mode}">📷 ${t(mode === "visit" ? "从就诊小结读取" : "从化验单读取")}</button>
-  <span class="small muted">${d && d._aiBusy ? t("正在读取…") : d && d.ai_used ? t("已经用 AI 读过，保存前请核对。") : t("拍照或选图片，AI 读出来预填，你核对后再保存；照片不保存。")}</span></div>`;
+/* AI 读取（2026-11-12 统一版式，js/attach.js）：收起来的一块「用 AI 读取」，里面一排缩略图（可多张、可删）+ 粘贴文字框 + 「让 AI 读出来」 */
+const ATT = mode => "sh-" + mode;
+const AI_SUM = { visit: "用 AI 读取：拍就诊小结、截图或粘贴文字", lab: "用 AI 读取：拍化验单或粘贴文字", labs: "用 AI 读取：拍化验单、门户截图（可多张）或粘贴文字" };
+const AI_PH = { visit: "把就诊小结（After Visit Summary）的文字粘贴在这里", lab: "把化验结果的文字粘贴在这里", labs: "把化验结果页的文字粘贴在这里（MyChart 等门户可以整页复制）" };
+const aiBlock = (mode, d) => `<div class="hl-ai2">${attachHTML(ATT(mode), { t, esc, collapsible: true, forceOpen: !!(d && d._aiBusy), summary: t(AI_SUM[mode]), textLabel: t("或者粘贴文字"), ph: t(AI_PH[mode]),
+  hint: d && d.ai_used ? t("已经用 AI 读过，保存前请核对。") : mode === "labs" ? t("门户每个套餐截一张图也行；AI 会把每一项填进下面的表，范围按单子上的。照片不保存。") : t("AI 读出来预填下面的表，你核对后再保存；照片不保存。"),
+  after: `<div class="btns" style="margin-top:0"><button type="button" class="btn primary sm" data-hl="ai-go" data-v="${mode}" ${d && d._aiBusy ? "disabled" : ""}>${d && d._aiBusy ? t("正在读取…") : `✦ ${t("让 AI 读出来")}`}</button></div>` })}</div>`;
 const labsPreview = d => (d._labs && d._labs.length ? `<div class="panel hl-labs-pre"><b>${t("一起保存 {n} 项化验", { n: d._labs.length })}</b><ul>${d._labs.map(x => `<li>${esc(labName(x, lang()))}：<b class="num">${esc(x.value)}</b> ${esc(x.unit || "")}${labFlag(x) ? ` <span class="pill ${labFlag(x) === "high" ? "hi" : "lo"}">${t(labFlag(x) === "high" ? "偏高" : "偏低")}</span>` : ""}</li>`).join("")}</ul>
   <button type="button" class="chip" data-hl="ai-labs-clear">${t("不要这些化验")}</button></div>` : "");
 
 function openVisit(v){
+  attachReset(ATT("visit"));   // 新开的表单：上一次的照片和文字不带过来
   const s = sys(), vt = (v && v.vitals) || {};
   const init = v ? { ...v, v_weight: toShow("weight", vt.weight_kg, s), v_height: toShow("length", vt.height_cm, s), v_sys: vt.sys ?? null, v_dia: vt.dia ?? null, v_hr: vt.hr ?? null, v_temp: toShow("temp", vt.temp_c, s), v_spo2: vt.spo2 ?? null }
     : { subject: UI().who, day: today(), kind: "regular" };
   openForm(v ? "编辑就诊" : "记一次就诊", [
-    { k: "h_ai", type: "html", html: d => aiBtn("visit", d) },
+    { k: "h_ai", type: "html", html: d => aiBlock("visit", d) },
     whoField(),
     { k: "day", label: "日期", type: "date", past: true },
     selectField("kind", "类型", () => Object.entries(VISIT_KINDS).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`])),
@@ -307,9 +314,10 @@ const codeSelect = d => `<div class="field" style="margin:0"><label for="f_code"
   ${Object.entries(LAB_GROUPS).map(([g, gl]) => { const items = Object.entries(LABS).filter(([, x]) => x.group === g); return items.length ? `<optgroup label="${esc(t(gl))}">${items.map(([k, x]) => `<option value="${k}" ${d.code === k ? "selected" : ""}>${esc(lang() === "en" ? x.en : x.name)}</option>`).join("")}</optgroup>` : ""; }).join("")}
   <option value="" ${!d.code ? "selected" : ""}>${t("其他（自己填名字）")}</option></select></div>`;
 function openLab(x){
+  attachReset(ATT("lab"));   // 新开的表单：上一次的照片和文字不带过来
   const init = x ? { ...x } : { subject: UI().who, day: today(), code: "ldl", unit: LABS.ldl.unit, ref_low: LABS.ldl.low, ref_high: LABS.ldl.high };
   openForm(x ? "编辑化验" : "记一份化验", [
-    ...(x ? [] : [{ k: "h_ai", type: "html", html: d => aiBtn("lab", d) }]),
+    ...(x ? [] : [{ k: "h_ai", type: "html", html: d => aiBlock("lab", d) }]),
     whoField(),
     { k: "day", label: "日期", type: "date", past: true },
     { k: "h_labs", type: "html", html: d => labsPreview(d) },
@@ -348,13 +356,12 @@ function batchTable(d){
     ${g === "other" ? `<button type="button" class="chip" data-hl="bt-extra">＋ ${t("加一项（单子上别的项目）")}</button>` : ""}`;
 }
 function openLabBatch(init = {}){
+  attachReset(ATT("labs"));   // 新开的表单：上一次的照片和文字不带过来
   const who = UI().who;
   const draft = { subject: who, day: today(), panel: "lipid", vals: {}, extra: [], visit_id: "", ...init };
   if (!draft.visit_id) { const v = S.hl.visits.filter(x => x.subject === draft.subject && Math.abs(daysBetween(x.day, draft.day)) <= 45).sort((a, b) => b.day.localeCompare(a.day))[0]; if (v) draft.visit_id = v.id; }
   openForm("录入化验", [
-    { k: "h_ai", type: "html", html: d => `<div class="hl-ai"><button type="button" class="btn" data-hl="ai-read" data-v="labs">📷 ${t("拍照 / 截图读取（可多张）")}</button><button type="button" class="btn" data-hl="bt-paste">📋 ${t("粘贴文字")}</button>
-      <span class="small muted">${d._aiBusy ? t("正在读取…") : d.ai_used ? t("已经用 AI 读过，保存前请核对。") : t("门户（MyChart 等）每个套餐截一张图，或者把结果页的文字复制过来；AI 会把每一项填进下面的表，范围按单子上的。")}</span>
-      ${d._paste ? `<textarea id="hlPaste" class="hl-paste" placeholder="${esc(t("把化验结果页的文字粘贴在这里"))}">${esc(d._pasteText || "")}</textarea><button type="button" class="btn primary" data-hl="bt-paste-read">${t("读取粘贴的文字")}</button>` : ""}</div>` },
+    { k: "h_ai", type: "html", html: d => aiBlock("labs", d) },
     whoField(),
     { k: "day", label: "采样日期", type: "date", past: true },
     { k: "visit_id", type: "html", html: d => { const vs = S.hl.visits.filter(x => x.subject === d.subject).sort((a, b) => b.day.localeCompare(a.day)).slice(0, 12);
@@ -436,61 +443,31 @@ function openProfile(){
 
 /* ---- AI 读图：照片在浏览器里压缩后发给用户自己配置的 AI（第一次问一下），只要 JSON，结果预填表单 ---- */
 const AI_OK = LS_PREFIX + ".hlAiOk";
-async function shrink(file, max = 1800){
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error(t("这张图片打不开"))); i.src = url; });
-    const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement("canvas");
-    c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
-    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-    return { mime: "image/jpeg", b64: c.toDataURL("image/jpeg", 0.85).split(",")[1] };
-  } finally { URL.revokeObjectURL(url); }
-}
-function aiRead(mode){
+async function aiGo(mode){
+  readForm(); const f = getForm(); if (!f) return;
+  const { images, text } = attachPayload(ATT(mode));
+  if (!images.length && !text) { toast(t("先拍照 / 选图片，或者粘贴文字")); return; }
   if (!aiReady()) { toast(t("先在 我的 → 咩咩咩 → AI 设置 里填一个 API key")); return; }
   if (!loadJSON(AI_OK, false)) {
-    if (!confirm(t("照片会发给你自己设置的 AI 服务商来读取（只要数字和医生建议，提示里要求它不要读姓名、生日、地址）；牧羊人不保存照片。继续吗？"))) return;
+    if (!confirm(t("照片和文字会发给你自己设置的 AI 服务商来读取（只要数字和医生建议，提示里要求它不要读姓名、生日、地址）；牧羊人不保存照片。继续吗？"))) return;
     saveJSON(AI_OK, true);
   }
-  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.multiple = true;
-  inp.onchange = async () => {
-    const files = [...inp.files].slice(0, 6); if (!files.length) return;   // 代谢综合常常要截 3 张
-    readForm(); const f = getForm(); if (!f) return;
-    f.draft._aiBusy = true; drawForm();
-    try {
-      const images = []; for (const x of files) images.push(await shrink(x));
-      const r = parseExtract(await askText(EXTRACT_SYSTEM, mode === "visit" ? "Read this after-visit summary (and any lab results on it)." : "Read every lab result on these pages.", { json: true, images, maxTokens: 4000 }));
-      if (!r) throw new Error(t("没读出内容，换一张清楚点的照片试试"));
-      const d = getForm().draft;
-      if (r.day) d.day = r.day;
-      if (mode === "visit") {
-        const s = sys(), v = r.vitals;
-        Object.assign(d, { kind: r.kind || d.kind, provider: r.provider || d.provider, reason: r.reason || d.reason, diagnosis: r.diagnosis || d.diagnosis, advice: r.advice || d.advice, follow_up: r.follow_up || d.follow_up,
-          v_weight: v.weight_kg != null ? toShow("weight", v.weight_kg, s) : d.v_weight, v_height: v.height_cm != null ? toShow("length", v.height_cm, s) : d.v_height, v_sys: v.sys ?? d.v_sys, v_dia: v.dia ?? d.v_dia,
-          v_hr: v.hr ?? d.v_hr, v_temp: v.temp_c != null ? toShow("temp", v.temp_c, s) : d.v_temp, v_spo2: v.spo2 ?? d.v_spo2 });
-      }
-      if (mode === "labs") { readForm(); fillBatch(getForm().draft, r.labs, r); }
-      else { d._labs = r.labs; d.ai_used = true; }
-      toast(r.labs.length ? t("读出 {n} 项化验，请核对", { n: r.labs.length }) : t("已读出，请核对"));
-    } catch (e) { toast(t("读取失败：{msg}", { msg: String(e.message || e).slice(0, 100) })); }
-    finally { const g = getForm(); if (g) { g.draft._aiBusy = false; drawForm(); } }
-  };
-  inp.click();
-}
-
-/** 粘贴的化验结果文字 → AI 读成 JSON → 填进表（只发文字；第一次问一下） */
-async function pasteRead(){
-  readForm(); const f = getForm(); if (!f) return;
-  const text = (document.getElementById("hlPaste") || {}).value || ""; f.draft._pasteText = text;
-  if (!text.trim()) { toast(t("先粘贴文字")); return; }
-  if (!aiReady()) { toast(t("先在 我的 → 咩咩咩 → AI 设置 里填一个 API key")); return; }
-  if (!loadJSON(AI_OK, false)) { if (!confirm(t("粘贴的文字会发给你自己设置的 AI 服务商来整理（提示里要求它不要读姓名、生日、地址）。继续吗？"))) return; saveJSON(AI_OK, true); }
   f.draft._aiBusy = true; drawForm();
   try {
-    const r = parseExtract(await askText(EXTRACT_SYSTEM, "Read every lab result in this text:" + String.fromCharCode(10) + text.slice(0, 20000), { json: true, maxTokens: 4000 }));
-    if (!r || !r.labs.length) throw new Error(t("没读出化验结果"));
-    fillBatch(getForm().draft, r.labs, r); getForm().draft._paste = false;
-    toast(t("读出 {n} 项化验，请核对", { n: r.labs.length }));
+    const ask = mode === "visit" ? "Read this after-visit summary (and any lab results on it)." : "Read every lab result on these pages.";
+    const r = parseExtract(await askText(EXTRACT_SYSTEM, ask + (text ? String.fromCharCode(10) + "Text:" + String.fromCharCode(10) + text.slice(0, 20000) : ""), { json: true, images, maxTokens: 4000 }));
+    if (!r) throw new Error(t("没读出内容，换一张清楚点的照片试试"));
+    const d = getForm().draft;
+    if (r.day) d.day = r.day;
+    if (mode === "visit") {
+      const s = sys(), v = r.vitals;
+      Object.assign(d, { kind: r.kind || d.kind, provider: r.provider || d.provider, reason: r.reason || d.reason, diagnosis: r.diagnosis || d.diagnosis, advice: r.advice || d.advice, follow_up: r.follow_up || d.follow_up,
+        v_weight: v.weight_kg != null ? toShow("weight", v.weight_kg, s) : d.v_weight, v_height: v.height_cm != null ? toShow("length", v.height_cm, s) : d.v_height, v_sys: v.sys ?? d.v_sys, v_dia: v.dia ?? d.v_dia,
+        v_hr: v.hr ?? d.v_hr, v_temp: v.temp_c != null ? toShow("temp", v.temp_c, s) : d.v_temp, v_spo2: v.spo2 ?? d.v_spo2 });
+      d._labs = r.labs; d.ai_used = true;
+    } else if (mode === "labs") { readForm(); fillBatch(getForm().draft, r.labs, r); }
+    else { d._labs = r.labs; d.ai_used = true; }
+    toast(r.labs.length ? t("读出 {n} 项化验，请核对", { n: r.labs.length }) : t("已读出，请核对"));
   } catch (e) { toast(t("读取失败：{msg}", { msg: String(e.message || e).slice(0, 100) })); }
   finally { const g = getForm(); if (g) { g.draft._aiBusy = false; drawForm(); } }
 }
@@ -509,15 +486,13 @@ async function hlAct(act, btn){
     case "new-visit": openVisit(null); return;
     case "new-lab": openLabBatch(); return;
     case "bt-extra": { readForm(); const f = getForm(); if (f) { f.draft.extra.push({ name: "", value: "", unit: "" }); f.draft.panel = "other"; drawForm(); } return; }
-    case "bt-paste": { readForm(); const f = getForm(); if (f) { f.draft._paste = !f.draft._paste; drawForm(); requestAnimationFrame(() => document.getElementById("hlPaste")?.focus()); } return; }
-    case "bt-paste-read": await pasteRead(); return;
     case "new-measure": openMeasure(null); return;
     case "edit-visit": { const v = S.hl.visits.find(x => x.id === d.id); if (v) openVisit(v); return; }
     case "open-visit": ui.visitId = d.id; ui.back = ui.view; ui.view = "visit"; render(); window.scrollTo(0, 0); return;
     case "edit-lab": { const x = S.hl.labs.find(y => y.id === d.id); if (x) openLab(x); return; }
     case "edit-measure": { const m = S.hl.measures.find(y => y.id === d.id); if (m) openMeasure(m); return; }
     case "edit-profile": openProfile(); return;
-    case "ai-read": aiRead(d.v); return;
+    case "ai-go": await aiGo(d.v); return;
     case "ai-labs-clear": { readForm(); const f = getForm(); if (f) { f.draft._labs = []; drawForm(); } return; }
   }
   if (await visitAct(act, d)) return;   // 就诊列表 / 详情 / AI（js/health-visits.js）

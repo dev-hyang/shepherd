@@ -31,7 +31,7 @@ function saveAiSettings(s){ try { localStorage.setItem(KEY, JSON.stringify({ pro
 const aiReady = () => !!String(aiSettings().key || "").trim();
 const cleanKey = s => String(s || "").trim().replace(/^Bearer\s+/i, "");
 
-/** 一次请求的地址、头、体：不发网络，方便单测。images = [{ mime, b64 }] */
+/** 一次请求的地址、头、体：不发网络，方便单测。images = [{ mime, b64 }]（附件里的 PDF 也走这里：Gemini 直接收，Claude 用 document，OpenAI 用 file） */
 function requestFor(s, p, model, { system, user, json = false, images = [], maxTokens = 2000, temperature = 0.2 }){
   const key = cleanKey(s.key), base = String(p.id === "custom" ? s.base : p.base).replace(/\/+$/, "");
   if (p.kind === "gemini") {
@@ -41,10 +41,10 @@ function requestFor(s, p, model, { system, user, json = false, images = [], maxT
   }
   if (p.kind === "anthropic") {
     return { url: `${base}/messages`, headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-      body: { model, max_tokens: maxTokens, temperature, system, messages: [{ role: "user", content: images.length ? [...images.map(i => ({ type: "image", source: { type: "base64", media_type: i.mime, data: i.b64 } })), { type: "text", text: user }] : user }] } };
+      body: { model, max_tokens: maxTokens, temperature, system, messages: [{ role: "user", content: images.length ? [...images.map(i => (i.mime === "application/pdf" ? { type: "document", source: { type: "base64", media_type: i.mime, data: i.b64 } } : { type: "image", source: { type: "base64", media_type: i.mime, data: i.b64 } })), { type: "text", text: user }] : user }] } };
   }
   return { url: `${base}/chat/completions`, headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: { model, temperature, max_tokens: maxTokens, messages: [{ role: "system", content: system }, { role: "user", content: images.length ? [{ type: "text", text: user }, ...images.map(i => ({ type: "image_url", image_url: { url: `data:${i.mime};base64,${i.b64}` } }))] : user }] } };
+    body: { model, temperature, max_tokens: maxTokens, messages: [{ role: "system", content: system }, { role: "user", content: images.length ? [{ type: "text", text: user }, ...images.map(i => (i.mime === "application/pdf" ? { type: "file", file: { filename: "document.pdf", file_data: `data:${i.mime};base64,${i.b64}` } } : { type: "image_url", image_url: { url: `data:${i.mime};base64,${i.b64}` } }))] : user }] } };
 }
 function textFrom(kind, j){
   if (kind === "gemini") return (j.candidates?.[0]?.content?.parts || []).map(x => x.text || "").join("");

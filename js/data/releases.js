@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-12.1", title: { zh: "AI 读取和 AI 分析：照片、文件、文字放在一起", en: "AI reading and review: photos, files and text in one place" }, items: [
+    { k: "better", zh: "就诊、化验表单里的「用 AI 读取」：缩略图可以拍很多次、每张都能删，也能粘贴文字或选 PDF，一个按钮读出来", en: "\"Read with AI\" on visit and lab forms: removable thumbnails, pasted text or PDFs, one button to read" },
+    { k: "new", zh: "AI 健康分析多了「补充信息」：写几句、拍照或上传体检报告一起分析；默认收起", en: "AI health review has an optional \"Add details\" area for notes, photos or reports, folded by default" },
+    { k: "better", zh: "文字框跟着粘贴的内容长高", en: "Text boxes grow with what you paste" }
+  ] },
   { v: "2026-11-11.2", title: { zh: "顶栏不再被窄条盖住", en: "Header no longer covered by the slim bar" }, items: [
     { k: "fix", zh: "电脑上打开再关掉表单后，顶上的窄条不再盖住顶栏", en: "On a laptop, closing a form no longer leaves the slim bar covering the header" }
   ] },

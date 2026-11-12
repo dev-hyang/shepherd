@@ -129,7 +129,7 @@ function viewAsk(){
     : t("还没填 API key：把问题连同记录摘要拼成提示词，复制到任一 AI 粘贴即可；填了 key（免费的 Gemini 就行）就能在这里直接出答案。")}</p>
   <div class="chips" style="margin:8px 0">${topics}</div>
   <form id="askForm" class="panel ask-form">
-    <textarea name="q" rows="3" maxlength="1000" aria-label="${esc(t("要问的问题"))}" placeholder="${esc(t("例如：最近读经总是读不进去，怎么办？"))}">${esc(a.q)}</textarea>
+    <textarea name="q" data-autosize rows="3" maxlength="1000" aria-label="${esc(t("要问的问题"))}" placeholder="${esc(t("例如：最近读经总是读不进去，怎么办？"))}">${esc(a.q)}</textarea>
     <label class="ask-ctx"><input type="checkbox" name="ctx" ${a.withCtx ? "checked" : ""}><span>${t("附带我最近 7 天的记录摘要（只有统计数字和计划进度；不含祷告内容、笔记正文、任务标题和家人姓名）")}</span></label>
     ${a.withCtx ? `<details class="ask-ctxv"><summary class="small muted">${ctx ? t("看看会发出去什么") : t("摘要为空（登录并记几天后才有）")}</summary>${ctx ? `<pre>${esc(ctx)}</pre>` : ""}</details>` : ""}
     <div class="btns">${ready ? `<button type="submit" class="btn primary" ${a.busy ? "disabled" : ""}>${a.busy ? t("思考中…") : t("发送")}</button>` : ""}<button type="button" class="btn ${ready ? "" : "primary"}" data-act="ask-copy">${t("复制提示词")}</button></div>

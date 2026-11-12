@@ -10,6 +10,7 @@ import { UI, fmtDay, lang, profileData } from "./health.js";
 import * as hl from "./hl.js";
 import { secHead } from "./ui.js";
 import { render, renderBg } from "./views.js";
+import { attachHTML, attachPayload } from "./attach.js";
 
 /* ============ 健康 · 概览的「AI 健康分析」（2026-11-11） ============
    单项化验、一套化验、一次就诊各有自己的 AI 解读；这里是放在概览上的整体分析，三种范围（逻辑和提示词在 health-review-lib.js）：
@@ -48,6 +49,7 @@ function reviewHTML(who){
   const btn = `<button class="btn ${a && !stale ? "" : "primary"}" data-hl="rv-run" ${busy || !aiReady() ? "disabled" : ""}>${busy ? t("分析中…") : a ? t("重新分析") : t("开始分析")}</button>`;
   return `${secHead(t("AI 健康分析"), "", t("给出就医、饮食、睡眠、运动的建议"))}<div class="panel hl-ai-res hl-rv">${seg}
     <p class="small muted hl-rv-scope">${esc(scopeText(m, who))}</p>
+    ${attachHTML("sh-review", { t, esc, collapsible: true, summary: t("补充信息（可选）：自己写几句、拍照或上传文件"), textLabel: t("补充说明"), ph: t("例：最近总是睡不好、膝盖疼；医生口头说要复查甲状腺；体检报告 PDF…"), hint: t("会和记录一起发给 AI 参考，比如体检报告、医生的单子、你自己的感受。照片不保存。") })}
     ${a ? meta + resultHTML(a) : ""}
     <div class="btns hl-rv-btns">${btn}</div>
     <p class="small muted" style="margin:6px 0 0">${aiReady() ? t("发给你自己设置的 AI：年龄、性别、档案里的病史 / 用药 / 目标，以及上面说的记录；不发姓名。只是建议，不是诊断；以医生意见为准。") : t("先在 我的 → 咩咩咩 → AI 设置 里填一个 API key")}</p></div>`;
@@ -65,11 +67,13 @@ async function runReview(who){
   const m = mode();
   if (!aiReady()) { toast(t("先在 我的 → 咩咩咩 → AI 设置 里填一个 API key")); return; }
   const input = inputFor(m, who);
-  if (!hasInput(m, input)) { toast(t("这个范围还没有记录可以分析")); return; }
+  const extra = attachPayload("sh-review");   // 补充信息：手动写的话、照片、PDF、文字文件（js/attach.js）
+  if (extra.text) input.user_notes = extra.text.slice(0, 6000);
+  if (!hasInput(m, input) && !extra.text && !extra.images.length) { toast(t("这个范围还没有记录可以分析")); return; }
   if (!loadJSON(AI_OK, false)) { if (!confirm(t("会把年龄、性别、档案里的病史 / 用药 / 目标，以及就诊、化验、体征记录发给你自己设置的 AI 服务商（不发姓名）。继续吗？"))) return; saveJSON(AI_OK, true); }
   S.hlAiBusy = "review:" + m; render();
   try {
-    const o = parseReview(await askText(REVIEW_SYSTEM(lang(), m, who.kid), JSON.stringify(input), { json: true, maxTokens: 3000 }));
+    const o = parseReview(await askText(REVIEW_SYSTEM(lang(), m, who.kid), JSON.stringify(input), { json: true, maxTokens: 3000, images: extra.images }));
     if (!o) throw new Error(t("AI 返回的格式不对，再试一次"));
     const data = hl.dataOf(who.key), p = profileData(who.key);
     await hl.saveProfile(who.key, { ...p, ai_review: { ...(p.ai_review || {}), [m]: { ...o, at: new Date().toISOString(), n: stampOf(data), ref: m === "recent" ? recentEvent(data).day : null } } });

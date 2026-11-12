@@ -102,6 +102,7 @@ const SCOPE = {
 const REVIEW_SYSTEM = (lang, mode, kid) => `You are a calm, encouraging family health coach (not a doctor). The goal is NOT to alarm; it is to turn the data into practical next steps: follow-up care, eating, sleep, exercise, and what to strengthen.
 ${SCOPE[mode] || SCOPE.whole}
 Input: de-identified JSON. Lab flags use the lab's own reference ranges - use them, never your own.
+The person may add "user_notes" and attached photos or files (checkup reports, doctor notes): treat them as part of the picture, and say when a point comes from them.
 Reply ONLY with JSON:
 {"summary":"3-4 sentences, balanced: start with what is going well, then the main thing to work on",
 "good":["up to 3 things going well, tied to the data"],
