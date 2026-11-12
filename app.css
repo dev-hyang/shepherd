@@ -834,3 +834,22 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .hl-sel{min-height:38px;font-size:14.5px}
 .hl-addmenu > summary.hl-addbtn{min-height:38px;padding:4px 14px;font-size:14.5px;font-weight:600;color:var(--slate);border-color:var(--slate);background:var(--surface)}
 .hl-addmenu[open] > summary.hl-addbtn{background:var(--slate-soft)}
+/* 概览 · AI 健康分析（health-review.js）：范围切换 → 一行说明 → 总结 / 做得好的 / 最值得加强的 → 就医、饮食、睡眠、运动、问医生（宽时两列） */
+.hl-rv .hl-rv-modes{margin-bottom:6px}
+.hl-rv .hl-rv-modes button{flex:1 1 auto}
+.hl-rv-scope{margin:0 0 8px}
+.hl-rv-meta{margin:0 0 6px}
+.hl-rv-stale{color:var(--ink);font-weight:600}
+.hl-rv-sum{margin:0 0 10px;line-height:1.6}
+.hl-rv-h{display:block;margin:4px 0 6px}
+.hl-rv-focus{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:8px}
+.hl-rv-focus li{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px 10px;background:var(--surface)}
+.hl-rv-focus li > div{min-width:0;display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere}
+.hl-rv-ft{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.hl-rv-ic{flex:none;width:32px;height:32px;border-radius:10px;background:var(--slate-soft);display:inline-flex;align-items:center;justify-content:center;font-size:16px}
+.hl-rv-do{color:var(--slate);font-weight:600;font-size:14px}
+.hl-rv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-bottom:4px}
+.hl-rv-box{border-radius:var(--radius-sm);background:var(--slate-soft);padding:8px 10px;min-width:0;overflow-wrap:anywhere}
+.hl-rv-box ul{margin:4px 0 0}
+.hl-rv-box.good{background:var(--sage-soft);margin-bottom:10px}
+.hl-rv-btns{margin-top:4px}

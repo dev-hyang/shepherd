@@ -10,13 +10,14 @@ import * as hl from "./hl.js";
 import { dietHTML, planAct, planHTML, todayPlanHTML, workoutHTML } from "./health-plan-ui.js";
 import { visitAct, visitDetailHTML, visitsListHTML } from "./health-visits.js";
 import { labAct, labItemHTML, panelAiHTML } from "./health-labs.js";
+import { reviewAct, reviewHTML } from "./health-review.js";
 import * as pg from "./pager.js";
 import { closeSheet, drawForm, getForm, openForm, readForm } from "./sheet.js";
 import { pageHead, secHead } from "./ui.js";
 import { render } from "./views.js";
 
 /* ============ 健康页签（家人健康 · 阶段 1） ============
-   一个人一个人地看：概览（待办、最近一次就诊、关键指标、走势图）· 就诊 · 化验 · 测量 · 档案。
+   一个人一个人地看：概览（待办、AI 健康分析、最近一次就诊、关键指标、走势图）· 就诊 · 化验 · 测量 · 档案。
    宽屏（≥ 900px）概览两栏：左边要做的事和医生说了什么，右边数字和图；手机一栏。
    数据库统一公制，显示按单位设置（English 默认美制，中文默认公制，档案页可改，存本机）。
    设计见 docs/design-health.md。 */
@@ -78,7 +79,7 @@ function overviewHTML(who){
   const vitals0 = vitalMetricsOf(data, { kid, heightCm });
   if (!vitals0.includes(ui.metric)) ui.metric = vitals0[0] || null;
   const due = dueItems({ data, today: S.day, kid });
-  const left = `${todayPlanHTML(who)}${secHead(t("待办"))}${dueHTML(due, kid)}${lastVisitHTML(data)}${kid ? `<p class="small muted" style="margin-top:10px">${t("孩子的身高体重和体检日程以小月亮为准，这里只读。")} <a href="https://dev-hyang.github.io/baby-log/" target="_blank" rel="noopener">${t("去小月亮")} ↗</a></p>` : ""}`;
+  const left = `${todayPlanHTML(who)}${secHead(t("待办"))}${dueHTML(due, kid)}${reviewHTML(who)}${lastVisitHTML(data)}${kid ? `<p class="small muted" style="margin-top:10px">${t("孩子的身高体重和体检日程以小月亮为准，这里只读。")} <a href="https://dev-hyang.github.io/baby-log/" target="_blank" rel="noopener">${t("去小月亮")} ↗</a></p>` : ""}`;
   if (!metrics.length) return `<div class="hl-grid"><div class="hl-col">${left}</div><div class="hl-col">${secHead(t("关键指标"))}<div class="panel empty">${t("还没有数字。记一次就诊（带体征）、一份化验或一次在家测量，这里就会出现走势。")}<br>
     <button class="btn primary" data-hl="new-visit">${t("记一次就诊")}</button> <button class="btn" data-hl="new-measure">${t("记一次测量")}</button></div></div></div>`;
   const vitals = vitalMetricsOf(data, { kid, heightCm });
@@ -521,6 +522,7 @@ async function hlAct(act, btn){
   }
   if (await visitAct(act, d)) return;   // 就诊列表 / 详情 / AI（js/health-visits.js）
   if (await labAct(act, d)) return;     // 化验单项页 / 套餐 AI（js/health-labs.js）
+  if (await reviewAct(act, d)) return;  // 概览的 AI 健康分析（js/health-review.js）
   await planAct(act, d);   // 计划 / 训练 / 饮食（js/health-plan-ui.js）
 }
 // 化验项目换了：单位和参考范围跟着换（只在没改过的时候）

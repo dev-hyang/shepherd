@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-11.1", title: { zh: "健康概览新增「AI 健康分析」", en: "New AI health review on the health overview" }, items: [
+    { k: "new", zh: "三种看法：全盘分析、最近一次就诊 / 化验、需要留意的项目", en: "Three views: everything, the latest visit / labs, and items that need attention" },
+    { k: "new", zh: "先说做得好的，再给最值得加强的几件事", en: "Starts with what's going well, then the few things most worth working on" },
+    { k: "new", zh: "具体建议：就医复查、多吃什么、少吃或先停什么、睡眠和运动", en: "Concrete next steps: follow-up care, what to eat more of, what to cut back or pause, sleep and exercise" }
+  ] },
   { v: "2026-11-09.2", title: { zh: "记录的日期不能选到未来", en: "Record dates can no longer be in the future" }, items: [
     { k: "better", zh: "就诊、化验、测量、训练记录和笔记的日期：晚于今天的变灰、不能选", en: "Dates for visits, labs, measurements, workouts and notes: anything after today is greyed out" },
     { k: "better", zh: "待办日期、复诊日期、提醒时间不受影响，照样能选未来", en: "Task dates, follow-up dates and reminder times are unchanged and can still be in the future" }
