@@ -1204,6 +1204,11 @@ const EN = {
   "把就诊小结（After Visit Summary）的文字粘贴在这里": "Paste the After Visit Summary text here",
   "把化验结果的文字粘贴在这里": "Paste the lab result text here",
   "把化验结果页的文字粘贴在这里（MyChart 等门户可以整页复制）": "Paste the lab results page here (you can copy a whole MyChart page)",
+  "可以拍几张照片或选文件一起问（体检单、作业、孩子的画、药盒说明、冰箱里的菜…），也能选 PDF。照片不保存。": "Add photos or files to your question (a checkup sheet, homework, a drawing, a medicine box, what's in the fridge…), PDFs too. Photos aren't stored.",
+  "可以拍几张照片或选文件一起问（笔记、讲章、体检单、冰箱里的菜…），也能选 PDF。照片不保存。": "Add photos or files to your question (notes, a sermon outline, a checkup sheet, what's in the fridge…), PDFs too. Photos aren't stored.",
+  "附件里的文字": "Text from the attachments",
+  "（附了 {n} 张照片 / 文件，请一起看）": "({n} photos / files attached; please look at them too)",
+  "看看这些照片 / 文件，告诉我要注意什么、可以怎么做。": "Look at these photos / files and tell me what to watch for and what I can do.",
 };
 export { EN };
 

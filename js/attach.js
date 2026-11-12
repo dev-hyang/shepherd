@@ -22,8 +22,8 @@ function thumbsHTML(id){
 }
 function attachHTML(id, opts){
   const s = attachState(id); s.opts = opts;
-  const { t, esc, textLabel = "", ph = "", hint = "", collapsible = false, summary = "", rows = 2, after = "" } = opts;   // after：放在这一块最下面的 HTML（比如「让 AI 读出来」按钮）
-  const body = `${thumbsHTML(id)}<label class="att-text">${textLabel ? `<span>${esc(textLabel)}</span>` : ""}<textarea data-att-text="${esc(id)}" data-autosize rows="${rows}" placeholder="${esc(ph)}">${esc(s.text)}</textarea></label>${hint ? `<p class="att-hint">${hint}</p>` : ""}${after}`;
+  const { t, esc, textLabel = "", ph = "", hint = "", collapsible = false, summary = "", rows = 2, after = "", noText = false } = opts;   // after：放在这一块最下面的 HTML（比如「让 AI 读出来」按钮）；noText：只要缩略图（问题框在外面，比如咩咩咩）
+  const body = `${thumbsHTML(id)}${noText ? "" : `<label class="att-text">${textLabel ? `<span>${esc(textLabel)}</span>` : ""}<textarea data-att-text="${esc(id)}" data-autosize rows="${rows}" placeholder="${esc(ph)}">${esc(s.text)}</textarea></label>`}${hint ? `<p class="att-hint">${hint}</p>` : ""}${after}`;
   if (!collapsible) return `<div class="att" data-att-box="${esc(id)}">${body}</div>`;
   const n = s.items.length + (s.text.trim() ? 1 : 0), open = opts.forceOpen || (s.toggled ? s.open : n > 0);   // forceOpen：正在读取时别收起来
   return `<details class="att att-opt" data-att-box="${esc(id)}" ${open ? "open" : ""}><summary><span>${esc(summary)}</span>${n ? ` <span class="att-n">${n}</span>` : ""}</summary><div class="att-body">${body}</div></details>`;
