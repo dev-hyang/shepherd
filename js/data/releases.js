@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-11.2", title: { zh: "顶栏不再被窄条盖住", en: "Header no longer covered by the slim bar" }, items: [
+    { k: "fix", zh: "电脑上打开再关掉表单后，顶上的窄条不再盖住顶栏", en: "On a laptop, closing a form no longer leaves the slim bar covering the header" }
+  ] },
   { v: "2026-11-11.1", title: { zh: "健康概览新增「AI 健康分析」", en: "New AI health review on the health overview" }, items: [
     { k: "new", zh: "三种看法：全盘分析、最近一次就诊 / 化验、需要留意的项目", en: "Three views: everything, the latest visit / labs, and items that need attention" },
     { k: "new", zh: "先说做得好的，再给最值得加强的几件事", en: "Starts with what's going well, then the few things most worth working on" },

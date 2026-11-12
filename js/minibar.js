@@ -24,6 +24,8 @@ function ensureBar() {
       bar.classList.toggle("show", show); bar.setAttribute("aria-hidden", String(!show));
     };
     window.addEventListener("scroll", sync, { passive: true }); window.addEventListener("resize", sync); sync();   // 滚动事件本来就按帧节流，这里只读一次位置、切一个 class
+    // 整页表单开 / 关、打印视图（body 的 class 变了）会把顶栏藏起来再放回来；如果滚动位置没变就没有滚动事件，窄条会一直盖在顶栏上：这里也重算一次
+    new MutationObserver(() => requestAnimationFrame(sync)).observe(document.body, { attributes: true, attributeFilter: ["class"] });
   }
   return bar;
 }
