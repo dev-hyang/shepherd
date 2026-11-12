@@ -880,3 +880,5 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .att-body{display:flex;flex-direction:column;gap:10px}
 textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .hl-ai2{margin:0 0 4px}.hl-rv .att-opt{margin:0 0 8px}
+/* AI 健康分析：按钮正常大小、靠左（和家庭学堂 AI 身心灵分析一样），不再撑满一整行 */
+.hl-rv .btns .btn,.hl-rv-btns .btn{flex:none;min-height:40px;padding:8px 22px;font-size:15px}
