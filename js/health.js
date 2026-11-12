@@ -13,7 +13,7 @@ import { labAct, labItemHTML, panelAiHTML } from "./health-labs.js";
 import { reviewAct, reviewHTML } from "./health-review.js";
 import * as pg from "./pager.js";
 import { closeSheet, drawForm, getForm, openForm, readForm } from "./sheet.js";
-import { pageHead, secHead } from "./ui.js";
+import { pageHead, routeNav, secHead } from "./ui.js";
 import { render } from "./views.js";
 import { attachHTML, attachPayload, attachReset } from "./attach.js";
 
@@ -67,10 +67,19 @@ function viewHealth(){
     <label class="sr-only" for="hlView">${t("健康内容")}</label><select id="hlView" class="hl-sel hl-sel-view">${VIEWS.map(([k, l]) => `<option value="${k}" ${parentView(ui.view) === k ? "selected" : ""}>${t(l)}</option>`).join("")}</select></div>`;
   // 详情页（单次就诊、单个化验项目）不在下拉框里：选中的是它们的上一级
   const body = { overview: overviewHTML, plan: planHTML, workout: workoutHTML, diet: dietHTML, visits: visitsListHTML, visit: visitDetailHTML, labs: labsHTML, lab: labItemHTML, measures: measuresHTML, profile: profileHTML }[ui.view] || overviewHTML;
-  return `${pageHead(t("家人健康"), add)}${mobile}${chips}${tabs}${body(who)}
+  return `${healthRoute(ui, add)}${mobile}${chips}${tabs}${body(who)}
     <p class="small muted hl-foot">${t("这里只做记录和按公开指南的提醒，不是诊断；有疑问以医生意见为准。家里的人都看得到这家人的健康记录。")}</p>`;
 }
 
+/** 顶部路径：健康 / 概览（第二层）；单次就诊、单个化验项目是第三层：健康 / 就诊 / 10/30 年度体检，带「‹ 返回」 */
+function healthRoute(ui, add){
+  const root = { label: t("健康"), attrs: 'data-hl="view" data-v="overview"' }, viewName = v => t((VIEWS.find(x => x[0] === v) || VIEWS[0])[1]);
+  if (ui.view === "visit") { const v = S.hl.visits.find(x => x.id === ui.visitId), k = v && (VISIT_KINDS[v.kind] || VISIT_KINDS.other);
+    return routeNav([root, { label: viewName("visits"), attrs: 'data-hl="view" data-v="visits"' }, { label: v ? `${fmtDay(v.day).slice(5)} ${t(k.label)}` : t("就诊") }], { back: 'data-hl="back"' }); }
+  if (ui.view === "lab") { const x = S.hl.labs.find(y => (y.code || y.name) === ui.labKey);
+    return routeNav([root, { label: viewName("labs"), attrs: 'data-hl="view" data-v="labs"' }, { label: x ? labName(x, lang()) : t("化验") }], { back: 'data-hl="back"' }); }
+  return routeNav(ui.view === "overview" ? [root, { label: viewName("overview") }] : [root, { label: viewName(ui.view) }], { actions: add });
+}
 /* 概览：左栏（待办、最近一次就诊）+ 右栏（关键指标、走势图） */
 function overviewHTML(who){
   const ui = UI(), data = hl.dataOf(who.key), prof = (hl.profileOf(who.key) || {}).data || {};

@@ -3,6 +3,7 @@ import { S } from "./core/state.js";
 import { esc } from "./core/util.js";
 import { RATINGS, kindOf, modeOf } from "./data/kinds.js";
 import * as wb from "./wb.js";
+import { routeNav } from "./ui.js";
 
 /* ============ 回顾页：本周 / 4 周 / 12 周 ============
    每项习惯一块：这段时间做到的天数或分钟，和上一段同样长的时间比；选中的一项画柱状图；下面是最近 28 天的格子。
@@ -46,7 +47,7 @@ function viewReview(){
     if (a.main != null && b.main != null && a.main !== b.main) { const up = a.main > b.main, good = a.lowerBetter ? !up : up; delta = `<span class="d ${good ? "good" : "bad"}">${up ? "↑" : "↓"} ${t("上一段 {v}", { v: b.main })}</span>`; }
     const faith = ["scripture", "prayer"].includes(p.kind);
     return `<button class="stat tile ${sel.id === p.id ? "sel" : ""}" data-metric="${esc(p.id)}"><div class="k">${k.icon} ${esc(p.name || t(k.label))}</div><div class="v">${a.main == null ? "–" : a.main}<small>${t(a.unit || "")}</small></div><div class="small muted">${a.sub}${faith ? "" : ""}</div>${delta}</button>`; };
-  return `
+  return `${routeNav([{ label: t("回顾"), attrs: 'data-tab="review"' }, { label: t(R.label || "近 4 周") }])}
   <div class="chips" role="group" aria-label="${t("时间范围")}" style="margin-top:12px">${Object.entries(RANGES).map(([k, v]) => `<button class="chip" data-range="${k}" aria-pressed="${r.range === k}">${t(v.label)}</button>`).join("")}</div>
   <div class="stats tiles">${practices.map(tile).join("")}</div>
   <h2>${esc(sel.name || t(kindOf(sel).label))}</h2>

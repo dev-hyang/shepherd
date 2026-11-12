@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-12.3", title: { zh: "顶上显示所在位置：健康 / 概览", en: "The top shows where you are: Health / Overview" }, items: [
+    { k: "better", zh: "健康、任务、祷告、回顾页顶上显示路径，比如「健康 / 计划」「健康 / 就诊 / 10/30 年度体检」，点前面的回上一层", en: "Health, Tasks, Prayer and Review show a path such as \"Health / Plan\"; tap an earlier part to go back up" },
+    { k: "new", zh: "再点一下（或双击）底部的「健康」，回到 健康 / 概览；任务、祷告也一样回到第一页", en: "Tap (or double-tap) the Health tab again to return to Health / Overview; Tasks and Prayer work the same way" }
+  ] },
   { v: "2026-11-12.2", title: { zh: "AI 健康分析的按钮正常大小", en: "Normal-size button on the AI health review" }, items: [
     { k: "better", zh: "「开始分析」不再在手机上撑满一整行，和其他按钮大小一致", en: "\"Start review\" no longer stretches across the whole phone screen" }
   ] },

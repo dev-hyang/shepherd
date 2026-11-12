@@ -6,7 +6,7 @@ import { addDays, addMonths, diffDays, periodEnd, recurText, weekStart, wdOf } f
 import * as pg from "./pager.js";
 import { closeSheet, openForm, openInfo } from "./sheet.js";
 import * as tk from "./tk.js";
-import { chipBtn, fbar, pageHead, secHead } from "./ui.js";
+import { chipBtn, fbar, pageHead, routeNav, secHead } from "./ui.js";
 import * as wb from "./wb.js";
 
 /* ============ 任务页 + 今天页的任务块 ============
@@ -203,7 +203,8 @@ function doneView(){
 function viewTasks(){
   const g = gate(); if (g) return `${pageHead(t("任务"))}${g}`;
   const seg = ui().seg;
-  return `${pageHead(t("任务"), seg === "list" ? "" : `<button class="btn primary sm" data-act="tk-new">＋ ${t("新任务")}</button>`)}
+  const segs = [["today", "今天"], ["plan", "计划"], ["list", "清单"], ["done", "已完成"]];
+  return `${routeNav([{ label: t("任务"), attrs: 'data-tks="today"' }, { label: t((segs.find(x => x[0] === seg) || segs[0])[1]) }], { actions: seg === "list" ? "" : `<button class="btn primary sm" data-act="tk-new">＋ ${t("新任务")}</button>` })}
   <div class="seg eq" role="group" aria-label="${t("任务视图")}">${[["today", "今天"], ["plan", "计划"], ["list", "清单"], ["done", "已完成"]].map(([k, l]) => `<button data-tks="${k}" aria-pressed="${seg === k}">${t(l)}</button>`).join("")}</div>
   ${seg === "today" ? `${nudgeBar()}${mitBlock()}${tasksBlock({ full: true })}` : seg === "plan" ? planView() : seg === "list" ? listView() : doneView()}`;
 }

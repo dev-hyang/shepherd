@@ -882,3 +882,10 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .hl-ai2{margin:0 0 4px}.hl-rv .att-opt{margin:0 0 8px}
 /* AI 健康分析：按钮正常大小、靠左（和家庭学堂 AI 身心灵分析一样），不再撑满一整行 */
 .hl-rv .btns .btn,.hl-rv-btns .btn{flex:none;min-height:40px;padding:8px 22px;font-size:15px}
+/* 顶部路径（ui.routeNav）：健康 / 概览、任务 / 计划……和子页的路径同一个样子；右边可以放这一页的主按钮 */
+.crumb.route{min-height:44px;font-size:15px}
+.crumb.route b{font-size:15.5px}
+.crumb.route .route-acts{margin-left:auto;display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
+.crumb.route .route-acts .btn,.crumb.route .route-acts .chip{min-height:34px;padding:4px 12px;font-size:13.5px}
+.crumb.route.mb .route-acts{display:none}
+.hl-li-group{margin:0 0 6px}

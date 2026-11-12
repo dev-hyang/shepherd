@@ -82,8 +82,7 @@ function visitDetailHTML(who){
   const k = VISIT_KINDS[v.kind] || VISIT_KINDS.other, data = hl.dataOf(v.subject), labs = data.labs.filter(x => x.visit_id === v.id);
   const row = (label, val) => (val ? `<div class="hl-prof-row"><span class="muted">${t(label)}</span><span>${val}</span></div>` : "");
   const bill = new URLSearchParams({ bill: "new", kind: "medical", provider: [v.location, v.provider].filter(Boolean).join(" · ").slice(0, 60), date: v.day, patient: (hl.person(v.subject) || {}).name || "" });
-  return `<div class="hl-detail-nav"><button class="chip" data-hl="back">‹ ${t("返回")}</button></div>
-    <div class="panel hl-vd">
+  return `    <div class="panel hl-vd">
       <div class="hl-vd-head"><h2>${k.icon} ${esc(t(k.label))}</h2><span class="num muted">${esc(fmtDay(v.day))}</span>${v.ai_used ? `<span class="pill cat">${t("AI 读图")}</span>` : ""}</div>
       ${row("地点", esc(placeText(v)))}${row("医生 / 科室", esc(v.provider))}${row("就诊原因", esc(v.reason))}${row("体征", esc(vitalsText(v.vitals || {})))}
       ${row("诊断", esc(v.diagnosis))}${v.advice ? `<div class="hl-advice" style="margin-top:8px"><span class="muted">${t("医生建议")}：</span>${esc(v.advice)}</div>` : ""}

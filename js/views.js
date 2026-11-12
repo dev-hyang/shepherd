@@ -15,6 +15,7 @@ import { viewToday } from "./today.js";
 import { viewHealth } from "./health.js";
 import { viewTasks } from "./tasks.js";
 import { pendingCount } from "./tk.js";
+import { routeNav } from "./ui.js";
 
 /* ============ 渲染 ============ */
 const TAB_LABELS = { today: "今天", tasks: "任务", health: "健康", prayer: "祷告", review: "回顾", me: "我的" };
@@ -85,10 +86,11 @@ function render(opts){
   const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
   $("#main").className = S.tab === "today" || S.tab === "health" ? "wide" : "narrow";   // 今天、健康在宽屏用两栏
   const crumb = sub ? crumbNav(crumbParts(S.tab)) : "";
+  S.route = null;   // 页面自己画路径（ui.routeNav）时记在这里，迷你栏用
   const html = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩、发布日志 没登录也能看
   if (opts && opts.bg) keepForms($("#main"), () => { $("#main").innerHTML = html; });
   else $("#main").innerHTML = html;
-  updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : "", t("回到顶部"));
+  updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : S.route ? routeNav(S.route).replace('class="crumb route"', 'class="crumb route mb"') : "", t("回到顶部"));
 }
 /** 后台重画 = render({ bg: true }) */
 const renderBg = () => render({ bg: true });

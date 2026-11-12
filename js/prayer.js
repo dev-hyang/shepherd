@@ -4,7 +4,7 @@ import { esc } from "./core/util.js";
 import { PRAYER_CATS } from "./data/kinds.js";
 import { viewNotes } from "./notes.js";
 import * as pg from "./pager.js";
-import { fbar, pageHead } from "./ui.js";
+import { fbar, pageHead, routeNav } from "./ui.js";
 import * as wb from "./wb.js";
 
 /* ============ 祷告页：代祷 + 灵修笔记（两个子页）============
@@ -14,7 +14,7 @@ function viewPrayer(){
   const v = S.prayerView === "notes" ? "notes" : "pray";
   const nOpen = S.wb.prayers.filter(p => p.status !== "answered").length, nNotes = S.nt && S.nt.loaded && S.nt.stats ? S.nt.stats.mine : 0;
   const tabs = [["pray", t("代祷"), nOpen], ["notes", t("灵修笔记"), nNotes]];
-  return `${pageHead(t("祷告与灵修"))}
+  return `${routeNav([{ label: t("祷告"), attrs: 'data-pview="pray"' }, { label: v === "notes" ? t("灵修笔记") : t("代祷") }])}
   <div class="seg eq" role="group" aria-label="${t("祷告与灵修")}">${tabs.map(([k, l, n]) => `<button data-pview="${k}" aria-pressed="${v === k}">${l}${n ? ` <span class="cnt">${n}</span>` : ""}</button>`).join("")}</div>
   ${v === "notes" ? viewNotes() : viewPray()}`;
 }

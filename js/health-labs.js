@@ -25,7 +25,7 @@ function labItemHTML(who){
   const ui = UI(), k = ui.labKey, rows = S.hl.labs.filter(x => x.subject === who.key && keyOf(x) === k).sort((a, b) => b.day.localeCompare(a.day));
   if (!rows.length) { ui.view = "labs"; return ""; }
   const last = rows[0], f = labFlag(last), bar = rangeBar(last), data = hl.dataOf(who.key), mode = ui.labMode || "rows";
-  const head = `<div class="hl-detail-nav"><button class="chip" data-hl="back">‹ ${t("返回")}</button><span class="small muted">${esc(t(LAB_GROUPS[labGroupOf(last)] || ""))}</span></div>
+  const head = `<p class="small muted hl-li-group">${esc(t(LAB_GROUPS[labGroupOf(last)] || ""))}</p>
     <div class="panel hl-li-head ${f ? "flag-" + f : ""}"><h2>${esc(nameOfKey(k))}</h2>
       <div class="hl-li-now"><b class="num">${esc(+(+last.value).toFixed(2))}</b><span class="muted">${esc(last.unit || "")}</span>${f ? `<span class="pill ${f === "high" ? "hi" : "lo"}">${t(f === "high" ? "偏高" : "偏低")}</span>` : `<span class="pill ok">${t("在范围内")}</span>`}</div>
       <p class="small muted" style="margin:2px 0 6px">${t("参考 {r}", { r: rangeText(last) || "—" })} · ${t("最近 {d}", { d: fmtDay(last.day) })} · ${t("{n} 次", { n: rows.length })}</p>

@@ -8,6 +8,13 @@ import { esc } from "./core/util.js";
    fbar：“筛选 ▾ 按钮 + 搜索框 + 新增按钮”一行；点筛选弹出下拉面板，里面是各组选项。已选的筛选在下面显示成可点掉的小标签。
    面板开合状态记在 S.fpop（重画后保持展开），点面板外或按 Esc 收起（events.js）。 */
 const secHead = (title, actions = "", sub = "") => `<div class="sec-head"><h2>${title}${sub ? ` <span class="sec-sub">${sub}</span>` : ""}</h2>${actions ? `<span class="sec-acts">${actions}</span>` : ""}</div>`;
+/** 顶部路径（2026-11-12，和其他应用一样）：健康 / 概览、任务 / 计划、健康 / 就诊 / 10/30 年度体检。
+    parts = [{ label, attrs }]：最后一项是当前页（加粗），前面的可点（attrs 是点了去哪的 data-*）；back = 「‹ 返回」按钮的属性（第三层才有）；actions = 右边的按钮。
+    画的时候记在 S.route，迷你栏（往下滚后顶上那条）跟着显示同一条路径。 */
+function routeNav(parts, { back = "", actions = "" } = {}){
+  S.route = parts;
+  return `<nav class="crumb route" aria-label="${esc(t("位置"))}">${back ? `<button type="button" class="crumb-link crumb-back" ${back} aria-label="${esc(t("返回"))}">‹ ${t("返回")}</button>` : ""}${parts.map((x, i) => `${i ? '<span class="sep">/</span>' : ""}${i === parts.length - 1 ? `<b aria-current="page">${esc(x.label)}</b>` : `<button type="button" class="crumb-link" ${x.attrs || ""}>${esc(x.label)}</button>`}`).join("")}${actions ? `<span class="route-acts">${actions}</span>` : ""}</nav>`;
+}
 const pageHead = (title, actions = "") => `<div class="page-head"><h1>${title}</h1>${actions ? `<span class="sec-acts">${actions}</span>` : ""}</div>`;
 const chipBtn = (label, attrs, cls = "") => `<button class="chip ${cls}" ${attrs}>${label}</button>`;
 
@@ -33,4 +40,4 @@ function togglePop(id){
 }
 const closePop = () => { if (S.fpop) togglePop("close"); };
 
-export { secHead, pageHead, chipBtn, fbar, togglePop, closePop };
+export { routeNav, secHead, pageHead, chipBtn, fbar, togglePop, closePop };
