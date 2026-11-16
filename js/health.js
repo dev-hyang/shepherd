@@ -530,4 +530,10 @@ document.addEventListener("change", ev => {
 /** 给咩咩咩 / 今天页用：这个人最要紧的几条待办（以后用） */
 const healthDue = key => dueItems({ data: hl.dataOf(key), today: S.day, kid: key.startsWith("c:") });
 
-export { viewHealth, hlAct, healthDue, UI, sys, lang, fmtDay, metricMeta, chartPanel, visitCard, vitalsText, latestLabs, labLine, byOrder, openVisit, openLab, openLabBatch, profileData0 as profileData };
+/** 网址带 new=lab / visit / measure（比如家庭学堂化验页的链接）：数据读完、人对上了，就直接打开那张录入表，只开一次 */
+function openPendingNew(){
+  const ui = S.hlUi; if (!ui || !ui.openNew || S.tab !== "health" || !S.hl.loaded || !hl.person(ui.who)) return;
+  const k = ui.openNew; ui.openNew = null;
+  if (k === "lab") openLabBatch(); else if (k === "visit") openVisit(null); else if (k === "measure") openMeasure(null);
+}
+export { viewHealth, openPendingNew, hlAct, healthDue, UI, sys, lang, fmtDay, metricMeta, chartPanel, visitCard, vitalsText, latestLabs, labLine, byOrder, openVisit, openLab, openLabBatch, profileData0 as profileData };

@@ -12,7 +12,7 @@ import { viewPrayer } from "./prayer.js";
 import { viewReview } from "./review.js";
 import { openSettings } from "./sheet.js";
 import { viewToday } from "./today.js";
-import { viewHealth } from "./health.js";
+import { viewHealth, openPendingNew } from "./health.js";
 import { viewTasks } from "./tasks.js";
 import { pendingCount } from "./tk.js";
 import { routeNav } from "./ui.js";
@@ -55,6 +55,7 @@ function restoreRoute(){
     u.view = r.sub || "overview"; u.back = null;
     if (r.sub === "visit") u.visitId = r.id; if (r.sub === "lab") u.labKey = r.id;
     if (r.q.get("who")) u.who = r.q.get("who");
+    if (["lab", "visit", "measure"].includes(r.q.get("new"))) u.openNew = r.q.get("new");   // 其他应用直接打开「录入化验 / 就诊 / 测量」：#/health/labs?who=c:<孩子id>&new=lab（家庭学堂的化验页用）
   }
   if (r.tab === "tasks" && S.tkUi) S.tkUi.seg = ["plan", "list", "done"].includes(r.sub) ? r.sub : "today";
   if (r.tab === "prayer") S.prayerView = r.sub === "notes" ? "notes" : "pray";
@@ -135,6 +136,7 @@ function render(opts){
   const html = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩、发布日志 没登录也能看
   if (opts && opts.bg) keepForms($("#main"), () => { $("#main").innerHTML = html; });
   else $("#main").innerHTML = html;
+  openPendingNew();   // 网址里带 new=… 且健康数据已读完：打开对应的录入表（只一次）
   syncRoute();   // 页面画完再写网址（健康页会在画的时候纠正不存在的子页 / 人）
   updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : S.route ? routeNav(S.route).replace('class="crumb route"', 'class="crumb route mb"') : "", t("回到顶部"));
 }
