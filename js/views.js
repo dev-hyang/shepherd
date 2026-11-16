@@ -27,6 +27,50 @@ function crumbParts(tab){
   while (p) { parts.unshift({ tab: p, label: SUB[p] ? SUB[p].label : TAB_LABELS[p] }); p = SUB[p] ? SUB[p].parent : null; }
   return parts;
 }
+/* 网址记住当前页（含页内的子页）：刷新、收藏后还停在这一页。和家庭学堂同一套做法。
+   #/health/labs?who=…、#/health/visit/<id>、#/health/lab/<化验项>、#/tasks/list、#/prayer/notes、#/ask、#/releases
+   只用 replaceState，不往浏览器历史里加条目（返回仍由「‹ 返回」/ 面包屑管）。登录回跳时 # 后面是 Supabase 的令牌，那时不动。 */
+const ROUTE_TABS = new Set([...Object.keys(VIEWS), ...Object.keys(SUB)]);
+function readRoute(hash = location.hash){
+  const m = /^#\/([^?]*)(?:\?(.*))?$/.exec(hash); if (!m) return null;
+  const [tab, sub, id] = m[1].split("/").map(x => { try { return decodeURIComponent(x); } catch (e) { return ""; } });
+  return ROUTE_TABS.has(tab) ? { tab, sub: sub || "", id: id || "", q: new URLSearchParams(m[2] || "") } : null;
+}
+function routeOf(){
+  const enc = encodeURIComponent;
+  if (S.tab === "health" && S.hlUi) {
+    const u = S.hlUi, id = u.view === "visit" ? u.visitId : u.view === "lab" ? u.labKey : "";
+    return `#/health${u.view && u.view !== "overview" ? "/" + u.view + (id ? "/" + enc(id) : "") : ""}${u.who ? "?who=" + enc(u.who) : ""}`;
+  }
+  if (S.tab === "tasks" && S.tkUi && S.tkUi.seg !== "today") return "#/tasks/" + S.tkUi.seg;
+  if (S.tab === "prayer" && S.prayerView !== "pray") return "#/prayer/" + S.prayerView;
+  return S.tab === "today" ? "" : "#/" + S.tab;
+}
+let routeHash = null;   // 上一次写进 / 读出网址的 #；网址里的 # 和它不一样 = 外面改的（手动输入、收藏、浏览器后退），以网址为准
+function restoreRoute(){
+  routeHash = location.hash; const r = readRoute(); if (!r) return false;
+  S.tab = r.tab;
+  if (r.tab === "health") {
+    const u = (S.hlUi ||= { who: null, view: "overview", metric: null });   // 子页名不认识时 health.js 自己退回概览
+    u.view = r.sub || "overview"; u.back = null;
+    if (r.sub === "visit") u.visitId = r.id; if (r.sub === "lab") u.labKey = r.id;
+    if (r.q.get("who")) u.who = r.q.get("who");
+  }
+  if (r.tab === "tasks" && S.tkUi) S.tkUi.seg = ["plan", "list", "done"].includes(r.sub) ? r.sub : "today";
+  if (r.tab === "prayer") S.prayerView = r.sub === "notes" ? "notes" : "pray";
+  return true;
+}
+function syncRoute(){
+  // 表单开着时，最上面那条历史是它自己压的，关掉时会 history.back()：这时不写，等退回去以后那次重画再写
+  const hs = history.state;
+  if ((hs && hs.sheet) || (location.hash.includes("=") && !location.hash.startsWith("#/"))) return;
+  const h = routeOf();
+  if (location.hash !== h) try { history.replaceState(history.state, "", location.pathname + location.search + h); } catch (e) {}
+  routeHash = location.hash;
+}
+// 改了网址里的 #：跳到那一页（有的浏览器先派发 popstate，表单的关闭逻辑会抢先重画一次，所以 render 开头也查一遍）
+function adoptRoute(){ if (routeHash === null || location.hash === routeHash || !readRoute()) return false; restoreRoute(); return true; }
+window.addEventListener("hashchange", () => { if (adoptRoute()) { render(); window.scrollTo(0, 0); } });
 /* 「‹ 返回」= 回到你刚才来的那一页；直接打开或刷新后没有上一页时，退到上一层。面包屑负责按层级往上跳，两者分工（和 iOS / 安卓 / 网页的常见做法一致） */
 const NAV = { last: null, stack: [], back: false };
 function trackNav(tab){ if (NAV.last && NAV.last !== tab && !NAV.back) { NAV.stack.push(NAV.last); if (NAV.stack.length > 30) NAV.stack.shift(); } NAV.back = false; NAV.last = tab; }
@@ -79,6 +123,7 @@ function renderStatus(){
 /** opts.bg = 后台触发的重画（实时同步、切回前台重读、过午夜、计时到点、AI 回来……）：
     正在填的表单（没保存的输入、焦点和光标）原样保住，见 util.keepForms。用户自己点的操作照旧直接重画 */
 function render(opts){
+  if (adoptRoute()) window.scrollTo(0, 0);
   renderStatus();
   trackNav(S.tab);
   const sub = SUB[S.tab], cur = sub ? sub.parent : S.tab;   // 子页时底部仍高亮它所属的页签
@@ -90,6 +135,7 @@ function render(opts){
   const html = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩、发布日志 没登录也能看
   if (opts && opts.bg) keepForms($("#main"), () => { $("#main").innerHTML = html; });
   else $("#main").innerHTML = html;
+  syncRoute();   // 页面画完再写网址（健康页会在画的时候纠正不存在的子页 / 人）
   updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : S.route ? routeNav(S.route).replace('class="crumb route"', 'class="crumb route mb"') : "", t("回到顶部"));
 }
 /** 后台重画 = render({ bg: true }) */
@@ -109,4 +155,4 @@ function gateHTML(){
   return "";
 }
 
-export { backTo, renderStatus, render, renderBg, refreshSettingsIfOpen, gateHTML, crumbNav, SUB };
+export { backTo, renderStatus, render, renderBg, refreshSettingsIfOpen, gateHTML, crumbNav, SUB, restoreRoute };

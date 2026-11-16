@@ -10,7 +10,7 @@ import { initProviders } from "./backup.js";
 import { APP_VERSION } from "./core/config.js";
 import { S } from "./core/state.js";
 import { dayKey } from "./core/util.js";
-import { render, renderBg } from "./views.js";
+import { render, renderBg, restoreRoute } from "./views.js";
 import { initReleases } from "./releases-ui.js";
 import { RELEASES } from "./data/releases.js";
 
@@ -32,6 +32,7 @@ if (!(await healStaleModules())) {
   initSwipeRows({ kinds: ["log", "dropped-task", "extra-read"], del: () => t("删除"), release: () => t("松手删除") });   // 行记录左滑删除（js/swipe-rows.js）
   // 发布日志：今天页顶上的新版本提示（每个新版本最多 5 次）+ 我的 → 发布日志（js/releases-ui.js）
   initReleases({ version: APP_VERSION, releases: RELEASES, lang: locale, accent: "var(--slate)", appId: "shepherd", open: 'data-tab="releases"' });
+  restoreRoute();    // 网址里记着的页（#/health/labs）：刷新后还停在这一页（js/views.js）
   render();          // 先画出"连接中"的壳
   initSupabase();    // 加载 supabase-js，登录状态回调里再渲染一次
   initProviders();   // 从 Dropbox 授权页跳回来时把 ?code= 换成令牌（js/backup.js）

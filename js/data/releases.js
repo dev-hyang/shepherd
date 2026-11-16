@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-16.1", title: { zh: "刷新后还停在原来那一页", en: "Refresh keeps you on the same page" }, items: [
+    { k: "better", zh: "比如在 健康 → 化验 或某次就诊里刷新，还是回到那里，不再跳回今天；任务、祷告的子页也一样", en: "Refreshing on, say, Health → Labs or a visit brings you back there instead of Today; the same for Tasks and Prayer sub-pages" }
+  ] },
   { v: "2026-11-12.4", title: { zh: "问咩咩咩可以带照片和文件", en: "Ask with photos and files" }, items: [
     { k: "new", zh: "提问框下面可以拍照、选多张图片或 PDF 一起问，每张都能删", en: "Add several photos or PDFs under the question box; remove any of them" }
   ] },
