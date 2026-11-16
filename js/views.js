@@ -46,9 +46,11 @@ function routeOf(){
   if (S.tab === "prayer" && S.prayerView !== "pray") return "#/prayer/" + S.prayerView;
   return S.tab === "today" ? "" : "#/" + S.tab;
 }
+/* 刷新后浏览器还留着「表单开着」的历史标记，但页面已经重新开始、什么都没开：清掉，不然 syncRoute 会一直以为表单还开着，再也不更新网址（刷新永远回到同一页） */
+function clearStaleMarker(){ const hs = history.state; if (hs && hs.sheet) try { history.replaceState(null, "", location.href); } catch (e) {} }
 let routeHash = null;   // 上一次写进 / 读出网址的 #；网址里的 # 和它不一样 = 外面改的（手动输入、收藏、浏览器后退），以网址为准
 function restoreRoute(){
-  routeHash = location.hash; const r = readRoute(); if (!r) return false;
+  routeHash = location.hash; clearStaleMarker(); const r = readRoute(); if (!r) return false;
   S.tab = r.tab;
   if (r.tab === "health") {
     const u = (S.hlUi ||= { who: null, view: "overview", metric: null });   // 子页名不认识时 health.js 自己退回概览

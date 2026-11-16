@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-16.3", title: { zh: "修复：刷新总回到同一页", en: "Fix: refresh always returning to the same page" }, items: [
+    { k: "fix", zh: "打开过表单后刷新，之后换页再刷新总是回到同一页：现在刷新后停在当前这一页", en: "After refreshing with a form open, later refreshes kept returning to the same page; now a refresh stays on the current page" }
+  ] },
   { v: "2026-11-16.2", title: { zh: "从家庭学堂直接打开孩子的化验录入", en: "Open a child's lab entry straight from Homeschool" }, items: [
     { k: "new", zh: "家庭学堂「化验」页的录入链接，现在直接打开这个孩子的「录入化验」，不再先到牧羊人首页（爸爸）", en: "The entry link on Homeschool's Labs page now opens that child's \"Enter labs\" form directly instead of the Shepherd home page" }
   ] },
