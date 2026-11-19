@@ -22,7 +22,7 @@
 |---|---|
 | `index.html` | 壳：标题、姊妹应用切换、四个页签、表单页、toast |
 | `app.css` | 样式；米白底 + 橄榄绿，组件和小月亮 / 学堂一致 |
-| `js/app.js` | 启动；版本不一致时强制刷新模块缓存 |
+| `js/app.js` | 启动；版本不一致时强制刷新入口缓存（打包后的入口是 `dist/app.js`） |
 | `js/core/config.js` | Supabase 地址与公开 key、Edge Function 地址、版本号、姊妹站点 |
 | `js/core/auth.js` | 登录、匿名账号绑定邮箱、家庭与成员（读小月亮的表） |
 | `js/core/state.js` `util.js` `i18n.js` | 状态、helpers、简 / 繁 / 英 |
@@ -66,6 +66,14 @@ supabase functions deploy ics --project-ref <项目 ref> --no-verify-jwt
 本机的 CLI 装在用户目录 `%USERPROFILE%\.supabase-cli`（npm 包，`node_modules\.bin` 已加入用户 PATH，直接用 `supabase`）；换电脑时在该目录重新 `npm install supabase --save-dev --registry https://registry.npmjs.org/`，把 `%USERPROFILE%\.supabase-cli\node_modules\.bin` 加进用户 PATH，再 `supabase login` 即可。不要在 repos 目录里装。
 
 网页 → 我的 → 日历订阅提醒 里拿链接，手机日历订阅即可；钥匙可随时换。
+
+## 开发与构建（2026-11-18 起）
+
+- 源码在 `js/`，**改完源码要运行 `npm run build`**，把 `dist/` 和 `index.html`（里面的 modulepreload 清单由构建脚本维护）和源码**一起提交**。GitHub Pages 的设置不变：从 main 分支根目录发布。
+- 第一次需要在 `shepherd/` 里运行 `npm install`（只装 esbuild，在项目文件夹里，`node_modules/` 不提交）。
+- `npm run check:dist`：检查 `dist/` 是不是最新（用源码重新打一遍逐文件比较），忘了打包会报错。`npm run build:dev`：不压缩、带 sourcemap，调试用（调试完要再运行 `npm run build`）。
+- 入口是 `js/app.js` → `dist/app.js`；`import("…")` 按需加载的模块各自成块（`dist/chunks/`，文件名带哈希）。新增 / 改名 `js/` 下的文件不用改 `index.html`。
+- 版本号仍然改 `js/core/config.js` 和 `index.html`（meta、`?v=`）；`js/app.js` 的版本自检只重新抓取入口 `dist/app.js?v=…`。
 
 ## 版本号 / 发布
 

@@ -16,14 +16,15 @@ import { RELEASES } from "./data/releases.js";
 
 /* 发布后的头几分钟，浏览器可能把新的 index.html 和缓存里的旧模块混在一起（内部 import 没有版本号）。
    index.html 里的 meta 版本与 config.js 不一致时，强制重新抓取所有模块并刷新一次。 */
-const MODULES = ["app", "attach", "backup", "cloud-drives", "events", "views", "minibar", "swipe-rows", "sheet", "today", "prayer", "review", "me", "ask", "about", "wb", "focus", "tk", "tasks", "recur", "nt", "notes", "notes-lib", "hl", "health", "health-lib", "health-plan-lib", "health-plan-ui", "health-visits", "health-labs", "health-review", "health-review-lib", "data/health-ref", "data/health-plans", "markdown", "ui", "ai", "data/taskcats", "releases-ui", "data/releases",
-  "core/config", "core/util", "core/state", "core/auth", "core/i18n", "data/s2t", "data/i18n-en", "data/bible", "data/plans", "data/kinds", "data/about"].map(m => `js/${m}.js`);
+// 打包后（dist/）真正的文件只有入口 dist/app.js（被 10 分钟缓存的就是它）；其余块的文件名带内容哈希，新发布自然是新地址。
+// 所以只需要绕过缓存重新抓取 index.html 里引用的这个入口（地址带 ?v=）。
+const entryUrls = () => [...document.querySelectorAll('script[type="module"][src*="dist/app.js"]')].map(s => s.src);
 async function healStaleModules(){
   const want = (document.querySelector('meta[name="app-version"]') || {}).content;
   if (!want || want === APP_VERSION) return false;
   const key = "shepherd.reloaded." + want;
   try { if (sessionStorage.getItem(key)) return false; sessionStorage.setItem(key, "1"); } catch (e) { return false; }
-  await Promise.all(MODULES.map(u => fetch(u, { cache: "reload" }).catch(() => null)));
+  await Promise.all(entryUrls().map(u => fetch(u, { cache: "reload" }).catch(() => null)));
   location.reload(); return true;
 }
 
