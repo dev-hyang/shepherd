@@ -57,7 +57,7 @@ function reviewHTML(who){
 const ul = (title, arr, cls = "") => (arr && arr.length ? `<div class="hl-rv-box ${cls}"><b>${title}</b><ul>${arr.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "");
 function resultHTML(a){
   const focus = a.focus && a.focus.length ? `<ol class="hl-rv-focus">${a.focus.map(f => { const [ic, l] = AREA[f.area] || AREA.other;
-    return `<li><span class="hl-rv-ic" aria-hidden="true">${ic}</span><div><span class="hl-rv-ft"><b>${esc(f.title || t(l))}</b><span class="pill cat">${t(l)}</span></span>${f.why ? `<small class="muted">${esc(f.why)}</small>` : ""}${f.action ? `<span class="hl-rv-do">→ ${esc(f.action)}</span>` : ""}</div></li>`; }).join("")}</ol>` : "";
+    return `<li><span class="hl-rv-ic" aria-hidden="true">${ic}</span><div><span class="hl-rv-ft"><b>${esc(f.title || t(l))}</b><span class="ui-badge" data-tone="accent">${t(l)}</span></span>${f.why ? `<small class="muted">${esc(f.why)}</small>` : ""}${f.action ? `<span class="hl-rv-do">→ ${esc(f.action)}</span>` : ""}</div></li>`; }).join("")}</ol>` : "";
   const grid = [ul(`🩺 ${t("就医")}`, a.medical), ul(`🥗 ${t("多吃 / 多做")}`, a.eat_more), ul(`🚫 ${t("少吃 / 先停一阵")}`, a.eat_less), ul(`😴 ${t("睡眠")}`, a.sleep), ul(`🏃 ${t("运动")}`, a.exercise), ul(`❓ ${t("可以问医生的问题")}`, a.ask)].filter(Boolean).join("");
   return `${a.summary ? `<p class="hl-rv-sum">${esc(a.summary)}</p>` : ""}${ul(`✓ ${t("做得好的")}`, a.good, "good")}
     ${focus ? `<b class="hl-rv-h">${t("最值得加强的")}</b>${focus}` : ""}${grid ? `<div class="hl-rv-grid">${grid}</div>` : ""}`;

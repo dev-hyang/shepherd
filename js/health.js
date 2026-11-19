@@ -98,7 +98,7 @@ function overviewHTML(who){
     const delta = l && l.delta != null && m !== "bp" ? `<span class="d">${l.delta > 0 ? "↑" : l.delta < 0 ? "↓" : "→"} ${Math.abs(meta.dim ? toShow(meta.dim, Math.abs(l.delta), sys()) : l.delta)}</span>` : "";
     return `<button class="kpi hl-kpi ${ui.metric === m ? "sel" : ""}" data-hl="metric" data-v="${esc(m)}" aria-pressed="${ui.metric === m}">
       <span class="k">${esc(meta.name)}</span><b class="v num">${showPoint(m, meta, l)}<small> ${esc(meta.unit)}</small></b>
-      <span class="hl-kpi-foot">${f ? `<span class="pill ${f.level === "high" ? "hi" : "lo"}">${esc(t(f.text))}</span>` : `<span class="small muted">${fmtDay(l.day)}</span>`}${delta}</span>
+      <span class="hl-kpi-foot">${f ? `<span class="ui-badge" data-tone="${f.level === "high" ? "danger" : "caution"}">${esc(t(f.text))}</span>` : `<span class="small muted">${fmtDay(l.day)}</span>`}${delta}</span>
       ${spark(s)}</button>`;
   }).join("");
   // 右栏：体征卡片（体重 / BMI / 血压 / 心率…）→ 化验结果（按套餐，下拉框切换，范围条）→ 选中那一项的走势图
@@ -108,11 +108,11 @@ function overviewHTML(who){
 }
 function dueHTML(due, kid){
   if (!due.length) return `<div class="panel small muted">${kid ? t("没有要复诊的。") : t("没有到期的复诊、体检或复查 ✓")}</div>`;
-  const cls = { due: "hi", soon: "soon", info: "" };
+  const cls = { due: "danger", soon: "caution", info: "neutral" };
   return `<div class="panel mlist hl-due">${due.map(x => {
     const vars = { ...(x.vars || {}) }; if (vars.name) vars.name = labName({ code: LABS[vars.name] ? vars.name : "", name: vars.name }, lang());
     const when = x.days == null ? "" : x.days < 0 ? t("逾期 {n} 天", { n: -x.days }) : x.days === 0 ? t("今天") : t("{n} 天后", { n: x.days });
-    return `<div class="hl-due-row"><span class="pill ${cls[x.level]}">${esc(when || t("留意"))}</span><div class="mt"><b>${esc(t(x.title, vars))}</b>${x.detail ? `<small>${esc(t(x.detail, vars))}</small>` : x.day ? `<small>${fmtDay(x.day)}</small>` : ""}</div></div>`;
+    return `<div class="hl-due-row"><span class="ui-badge" data-tone="${cls[x.level]}">${esc(when || t("留意"))}</span><div class="mt"><b>${esc(t(x.title, vars))}</b>${x.detail ? `<small>${esc(t(x.detail, vars))}</small>` : x.day ? `<small>${fmtDay(x.day)}</small>` : ""}</div></div>`;
   }).join("")}</div>`;
 }
 function lastVisitHTML(data){
@@ -132,9 +132,9 @@ const vitalsText = vt => {
 };
 function visitCard(v, data, { full = false } = {}){
   const k = VISIT_KINDS[v.kind] || VISIT_KINDS.other, labs = data.labs.filter(x => x.visit_id === v.id), vt = vitalsText(v.vitals || {});
-  const fu = v.follow_up ? `<span class="pill ${daysBetween(S.day, v.follow_up) <= 14 && v.follow_up >= S.day ? "soon" : "cat"}">${t("复诊 {d}", { d: fmtDay(v.follow_up) })}</span>` : "";
+  const fu = v.follow_up ? `<span class="ui-badge" data-tone="${daysBetween(S.day, v.follow_up) <= 14 && v.follow_up >= S.day ? "caution" : "accent"}">${t("复诊 {d}", { d: fmtDay(v.follow_up) })}</span>` : "";
   return `<button class="panel hl-visit" data-hl="open-visit" data-id="${esc(v.id)}">
-    <span class="hl-visit-top"><b>${k.icon} ${esc(t(k.label))}</b><span class="num">${fmtDay(v.day)}</span>${fu}${v.ai_used ? `<span class="pill cat">AI</span>` : ""}</span>
+    <span class="hl-visit-top"><b>${k.icon} ${esc(t(k.label))}</b><span class="num">${fmtDay(v.day)}</span>${fu}${v.ai_used ? `<span class="ui-badge" data-tone="accent">AI</span>` : ""}</span>
     ${v.provider || v.reason ? `<span class="hl-line">${esc([v.provider, v.reason].filter(Boolean).join(" · "))}</span>` : ""}
     ${vt ? `<span class="hl-line small muted">${esc(vt)}</span>` : ""}
     ${v.diagnosis ? `<span class="hl-line"><span class="muted">${t("诊断")}：</span>${esc(full ? v.diagnosis : v.diagnosis.slice(0, 80))}</span>` : ""}
@@ -199,7 +199,7 @@ function labLine(r, { metric = null, hist = false } = {}){
   return `<div class="hl-lr ${r.flag ? "flag-" + r.flag : ""} ${metric === m ? "sel" : ""}">
     <button class="hl-lr-main" data-hl="lab-open" data-v="${esc(r.k)}" aria-label="${esc(t("看 {n} 的走势和每次记录", { n: labName(x, lang()) }))}">
       <span class="hl-lr-name"><b>${esc(labName(x, lang()))}</b><small>${t("参考 {r}", { r: rangeText(x) || "—" })}${x.unit ? ` ${esc(x.unit)}` : ""}</small></span>
-      <span class="hl-lr-val"><b class="num">${esc(+(+x.value).toFixed(2))}</b>${r.flag ? `<span class="pill ${r.flag === "high" ? "hi" : "lo"}">${t(r.flag === "high" ? "偏高" : "偏低")}</span>` : ""}${d ? `<small class="muted">${d > 0 ? "↑" : "↓"} ${Math.abs(d)}</small>` : ""}</span>
+      <span class="hl-lr-val"><b class="num">${esc(+(+x.value).toFixed(2))}</b>${r.flag ? `<span class="ui-badge" data-tone="${r.flag === "high" ? "danger" : "caution"}">${t(r.flag === "high" ? "偏高" : "偏低")}</span>` : ""}${d ? `<small class="muted">${d > 0 ? "↑" : "↓"} ${Math.abs(d)}</small>` : ""}</span>
       ${bar ? `<span class="hl-rbar" aria-hidden="true"><i class="ok" style="left:${bar.lo.toFixed(1)}%;width:${(bar.hi - bar.lo).toFixed(1)}%"></i><i class="at" style="left:${bar.at.toFixed(1)}%"></i></span>` : ""}
     </button>
     ${hist ? `<span class="hl-lab-hist">${S.hl.labs.filter(y => (y.code || y.name) === r.k && y.subject === x.subject).sort((a, b) => b.day.localeCompare(a.day)).slice(0, 4).map(y => `<button class="hl-lab-v ${labFlag(y) ? "flag-" + labFlag(y) : ""}" data-hl="edit-lab" data-id="${esc(y.id)}" title="${esc(t("改这一条"))}"><b class="num">${esc(+(+y.value).toFixed(2))}</b><small>${fmtDay(y.day).slice(2)}</small></button>`).join("")}</span>` : ""}
@@ -277,7 +277,7 @@ const AI_PH = { visit: "把就诊小结（After Visit Summary）的文字粘贴�
 const aiBlock = (mode, d) => `<div class="hl-ai2">${attachHTML(ATT(mode), { t, esc, collapsible: true, forceOpen: !!(d && d._aiBusy), summary: t(AI_SUM[mode]), textLabel: t("或者粘贴文字"), ph: t(AI_PH[mode]),
   hint: d && d.ai_used ? t("已经用 AI 读过，保存前请核对。") : mode === "labs" ? t("门户每个套餐截一张图也行；AI 会把每一项填进下面的表，范围按单子上的。照片不保存。") : t("AI 读出来预填下面的表，你核对后再保存；照片不保存。"),
   after: `<div class="btns" style="margin-top:0"><button type="button" class="btn primary sm" data-hl="ai-go" data-v="${mode}" ${d && d._aiBusy ? "disabled" : ""}>${d && d._aiBusy ? t("正在读取…") : `✦ ${t("让 AI 读出来")}`}</button></div>` })}</div>`;
-const labsPreview = d => (d._labs && d._labs.length ? `<div class="panel hl-labs-pre"><b>${t("一起保存 {n} 项化验", { n: d._labs.length })}</b><ul>${d._labs.map(x => `<li>${esc(labName(x, lang()))}：<b class="num">${esc(x.value)}</b> ${esc(x.unit || "")}${labFlag(x) ? ` <span class="pill ${labFlag(x) === "high" ? "hi" : "lo"}">${t(labFlag(x) === "high" ? "偏高" : "偏低")}</span>` : ""}</li>`).join("")}</ul>
+const labsPreview = d => (d._labs && d._labs.length ? `<div class="panel hl-labs-pre"><b>${t("一起保存 {n} 项化验", { n: d._labs.length })}</b><ul>${d._labs.map(x => `<li>${esc(labName(x, lang()))}：<b class="num">${esc(x.value)}</b> ${esc(x.unit || "")}${labFlag(x) ? ` <span class="ui-badge" data-tone="${labFlag(x) === "high" ? "danger" : "caution"}">${t(labFlag(x) === "high" ? "偏高" : "偏低")}</span>` : ""}</li>`).join("")}</ul>
   <button type="button" class="chip" data-hl="ai-labs-clear">${t("不要这些化验")}</button></div>` : "");
 
 function openVisit(v){
@@ -357,7 +357,7 @@ function batchTable(d){
     const x = { value: v.value, ref_low: v.ref_low !== undefined ? v.ref_low : def.low, ref_high: v.ref_high !== undefined ? v.ref_high : def.high }, f = filledVal(v) ? labFlag(x) : null;
     return `<tr class="${f ? "flag-" + f : ""}"><th scope="row">${label}</th><td>${cell(key, "value", v.value, "v")}</td><td class="hl-bt-unit">${cell(key, "unit", v.unit ?? def.unit, "u")}</td>
       <td class="hl-bt-rng">${cell(key, "ref_low", x.ref_low, "r")}<span aria-hidden="true">–</span>${cell(key, "ref_high", x.ref_high, "r")}</td>
-      <td class="hl-bt-f">${f ? `<span class="pill ${f === "high" ? "hi" : "lo"}">${t(f === "high" ? "偏高" : "偏低")}</span>` : ""}</td></tr>`;
+      <td class="hl-bt-f">${f ? `<span class="ui-badge" data-tone="${f === "high" ? "danger" : "caution"}">${t(f === "high" ? "偏高" : "偏低")}</span>` : ""}</td></tr>`;
   };
   const rows = items.map(([c, x]) => row(c, esc(lang() === "en" ? x.en : x.name), (d.vals || {})[c] || {}, x)).join("")
     + (g === "other" ? (d.extra || []).map((v, i) => row("x" + i, cell("x" + i, "name", v.name, "n"), v, { unit: "", low: null, high: null })).join("") : "");

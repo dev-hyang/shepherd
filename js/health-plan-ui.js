@@ -43,7 +43,7 @@ function todayPlanHTML(who){
   const acts = hl.dataOf(who.key).activity, today = S.day;
   const doneW = acts.filter(a => a.kind === "workout" && a.day === today);
   const wRow = w ? `<div class="hl-today-row"><span class="mi" aria-hidden="true">🏃</span><div class="mt"><b>${esc(L(w.x))}</b><small>${t("约 {n} 分钟", { n: w.x.minutes || 30 })} · ${workoutOn(plan, today) ? t("今天要练") : t("今天休息（想练也可以）")}</small></div>
-      ${doneW.length ? `<span class="pill ok">✓ ${t("{n} 分钟", { n: doneW.reduce((s, a) => s + (+a.minutes || 0), 0) })}</span>` : S.hl.plansOk ? `<button class="btn primary hl-did" data-hl="wk-quick" data-ref="${esc(plan.workout.tpl)}">${t("今天照做了")}</button>` : ""}</div>` : "";
+      ${doneW.length ? `<span class="ui-badge" data-tone="ok">✓ ${t("{n} 分钟", { n: doneW.reduce((s, a) => s + (+a.minutes || 0), 0) })}</span>` : S.hl.plansOk ? `<button class="btn primary hl-did" data-hl="wk-quick" data-ref="${esc(plan.workout.tpl)}">${t("今天照做了")}</button>` : ""}</div>` : "";
   const dRow = d ? `<div class="hl-today-row hl-meals"><span class="mi" aria-hidden="true">🥗</span><div class="mt"><b>${esc(L(d.x))}</b>${S.hl.plansOk ? mealButtons(who.key, today) : ""}</div></div>` : "";
   return `${secHead(t("今日计划"), `<button class="chip" data-hl="view" data-v="plan">${t("计划")} ›</button>`)}<div class="panel hl-today">${wRow}${dRow}</div>`;
 }
@@ -85,7 +85,7 @@ function recHTML(who, data, prof){
     : `<p class="small muted">${t("还没有异常的化验、体征或医生建议：先给通用的。记了就诊和化验以后，这里会按结果推荐。")}</p>`;
   const card = (kind, x) => { const tp = tpl("b:" + x.id, kind); if (!tp) return ""; const ref = "b:" + x.id, on = (planOf(who.key)[kind] || {}).tpl === ref;
     return `<div class="hl-rec"><button class="hl-rec-main" data-hl="tpl" data-kind="${kind}" data-ref="${ref}"><b>${kind === "workout" ? "🏃" : "🥗"} ${esc(L(tp.x))}</b><small>${x.hits.map(h => t(TAGS[h] || h)).join(" · ") || t("通用")}${kind === "workout" ? ` · ${t("约 {n} 分钟", { n: tp.x.minutes })}` : ""}</small></button>
-      ${on ? `<span class="pill ok">✓ ${t("当前")}</span>` : `<button class="chip" data-hl="plan-set" data-kind="${kind}" data-ref="${ref}">${t("设为计划")}</button>`}</div>`; };
+      ${on ? `<span class="ui-badge" data-tone="ok">✓ ${t("当前")}</span>` : `<button class="chip" data-hl="plan-set" data-kind="${kind}" data-ref="${ref}">${t("设为计划")}</button>`}</div>`; };
   return `${secHead(t("推荐"), "", t("按公开指南的规则"))}<div class="panel">${basis}
     <div class="hl-recs">${r.diets.map(x => card("diet", x)).join("")}${r.workouts.map(x => card("workout", x)).join("")}</div>
     <p class="small muted" style="margin:8px 0 0">${t("依据你记的化验、体征、档案和医生建议原文打标签；有慢病、怀孕、术后或医生另有交代的，以医生为准。")}</p></div>`;
@@ -106,7 +106,7 @@ function workoutHTML(who){
   const key = who.key, data = hl.dataOf(key), plan = planOf(key);
   const list = libFor("workout", who.kid).map(ref => ({ ref, tp: tpl(ref, "workout") })).filter(x => x.tp);
   const lib = `<div class="panel mlist">${list.map(({ ref, tp }) => `<button class="mrow" data-hl="tpl" data-kind="workout" data-ref="${esc(ref)}"><span class="mi" aria-hidden="true">${tp.src === "c" ? "✎" : "🏃"}</span>
-    <span class="mt"><b>${esc(L(tp.x))}${(plan.workout || {}).tpl === ref ? ` <span class="pill ok">${t("当前")}</span>` : ""}</b><small>${t("约 {n} 分钟", { n: tp.x.minutes || 30 })} · ${levelDots(tp.x.level || 1)} · ${(tp.x.tags || []).filter(x => TAGS[x]).map(x => t(TAGS[x])).join(" · ")}</small></span><span class="mch" aria-hidden="true">›</span></button>`).join("")}</div>`;
+    <span class="mt"><b>${esc(L(tp.x))}${(plan.workout || {}).tpl === ref ? ` <span class="ui-badge" data-tone="ok">${t("当前")}</span>` : ""}</b><small>${t("约 {n} 分钟", { n: tp.x.minutes || 30 })} · ${levelDots(tp.x.level || 1)} · ${(tp.x.tags || []).filter(x => TAGS[x]).map(x => t(TAGS[x])).join(" · ")}</small></span><span class="mch" aria-hidden="true">›</span></button>`).join("")}</div>`;
   const logs = data.activity.filter(a => a.kind === "workout").sort((a, b) => b.day.localeCompare(a.day));
   const hist = logs.length ? `<div class="panel mlist">${pg.page("hlWk", logs).map(a => { const tp = tpl(a.template, "workout"); return `<button class="mrow" data-hl="wk-edit" data-id="${esc(a.id)}"><span class="mi" aria-hidden="true">✓</span>
       <span class="mt"><b>${esc(tp ? L(tp.x) : t("自由训练"))} · ${t("{n} 分钟", { n: a.minutes || 0 })}</b><small>${fmtDay(a.day)}${(a.data || {}).note ? ` · ${esc(a.data.note)}` : ""}</small></span><span class="mch" aria-hidden="true">›</span></button>`; }).join("")}</div>${pg.moreBtn("hlWk", logs.length)}`
@@ -128,7 +128,7 @@ function dietHTML(who){
   const grid = d && meals.length ? `<div class="panel scroll-x"><table class="hl-grid7"><caption class="sr-only">${t("最近 7 天的饮食")}</caption><thead><tr><th></th>${days.map(x => `<th scope="col">${t("周{d}", { d: t(WEEKDAY[new Date(x + "T12:00:00").getDay()]) })}</th>`).join("")}</tr></thead>
     <tbody>${SLOTS.map(([slot, label]) => `<tr><th scope="row">${t(label)}</th>${days.map(x => cell(x, slot)).join("")}</tr>`).join("")}</tbody></table></div>` : "";
   const lib = `<div class="panel mlist">${list.map(({ ref, tp }) => `<button class="mrow" data-hl="tpl" data-kind="diet" data-ref="${esc(ref)}"><span class="mi" aria-hidden="true">${tp.src === "c" ? "✎" : "🥗"}</span>
-    <span class="mt"><b>${esc(L(tp.x))}${(plan.diet || {}).tpl === ref ? ` <span class="pill ok">${t("当前")}</span>` : ""}</b><small>${esc(L(tp.x.summary) || "")}</small></span><span class="mch" aria-hidden="true">›</span></button>`).join("")}</div>`;
+    <span class="mt"><b>${esc(L(tp.x))}${(plan.diet || {}).tpl === ref ? ` <span class="ui-badge" data-tone="ok">${t("当前")}</span>` : ""}</b><small>${esc(L(tp.x.summary) || "")}</small></span><span class="mch" aria-hidden="true">›</span></button>`).join("")}</div>`;
   return `${S.hl.plansOk ? "" : noTables()}${today}${grid}${secHead(t("饮食模版"), S.hl.plansOk ? `<button class="chip" data-hl="tpl-new" data-kind="diet">＋ ${t("自己建一个")}</button>` : "")}${lib}
     ${who.kid ? `<p class="small muted">${t("孩子按餐盘法，不数热量、不说减重。")}</p>` : ""}`;
 }
@@ -137,7 +137,7 @@ function dietHTML(who){
 function openTpl(kind, ref){
   const tp = tpl(ref, kind); if (!tp) return;
   const x = tp.x, key = UI().who, on = (planOf(key)[kind] || {}).tpl === ref;
-  const acts = `<div class="btns">${on ? `<span class="pill ok">✓ ${t("当前计划")}</span>` : `<button class="btn primary" data-hl="plan-set" data-kind="${kind}" data-ref="${esc(ref)}">${t("设为计划")}</button>`}
+  const acts = `<div class="btns">${on ? `<span class="ui-badge" data-tone="ok">✓ ${t("当前计划")}</span>` : `<button class="btn primary" data-hl="plan-set" data-kind="${kind}" data-ref="${esc(ref)}">${t("设为计划")}</button>`}
     ${kind === "workout" && S.hl.plansOk ? `<button class="btn" data-hl="wk-quick" data-ref="${esc(ref)}">${t("今天照做了")}</button>` : ""}
     ${kind === "diet" && (x.shop || []).length ? `<a class="btn" href="${esc(pantryLink(x.shop.map(L), L(x)))}" target="_blank" rel="noopener">🛒 ${t("加进爱家采购清单")} ↗</a>` : ""}
     ${S.hl.plansOk ? `<button class="btn" data-hl="tpl-copy" data-kind="${kind}" data-ref="${esc(ref)}">${tp.src === "c" ? t("编辑") : t("复制后改成自己的")}</button>` : ""}</div>`;

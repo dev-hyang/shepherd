@@ -137,7 +137,7 @@ function weekPlan(day){
   return `${dayNav(`${shortDay(ws)} – ${shortDay(addDays(ws, 6))}`, "tk-prev", "tk-next")}
   ${pt.length ? `<div class="panel" style="padding:4px 10px"><h3 class="tk-h">${t("本周要做（不指定哪天）")}</h3>${rows(pt)}</div>` : ""}
   ${days.map(d => { const list = tk.onDay(d), n = list.length;
-    return `<div class="panel wkday ${d === S.day ? "today" : ""}" style="padding:4px 10px"><h3 class="tk-h"><button class="linkbtn" data-act="tk-goto" data-day="${d}">${wdLabel(d)} ${shortDay(d)}</button> <span class="muted small">${n ? t("{n} 件", { n }) : t("空")}</span>${d === S.day ? ` <span class="pill">${t("今天")}</span>` : ""}</h3>${rows(list)}</div>`; }).join("")}`;
+    return `<div class="panel wkday ${d === S.day ? "today" : ""}" style="padding:4px 10px"><h3 class="tk-h"><button class="linkbtn" data-act="tk-goto" data-day="${d}">${wdLabel(d)} ${shortDay(d)}</button> <span class="muted small">${n ? t("{n} 件", { n }) : t("空")}</span>${d === S.day ? ` <span class="ui-badge" data-tone="neutral">${t("今天")}</span>` : ""}</h3>${rows(list)}</div>`; }).join("")}`;
 }
 function monthPlan(day){
   const [y, m] = day.split("-").map(Number), first = `${y}-${pad(m)}-01`, dim = new Date(y, m, 0).getDate(), lead = (wdOf(first) + 6) % 7;

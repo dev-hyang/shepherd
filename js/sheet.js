@@ -150,9 +150,9 @@ function openHabits(filter){
       : isMed(p) ? esc(m.dose || "") : "";
     const stock = isMed(p) && m.stock != null && m.stock !== "" ? `${t("剩 {n}", { n: m.stock })}${(sc.times || []).length ? ` · ${t("约 {d} 天", { d: daysLeft(p) })}` : ""}` : "";
     const days = (sc.days || ALL_DAYS).length === 7 ? t("每天") : (sc.days || []).map(d => t(WEEKDAY[d])).join("");
-    const tags = [days, sc.times && sc.times.length ? sc.times.join(" ") + (sc.remind === false ? "" : " ⏰") : ""].filter(Boolean).map(x => `<span class="tag">${esc(x)}</span>`).join("");
+    const tags = [days, sc.times && sc.times.length ? sc.times.join(" ") + (sc.remind === false ? "" : " ⏰") : ""].filter(Boolean).map(x => `<span class="ui-badge" data-tone="neutral" data-outline>${esc(x)}</span>`).join("");
     return `<div class="habit hrow ${p.active === false && !p.archived ? "paused" : ""}"><span class="hi" style="background:${k.color}22;color:${k.color}">${k.icon}</span>
-      <button class="main" data-act="habit-edit" data-pid="${esc(p.id)}"><span class="title">${esc(p.name || t(k.label))}${p.active === false && !p.archived ? ` <span class="pill">${t("暂停")}</span>` : ""}${!p.archived && lowStock(p) ? ` <span class="warn">${t("该补货了")}</span>` : ""}</span>
+      <button class="main" data-act="habit-edit" data-pid="${esc(p.id)}"><span class="title">${esc(p.name || t(k.label))}${p.active === false && !p.archived ? ` <span class="ui-badge" data-tone="neutral">${t("暂停")}</span>` : ""}${!p.archived && lowStock(p) ? ` <span class="warn">${t("该补货了")}</span>` : ""}</span>
         ${goal || stock ? `<span class="meta">${[goal, stock].filter(Boolean).join(" · ")}</span>` : ""}${tags ? `<span class="tags">${tags}</span>` : ""}</button>
       <span class="acts">${p.archived ? `<button class="chip" data-act="habit-restore" data-pid="${esc(p.id)}">${t("恢复")}</button>` : `<button class="chip share" data-act="habit-share" data-pid="${esc(p.id)}" aria-pressed="${p.share === "family"}" title="${t("完成情况开给家人看")}">${p.share === "family" ? `👪 ${t("家人可见")}` : t("仅自己")}</button>`}</span></div>`; };
   // “全部”里习惯和用药各一组，用小标题分开；只有一组时不加

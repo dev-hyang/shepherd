@@ -60,7 +60,7 @@ function visitsListHTML(who){
 function rowsHTML(list){
   return `<div class="panel mlist hl-vrows">${list.map(v => { const k = VISIT_KINDS[v.kind] || VISIT_KINDS.other, labs = S.hl.labs.filter(x => x.visit_id === v.id), bad = labs.filter(labFlag).length;
     return `<button class="mrow" data-hl="open-visit" data-id="${esc(v.id)}"><span class="mi" aria-hidden="true">${k.icon}</span>
-      <span class="mt"><b>${esc(fmtDay(v.day))} · ${esc(t(k.label))}${v.follow_up && v.follow_up >= S.day ? ` <span class="pill soon">${t("复诊 {d}", { d: fmtDay(v.follow_up) })}</span>` : ""}${v.ai ? ` <span class="pill cat">AI</span>` : ""}</b>
+      <span class="mt"><b>${esc(fmtDay(v.day))} · ${esc(t(k.label))}${v.follow_up && v.follow_up >= S.day ? ` <span class="ui-badge" data-tone="caution">${t("复诊 {d}", { d: fmtDay(v.follow_up) })}</span>` : ""}${v.ai ? ` <span class="ui-badge" data-tone="accent">AI</span>` : ""}</b>
         <small>${esc([placeText(v), v.provider].filter(Boolean).join(" · ") || t("没填地点"))}</small>
         ${v.reason || v.diagnosis ? `<small>${esc([v.reason, v.diagnosis].filter(Boolean).join(" · ").slice(0, 120))}</small>` : ""}
         ${labs.length ? `<small>${t("化验 {n} 项", { n: labs.length })}${bad ? ` · <span class="hl-bad">${t("{n} 项超出范围", { n: bad })}</span>` : ""}</small>` : ""}</span><span class="mch" aria-hidden="true">›</span></button>`; }).join("")}</div>`;
@@ -69,7 +69,7 @@ function timelineHTML(list){
   let lastYm = "";
   return `<ol class="hl-tl">${list.map(v => { const k = VISIT_KINDS[v.kind] || VISIT_KINDS.other, ym = v.day.slice(0, 7), head = ym !== lastYm ? `<li class="hl-tl-month">${esc(ym.replace("-", " / "))}</li>` : ""; lastYm = ym;
     return `${head}<li class="hl-tl-item"><span class="hl-tl-dot" aria-hidden="true">${k.icon}</span><button class="hl-tl-card" data-hl="open-visit" data-id="${esc(v.id)}">
-      <span class="hl-tl-top"><b>${esc(t(k.label))}</b><span class="num muted">${esc(fmtDay(v.day))}</span>${v.follow_up && v.follow_up >= S.day ? `<span class="pill soon">${t("复诊 {d}", { d: fmtDay(v.follow_up) })}</span>` : ""}</span>
+      <span class="hl-tl-top"><b>${esc(t(k.label))}</b><span class="num muted">${esc(fmtDay(v.day))}</span>${v.follow_up && v.follow_up >= S.day ? `<span class="ui-badge" data-tone="caution">${t("复诊 {d}", { d: fmtDay(v.follow_up) })}</span>` : ""}</span>
       ${placeText(v) || v.provider ? `<span class="small muted">${esc([placeText(v), v.provider].filter(Boolean).join(" · "))}</span>` : ""}
       ${v.reason ? `<span>${esc(v.reason)}</span>` : ""}
       ${v.advice ? `<span class="hl-tl-adv">${esc(v.advice.slice(0, 140))}${v.advice.length > 140 ? "…" : ""}</span>` : ""}</button></li>`; }).join("")}</ol>`;
@@ -83,14 +83,14 @@ function visitDetailHTML(who){
   const row = (label, val) => (val ? `<div class="hl-prof-row"><span class="muted">${t(label)}</span><span>${val}</span></div>` : "");
   const bill = new URLSearchParams({ bill: "new", kind: "medical", provider: [v.location, v.provider].filter(Boolean).join(" · ").slice(0, 60), date: v.day, patient: (hl.person(v.subject) || {}).name || "" });
   return `    <div class="panel hl-vd">
-      <div class="hl-vd-head"><h2>${k.icon} ${esc(t(k.label))}</h2><span class="num muted">${esc(fmtDay(v.day))}</span>${v.ai_used ? `<span class="pill cat">${t("AI 读图")}</span>` : ""}</div>
+      <div class="hl-vd-head"><h2>${k.icon} ${esc(t(k.label))}</h2><span class="num muted">${esc(fmtDay(v.day))}</span>${v.ai_used ? `<span class="ui-badge" data-tone="accent">${t("AI 读图")}</span>` : ""}</div>
       ${row("地点", esc(placeText(v)))}${row("医生 / 科室", esc(v.provider))}${row("就诊原因", esc(v.reason))}${row("体征", esc(vitalsText(v.vitals || {})))}
       ${row("诊断", esc(v.diagnosis))}${v.advice ? `<div class="hl-advice" style="margin-top:8px"><span class="muted">${t("医生建议")}：</span>${esc(v.advice)}</div>` : ""}
       ${row("复诊", v.follow_up ? esc(fmtDay(v.follow_up)) : "")}${row("备注", esc(v.notes))}
       <div class="btns"><button class="btn" data-hl="edit-visit" data-id="${esc(v.id)}">${t("编辑")}</button>
         <a class="btn" href="${esc(PANTRY + "#/bills/onetime?" + bill.toString())}" target="_blank" rel="noopener">🧾 ${t("去爱家记医疗账单")} ↗</a></div>
       <p class="small muted" style="margin:6px 0 0">${t("爱家小助手是另一个数据库：这里只是打开爱家的一次性账单表单，把地点、日期、就诊人带过去预填，两边不互相关联。")}</p></div>
-    ${labs.length ? `${secHead(t("这次的化验"), "", t("{n} 项", { n: labs.length }))}<div class="panel hl-labs-ov">${labs.map(x => { const f = labFlag(x); return `<button class="hl-vd-lab ${f ? "flag-" + f : ""}" data-hl="lab-open" data-v="${esc(x.code || x.name)}"><span>${esc(labName(x, lang()))}</span><b class="num">${esc(+(+x.value).toFixed(2))}</b><small class="muted">${esc(x.unit || "")} · ${t("参考 {r}", { r: rangeText(x) || "—" })}</small>${f ? `<span class="pill ${f === "high" ? "hi" : "lo"}">${t(f === "high" ? "偏高" : "偏低")}</span>` : ""}</button>`; }).join("")}</div>` : ""}
+    ${labs.length ? `${secHead(t("这次的化验"), "", t("{n} 项", { n: labs.length }))}<div class="panel hl-labs-ov">${labs.map(x => { const f = labFlag(x); return `<button class="hl-vd-lab ${f ? "flag-" + f : ""}" data-hl="lab-open" data-v="${esc(x.code || x.name)}"><span>${esc(labName(x, lang()))}</span><b class="num">${esc(+(+x.value).toFixed(2))}</b><small class="muted">${esc(x.unit || "")} · ${t("参考 {r}", { r: rangeText(x) || "—" })}</small>${f ? `<span class="ui-badge" data-tone="${f === "high" ? "danger" : "caution"}">${t(f === "high" ? "偏高" : "偏低")}</span>` : ""}</button>`; }).join("")}</div>` : ""}
     ${aiVisitHTML(v)}`;
 }
 function aiVisitHTML(v){

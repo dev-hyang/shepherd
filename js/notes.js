@@ -39,7 +39,7 @@ function rowHTML(n){
   const body = mdToText(n.reflection || n.quote || "");
   return `<button class="nrow" data-act="note-open" data-id="${esc(n.id)}"><span class="ni" aria-hidden="true">${kindIcon(n.kind)}</span><span class="nt"><b>${esc(noteHeading(n, kindLabel))}</b>
     <small>${esc(n.day)} · ${esc(kindLabel(n.kind))}${mine ? "" : ` · ${esc(nameOf(n))}`}${mine && n_sh ? ` · 👥 ${t("{n} 人可见", { n: n_sh })}` : ""}</small>
-    ${body ? `<span class="nsnip">${esc(body)}</span>` : ""}${(n.tags || []).length ? `<span class="ntags">${n.tags.map(x => `<span class="pill cat">#${esc(x)}</span>`).join(" ")}</span>` : ""}</span></button>`;
+    ${body ? `<span class="nsnip">${esc(body)}</span>` : ""}${(n.tags || []).length ? `<span class="ntags">${n.tags.map(x => `<span class="ui-badge" data-tone="accent">#${esc(x)}</span>`).join(" ")}</span>` : ""}</span></button>`;
 }
 /** 月份导航：‹ 较早 | 选月份 | 较晚 ›；有筛选时换成一行说明 */
 function navHTML(){

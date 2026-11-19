@@ -215,7 +215,7 @@ function familyHTML(){
     <div class="field"><label for="sb_code">${t("或者输入邀请码")}</label><input id="sb_code" type="text" autocapitalize="characters" autocomplete="off"></div>
     <div class="btns"><button class="btn" data-act="sb-join">${t("加入家庭")}</button><button class="btn" data-act="sb-logout">${t("退出登录")}</button></div>`;
   const me = S.user.id;
-  const rows = Object.entries(S.members).map(([uid, m]) => `<div class="medrow"><div><b>${esc(m.name)}</b>${uid === me ? ` <span class="small muted">${t("（你）")}</span>` : ""}${m.role === "owner" ? ` <span class="pill ok">${t("家主")}</span>` : ""}</div></div>`).join("");
+  const rows = Object.entries(S.members).map(([uid, m]) => `<div class="medrow"><div><b>${esc(m.name)}</b>${uid === me ? ` <span class="small muted">${t("（你）")}</span>` : ""}${m.role === "owner" ? ` <span class="ui-badge" data-tone="ok">${t("家主")}</span>` : ""}</div></div>`).join("");
   const owner = isOwner();
   const pend = owner && S.pending.length ? `
     <div class="panel" style="margin-top:12px;border-color:var(--rose)"><b>${t("等你批准（{n}）", { n: S.pending.length })}</b>

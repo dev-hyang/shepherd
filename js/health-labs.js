@@ -27,14 +27,14 @@ function labItemHTML(who){
   const last = rows[0], f = labFlag(last), bar = rangeBar(last), data = hl.dataOf(who.key), mode = ui.labMode || "rows";
   const head = `<p class="small muted hl-li-group">${esc(t(LAB_GROUPS[labGroupOf(last)] || ""))}</p>
     <div class="panel hl-li-head ${f ? "flag-" + f : ""}"><h2>${esc(nameOfKey(k))}</h2>
-      <div class="hl-li-now"><b class="num">${esc(+(+last.value).toFixed(2))}</b><span class="muted">${esc(last.unit || "")}</span>${f ? `<span class="pill ${f === "high" ? "hi" : "lo"}">${t(f === "high" ? "偏高" : "偏低")}</span>` : `<span class="pill ok">${t("在范围内")}</span>`}</div>
+      <div class="hl-li-now"><b class="num">${esc(+(+last.value).toFixed(2))}</b><span class="muted">${esc(last.unit || "")}</span>${f ? `<span class="ui-badge" data-tone="${f === "high" ? "danger" : "caution"}">${t(f === "high" ? "偏高" : "偏低")}</span>` : `<span class="ui-badge" data-tone="ok">${t("在范围内")}</span>`}</div>
       <p class="small muted" style="margin:2px 0 6px">${t("参考 {r}", { r: rangeText(last) || "—" })} · ${t("最近 {d}", { d: fmtDay(last.day) })} · ${t("{n} 次", { n: rows.length })}</p>
       ${bar ? `<span class="hl-rbar big" aria-hidden="true"><i class="ok" style="left:${bar.lo.toFixed(1)}%;width:${(bar.hi - bar.lo).toFixed(1)}%"></i><i class="at" style="left:${bar.at.toFixed(1)}%"></i></span>` : ""}</div>`;
   const chart = chartPanel("lab:" + k, data, { heightCm: null, kid: who.kid });
   const view = `<div class="seg mini" role="group" aria-label="${esc(t("显示方式"))}"><button data-hl="lab-mode" data-v="rows" aria-pressed="${mode === "rows"}">${t("行")}</button><button data-hl="lab-mode" data-v="timeline" aria-pressed="${mode === "timeline"}">${t("时间线")}</button></div>`;
   const shown = pg.page("hlLabRec", rows);
   const rec = (x, i) => { const g = labFlag(x), prev = rows[rows.indexOf(x) + 1], d = prev ? +(+x.value - +prev.value).toFixed(2) : null, visit = x.visit_id ? S.hl.visits.find(v => v.id === x.visit_id) : null;
-    return { g, d, visit, main: `<b class="num">${esc(+(+x.value).toFixed(2))}</b> <small class="muted">${esc(x.unit || "")}</small>${g ? ` <span class="pill ${g === "high" ? "hi" : "lo"}">${t(g === "high" ? "偏高" : "偏低")}</span>` : ""}${d ? ` <small class="muted">${d > 0 ? "↑" : "↓"} ${Math.abs(d)}</small>` : ""}`,
+    return { g, d, visit, main: `<b class="num">${esc(+(+x.value).toFixed(2))}</b> <small class="muted">${esc(x.unit || "")}</small>${g ? ` <span class="ui-badge" data-tone="${g === "high" ? "danger" : "caution"}">${t(g === "high" ? "偏高" : "偏低")}</span>` : ""}${d ? ` <small class="muted">${d > 0 ? "↑" : "↓"} ${Math.abs(d)}</small>` : ""}`,
       sub: [t("参考 {r}", { r: rangeText(x) || "—" }), visit ? `🩺 ${fmtDay(visit.day)}` : "", x.notes, x.ai_used ? "AI" : ""].filter(Boolean).map(esc).join(" · ") }; };
   const list = mode === "timeline"
     ? `<ol class="hl-tl">${shown.map(x => { const r = rec(x); return `<li class="hl-tl-item"><span class="hl-tl-dot ${r.g ? "flag-" + r.g : ""}" aria-hidden="true">🧪</span><button class="hl-tl-card" data-hl="edit-lab" data-id="${esc(x.id)}"><span class="hl-tl-top"><span class="num muted">${esc(fmtDay(x.day))}</span></span><span>${r.main}</span><span class="small muted">${r.sub}</span></button></li>`; }).join("")}</ol>`
