@@ -73,7 +73,7 @@ document.addEventListener("click", async ev => {
   if (d.copy) { try { await navigator.clipboard.writeText(d.copy); toast(t("已复制")); } catch (e) { toast(t("请手动复制：") + d.copy); } return; }
   if (d.themeSet !== undefined) { if (d.themeSet) document.documentElement.dataset.theme = d.themeSet; else delete document.documentElement.dataset.theme; try { localStorage.setItem(LS_PREFIX + ".theme", d.themeSet); } catch (e) {} openSettings(); return; }
   if (d.pageSize) { pg.setPageSize(+d.pageSize); render(); openSettings(); return; }   // 设置 → 显示 → 列表每次显示
-  if (d.localeSet !== undefined) { setLocale(d.localeSet); render(); openSettings(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: d.localeSet }).catch(() => {}); return; }
+  if (d.localeSet !== undefined) { await setLocale(d.localeSet); render(); openSettings(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: d.localeSet }).catch(() => {}); return; }
   // generic form controls
   if (d.seg) { readForm(); const dr = getForm().draft; dr[d.seg] = d.v; if (d.seg === "cat") dr.sub = ""; drawForm(); return; }   // 换大类：小类清空重选
   if (d.tks) { S.tkUi.seg = d.tks; pg.reset("tkList", "tkDone", "tkDropped"); render(); return; }
@@ -262,4 +262,4 @@ document.addEventListener("visibilitychange", async () => {
 export { showSheet, head, kindOf, RATINGS };
 
 // 顶栏语言切换器（共用组件）选了语言：和设置里一样，记在本机，登录后也记到账号设置
-document.addEventListener("eco-set-lang", e => { setLocale(e.detail); render(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: e.detail }).catch(() => {}); });
+document.addEventListener("eco-set-lang", async e => { await setLocale(e.detail); render(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: e.detail }).catch(() => {}); });

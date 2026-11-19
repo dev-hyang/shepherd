@@ -8,7 +8,7 @@ import { S } from "./core/state.js";
 import { $, esc, keepForms } from "./core/util.js";
 import { WEEKDAY } from "./data/kinds.js";
 import { viewAsk } from "./ask.js";
-import { releasePageHTML } from "./releases-ui.js";
+import { releasesView } from "./releases-lazy.js";
 import { viewMe } from "./me.js";
 import { viewPrayer } from "./prayer.js";
 import { viewReview } from "./review.js";
@@ -23,7 +23,7 @@ import { routeNav } from "./ui.js";
 const TAB_LABELS = { today: "今天", tasks: "任务", health: "健康", prayer: "祷告", review: "回顾", me: "我的" };
 const VIEWS = { today: viewToday, tasks: viewTasks, health: viewHealth, prayer: viewPrayer, review: viewReview, me: viewMe };
 /* 子页：挂在某个底部页签下面，顶部显示完整路径（像爱家小助手）：‹ 我的 / 咩咩咩。parent 也可以是另一个子页，路径一路显示到底部页签 */
-const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk }, releases: { parent: "me", label: "发布日志", view: releasePageHTML } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
+const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk }, releases: { parent: "me", label: "发布日志", view: releasesView } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
 function crumbParts(tab){
   const parts = [{ label: SUB[tab].label }]; let p = SUB[tab].parent;
   while (p) { parts.unshift({ tab: p, label: SUB[p] ? SUB[p].label : TAB_LABELS[p] }); p = SUB[p] ? SUB[p].parent : null; }

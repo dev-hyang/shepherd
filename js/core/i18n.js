@@ -4,8 +4,18 @@
    - 繁體：先按 TW_PHRASES 换词，再按 data/s2t.js 逐字转换，所以不需要维护第二份字典。
    - 用户自己录入的内容（习惯名、祷告事项、备注……）不经过 t()，按输入原样显示；tc() 只给应用自带的内容做繁体转换。 */
 import { LS_PREFIX } from "./config.js";
-import { s2tChars } from "../data/s2t.js";
-import { EN } from "../data/i18n-en.js";
+// 英文字典（约 110KB）和繁体字表（约 17KB）按需加载：简体用户一个都不下载。
+// 没加载完时 t() 先回落到简体（不缓存），加载完发出 "i18n-loaded"，界面据此重画一次；启动和切换语言时都会先等它加载完再画，所以平时看不到简体闪一下。
+let EN = {}, s2tChars = null, dataLoading = null;
+function loadData(){
+  const need = cur === "en" ? "en" : cur === "zh-TW" ? "tw" : "";
+  if (!need || (need === "en" ? EN !== EMPTY_EN : s2tChars)) return Promise.resolve();
+  return (dataLoading ||= (need === "en" ? import("../data/i18n-en.js").then(m => { EN = m.EN; }) : import("../data/s2t.js").then(m => { s2tChars = m.s2tChars; twCache.clear(); }))
+    .then(() => { applyLang(); document.dispatchEvent(new Event("i18n-loaded")); })
+    .catch(() => {})   // 失败：回落到简体，下次切换时再试
+    .finally(() => { dataLoading = null; }));
+}
+const EMPTY_EN = EN;
 
 const LOCALES = [["zh-CN", "简体"], ["zh-TW", "繁體"], ["en", "English"]];
 const KEY = LS_PREFIX + ".locale";
@@ -24,6 +34,7 @@ function s2t(s){
   s = String(s); if (twCache.has(s)) return twCache.get(s);
   let o = s; for (const [a, b] of TW_PHRASES) if (o.includes(a)) o = o.split(a).join(b);
   o = o.replace(/周(?=[一二三四五六日数末例]|[\s）)，。、]|$)/g, "週");
+  if (!s2tChars) return o;   // 字表还没加载：先显示简体，不缓存
   o = s2tChars(o); twCache.set(s, o); return o;
 }
 function t(key, vars){
@@ -35,8 +46,9 @@ function t(key, vars){
 }
 const tc = text => cur === "zh-TW" ? s2t(text) : String(text ?? "");
 function locale(){ return cur; }
-function setLocale(l){ if (!LOCALES.some(x => x[0] === l)) return; cur = l; try { localStorage.setItem(KEY, l); } catch (e) {} applyLang(); }
+/** 切换语言：记住选择，等这个语言要用的数据加载完（简体不用）再返回；调用方随后重画 */
+async function setLocale(l){ if (!LOCALES.some(x => x[0] === l)) return; cur = l; try { localStorage.setItem(KEY, l); } catch (e) {} await loadData(); applyLang(); }
 function applyLang(){ document.documentElement.lang = cur; document.title = t("牧羊人") + " · " + t("身心灵 · 家人健康"); }
 applyLang();
 
-export { LOCALES, t, tc, locale, setLocale, s2t };
+export { LOCALES, t, tc, locale, setLocale, s2t, loadData as loadLocaleData };

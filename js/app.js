@@ -1,7 +1,7 @@
 /* ============ boot ============
    模块顺序：core/config → core/util → core/state → wb ↔ core/auth ↔ views ↔ sheet → events。
    跨模块调用都在函数体内，循环引用是安全的。 */
-import { locale, t } from "./core/i18n.js";
+import { t, loadLocaleData } from "./core/i18n.js";
 import { initSwipeRows } from "./swipe-rows.js";
 import "./events.js";
 import "./attach.js";   // AI 附件区 + 会自己长高的文字框（姊妹应用同一份）
@@ -11,8 +11,7 @@ import { APP_VERSION } from "./core/config.js";
 import { S } from "./core/state.js";
 import { dayKey } from "./core/util.js";
 import { render, renderBg, restoreRoute } from "./views.js";
-import { initReleases } from "./releases-ui.js";
-import { RELEASES } from "./data/releases.js";
+import { loadReleases, releaseBadgePossible } from "./releases-lazy.js";
 
 /* 发布后的头几分钟，浏览器可能把新的 index.html 和缓存里的旧模块混在一起（内部 import 没有版本号）。
    index.html 里的 meta 版本与 config.js 不一致时，强制重新抓取所有模块并刷新一次。 */
@@ -29,10 +28,13 @@ async function healStaleModules(){
 }
 
 if (!(await healStaleModules())) {
+  await loadLocaleData();   // English / 繁體：先等字典加载完再第一次画，不闪简体（简体不下载）
   { const v = document.getElementById("appver"); if (v) v.textContent = "v" + APP_VERSION; } // 顶栏版本号：不用翻到最后一页就能对照有没有更新
   initSwipeRows({ kinds: ["log", "dropped-task", "extra-read"], del: () => t("删除"), release: () => t("松手删除") });   // 行记录左滑删除（js/swipe-rows.js）
   // 发布日志：今天页顶上的新版本提示（每个新版本最多 5 次）+ 我的 → 发布日志（js/releases-ui.js）
-  initReleases({ version: APP_VERSION, releases: RELEASES, lang: locale, accent: "var(--slate)", appId: "shepherd", open: 'data-tab="releases"' });
+  if (releaseBadgePossible()) loadReleases();   // 提示还会出现才下载发布日志数据；到了会重画（releases-loaded）
+  const redraw = () => { if (!document.querySelector("#sheet").open) renderBg(); };   // 后台重画不冲掉表单里没保存的输入
+  document.addEventListener("i18n-loaded", redraw); document.addEventListener("releases-loaded", redraw);
   restoreRoute();    // 网址里记着的页（#/health/labs）：刷新后还停在这一页（js/views.js）
   render();          // 先画出"连接中"的壳
   initSupabase();    // 加载 supabase-js，登录状态回调里再渲染一次
