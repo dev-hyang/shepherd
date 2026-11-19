@@ -1,3 +1,4 @@
+import { importFresh } from "./core/lazy-reload.js";
 import { SB } from "./core/auth.js";
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
@@ -143,7 +144,7 @@ async function postpone(id, to){
 async function remove(id){ await run(SB.client.from("wb_tasks").delete().eq("user_id", me()).eq("id", id)); S.tk.items = S.tk.items.filter(x => x.id !== id); }
 async function toggleSub(id, i){ const tk = task(id); if (!tk || !tk.subtasks[i]) return; const subs = tk.subtasks.map((s, j) => (j === i ? { ...s, done: !s.done } : s)); await patch(id, { subtasks: subs }); }
 /** 快速添加：一句话解析后存；认不出日期的进收件箱（due 为空）*/
-async function quickAdd(text, day){ const { parseQuick } = await import("./recur.js"); const q = parseQuick(text, S.day, cats()); if (!q.title) { toast(t("请填标题")); return null; }
+async function quickAdd(text, day){ const { parseQuick } = await importFresh(() => import("./recur.js")); const q = parseQuick(text, S.day, cats()); if (!q.title) { toast(t("请填标题")); return null; }
   const hasDue = q.due || q.start_time; const due = q.due || (q.start_time ? day : null);
   return saveTask({ title: q.title, due: hasDue ? due : null, period: q.period || "day", start_time: q.start_time, dur: q.dur, prio: q.prio, cat: q.cat || "inbox", sub: q.sub || "", remind: q.start_time ? nudge().remind : [] }); }
 

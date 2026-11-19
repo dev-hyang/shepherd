@@ -3,6 +3,7 @@
    - English：查 data/i18n-en.js，查不到就原样显示简体（不会报错）。
    - 繁體：先按 TW_PHRASES 换词，再按 data/s2t.js 逐字转换，所以不需要维护第二份字典。
    - 用户自己录入的内容（习惯名、祷告事项、备注……）不经过 t()，按输入原样显示；tc() 只给应用自带的内容做繁体转换。 */
+import { importFresh } from "./lazy-reload.js";
 import { LS_PREFIX } from "./config.js";
 // 英文字典（约 110KB）和繁体字表（约 17KB）按需加载：简体用户一个都不下载。
 // 没加载完时 t() 先回落到简体（不缓存），加载完发出 "i18n-loaded"，界面据此重画一次；启动和切换语言时都会先等它加载完再画，所以平时看不到简体闪一下。
@@ -10,7 +11,7 @@ let EN = {}, s2tChars = null, dataLoading = null;
 function loadData(){
   const need = cur === "en" ? "en" : cur === "zh-TW" ? "tw" : "";
   if (!need || (need === "en" ? EN !== EMPTY_EN : s2tChars)) return Promise.resolve();
-  return (dataLoading ||= (need === "en" ? import("../data/i18n-en.js").then(m => { EN = m.EN; }) : import("../data/s2t.js").then(m => { s2tChars = m.s2tChars; twCache.clear(); }))
+  return (dataLoading ||= (need === "en" ? importFresh(() => import("../data/i18n-en.js")).then(m => { EN = m.EN; }) : importFresh(() => import("../data/s2t.js")).then(m => { s2tChars = m.s2tChars; twCache.clear(); }))
     .then(() => { applyLang(); document.dispatchEvent(new Event("i18n-loaded")); })
     .catch(() => {})   // 失败：回落到简体，下次切换时再试
     .finally(() => { dataLoading = null; }));

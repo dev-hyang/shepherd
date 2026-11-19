@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-19.1", title: { zh: "修复：发新版后旧页面切换语言偶尔失败", en: "Fix: switching language on an already-open page could fail after an update" }, items: [
+    { k: "fix", zh: "应用更新后，之前就开着的页面切换英文 / 繁體偶尔下载失败；现在会自动刷新一次换成新版，不用手动刷新", en: "After an update, a page that was already open could fail to switch to English / Traditional Chinese; it now refreshes itself once to get the new version" }
+  ] },
   { v: "2026-11-18.3", title: { zh: "打开更快：英文和繁體词典按需下载", en: "Faster to open: English and Traditional data load on demand" }, items: [
     { k: "better", zh: "只有用英文或繁體时才下载对应的词典，简体用户打开更快；界面和用法不变", en: "The English and Traditional Chinese data now download only when you use those languages; the interface is unchanged" }
   ] },
