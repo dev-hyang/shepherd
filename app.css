@@ -8,6 +8,14 @@
   --f-body:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
   --f-head:"Lora","Noto Serif SC","Songti SC","STSong","SimSun",Georgia,serif;
   --f-num:"Outfit","Noto Sans SC",system-ui,sans-serif;
+  /* 共享控件（shared/ui.css）读的语义变量：对应到本站自己的色板，深色模式跟着色板变。
+     文字色往墨色靠一点，保证在浅底上对比度 ≥ 4.5:1 */
+  --ok:color-mix(in srgb,var(--sage) 70%,var(--ink)); --ok-bg:var(--sage-soft);
+  --out:color-mix(in srgb,var(--rose) 75%,var(--ink)); --out-bg:var(--rose-soft);
+  --low:color-mix(in srgb,var(--honey) 40%,var(--ink)); --low-bg:var(--honey-soft);
+  --soon:var(--low); --soon-bg:var(--honey-soft);
+  --exp:color-mix(in srgb,var(--slate) 75%,var(--ink)); --exp-bg:var(--slate-soft);
+  --surface-2:var(--field); --focus:var(--slate); --font:var(--f-body);
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -114,6 +122,7 @@ body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 .field{margin:12px 0}
 .field > label,.field > .lab{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
 .field input[type=text],.field input[type=password],.field input[type=number],.field input[type=date],.field input[type=time],.field textarea,.field select{width:100%;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:11px 12px;font-size:16px;min-height:46px}
+.field input[type=text],.field input[type=password],.field input[type=number],.field input[type=date],.field input[type=time],.field input[type=search],.field select{height:48px}   /* 输入框 / 下拉 / 日期原生行高不同：同一张表单里统一成一样高 */
 .field textarea{min-height:70px;resize:vertical}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg button{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-sm);padding:9px 12px;cursor:pointer;min-height:42px;font-size:15px}
