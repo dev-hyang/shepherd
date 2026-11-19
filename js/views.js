@@ -1,4 +1,6 @@
 import { updateMiniBar } from "./minibar.js";
+import * as appSwitcherMod from "./shared/app-switcher.js";
+import * as langSwitcherMod from "./shared/lang-switcher.js";
 import { myName } from "./core/auth.js";
 import { APP_VERSION, SISTER_APPS, THIS_APP } from "./core/config.js";
 import { LOCALES, locale, t } from "./core/i18n.js";
@@ -84,31 +86,17 @@ function crumbNav(parts, cls = ""){
   return `<nav class="crumb ${cls}" aria-label="${t("位置")}">${backBtn(parts[parts.length - 2].tab)}${parts.map((x, i) => `${i ? '<span class="sep">/</span>' : ""}${i === parts.length - 1
     ? `<b aria-current="page">${t(x.label)}</b>` : `<button type="button" class="crumb-link" data-tab="${x.tab}">${t(x.label)}</button>`}`).join("")}</nav>`;
 }
-// 应用切换（四个姊妹站点共用）：右上角九宫格按钮，宽屏浮层、手机底部抽屉。
-// 组件放在 home-pantry/shared；首次离线加载不到时，先用原来的 ‹ 上一个 / 下一个 › 胶囊，切换不受影响。
-const SWITCHER_URL = "https://dev-hyang.github.io/home-pantry/shared/app-switcher.js";
-let switcherMod = null, switcherTried = false;
-// 语言切换（四个姊妹站点共用）：地球按钮 + 列表，以后加语言只要在 LOCALES 里加一项
-const LANG_URL = "https://dev-hyang.github.io/home-pantry/shared/lang-switcher.js";
-let langMod = null, langTried = false;
+// 应用切换（姊妹站点共用）：右上角九宫格按钮，宽屏浮层、手机底部抽屉。组件是本应用自己的副本 js/shared/（母版在 home-pantry/shared/）。
+// 语言切换：地球按钮 + 列表，以后加语言只要在 LOCALES 里加一项。
 function renderLangSwitch(){
   const host = $("#langsw"); if (!host) return;
-  if (langMod) {
-    const cur = locale();
-    langMod.mountLangSwitcher({ host, current: cur, ui: cur === "en" ? "en" : cur === "zh-TW" ? "tw" : "zh", languages: LOCALES.map(([code]) => ({ code })),
-      onSelect: code => document.dispatchEvent(new CustomEvent("eco-set-lang", { detail: code })) });
-    return;
-  }
-  if (!langTried) { langTried = true; import(LANG_URL).then(m => { langMod = m; renderLangSwitch(); }).catch(() => {}); }
+  const cur = locale();
+  langSwitcherMod.mountLangSwitcher({ host, current: cur, ui: cur === "en" ? "en" : cur === "zh-TW" ? "tw" : "zh", languages: LOCALES.map(([code]) => ({ code })),
+    onSelect: code => document.dispatchEvent(new CustomEvent("eco-set-lang", { detail: code })) });
 }
 function renderAppSwitch(){
   const host = $("#apps");
-  if (switcherMod) { switcherMod.mountAppSwitcher({ host, current: THIS_APP, lang: locale() }); return; }
-  const i = SISTER_APPS.findIndex(a => a.id === THIS_APP), n = SISTER_APPS.length, prev = SISTER_APPS[(i - 1 + n) % n], next = SISTER_APPS[(i + 1) % n];
-  const badge = (a, label) => `<a class="badge" href="${a.url}" title="${esc(t("切到{name}", { name: t(a.name) }))}" aria-label="${esc(t("切到{name}", { name: t(a.name) }))}">${label}</a>`;
-  host.setAttribute("aria-label", t("切换姊妹应用"));
-  host.innerHTML = badge(prev, `‹ ${esc(t(prev.short))}`) + badge(next, `${esc(t(next.short))} ›`);
-  if (!switcherTried) { switcherTried = true; import(SWITCHER_URL).then(m => { switcherMod = m; renderAppSwitch(); }).catch(() => {}); }
+  appSwitcherMod.mountAppSwitcher({ host, current: THIS_APP, lang: locale() });
 }
 function renderStatus(){
   const st = { loading: ["", t("连接中")], offline: ["", t("云端不可用")], signedout: ["", t("未登录")], anon: ["", t("请绑定邮箱")],

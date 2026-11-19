@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-18.2", title: { zh: "应用切换器和语言切换器随应用一起发布", en: "App and language switchers now ship with the app" }, items: [
+    { k: "better", zh: "右上角的应用切换和语言切换改为随本应用一起发布，更稳定；外观和用法不变", en: "The top-right app and language switchers now ship with this app, so they are more reliable; looks and use are unchanged" }
+  ] },
   { v: "2026-11-18.1", title: { zh: "打开更快：程序文件打包发布", en: "Faster to open: app files bundled" }, items: [
     { k: "better", zh: "程序文件合并发布，打开时下载的文件少很多，页面和功能都没有变", en: "App files are now bundled, so far fewer files download at startup; pages and features are unchanged" }
   ] },
