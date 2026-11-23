@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-23.1", title: { zh: "共用的小提示控件多了「右上角角标」样式", en: "Shared info-tip control gains a corner-badge style" }, items: [
+    { k: "better", zh: "共用的小 i 提示新增贴在文字右上角的小角标形态（小 / 中 / 大三种）；这个应用里现有的提示外观不变", en: "The shared info tip gains a small badge style at the top-right of text (small / medium / large); existing tips in this app look the same" },
+  ] },
   { v: "2026-11-19.3", title: { zh: "各页的小状态标签统一成共用的徽标样式", en: "Small status labels now use the shared badge style" }, items: [
     { k: "better", zh: "化验“偏高 / 偏低 / 在范围内”、“复诊”、“AI 解读”、标签等小标签换成和其他应用一致的徽标样式（字略粗、颜色统一）", en: "Small labels such as High / Low / In range, Follow-up, AI reading and tags now use the same badge style as the other apps (slightly bolder, consistent colors)" }
   ] },
