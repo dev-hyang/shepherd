@@ -14,6 +14,7 @@ import { viewPrayer } from "./prayer.js";
 import { viewReview } from "./review.js";
 import { openSettings } from "./sheet.js";
 import { viewToday } from "./today.js";
+import { restoreHero } from "./med-hero.js";
 import { viewHealth, openPendingNew } from "./health.js";
 import { viewTasks } from "./tasks.js";
 import { pendingCount } from "./tk.js";
@@ -126,6 +127,7 @@ function render(opts){
   const html = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩、发布日志 没登录也能看
   if (opts && opts.bg) keepForms($("#main"), () => { $("#main").innerHTML = html; });
   else $("#main").innerHTML = html;
+  restoreHero();   // 今天页顶上的滑动卡：滑回刚才停的那一张
   openPendingNew();   // 网址里带 new=… 且健康数据已读完：打开对应的录入表（只一次）
   syncRoute();   // 页面画完再写网址（健康页会在画的时候纠正不存在的子页 / 人）
   updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : S.route ? routeNav(S.route).replace('class="crumb route"', 'class="crumb route mb"') : "", t("回到顶部"));

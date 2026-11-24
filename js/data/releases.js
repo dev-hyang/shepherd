@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.1", title: { zh: "今天页顶部：每种药一张「距上次用药」大卡片", en: "Today: a Since-last-dose card for each medicine" }, items: [
+    { k: "new", zh: "今天页顶上多了可左右滑的用药卡：每种药一张，显示多久没服、上次几点、下一个时间点（过了会变暖色）、剂量和库存", en: "Swipeable medicine cards on top of Today: time since the last dose, last time, the next time (turns warm when due), dose and stock" },
+    { k: "new", zh: "卡片上直接点「服了 / 跳过」，记在下一个时间点上", en: "Tap Taken / Skip right on the card to log the next time slot" },
+    { k: "better", zh: "病好了点卡片上的「不再显示」就不再出现；在「习惯与用药」里能随时重新打开，保健品也可以手动打开", en: "Once you're better, tap Hide on the card; turn it back on under Habits & meds, where supplements can be shown too" },
+  ] },
   { v: "2026-11-23.1", title: { zh: "共用的小提示控件多了「右上角角标」样式", en: "Shared info-tip control gains a corner-badge style" }, items: [
     { k: "better", zh: "共用的小 i 提示新增贴在文字右上角的小角标形态（小 / 中 / 大三种）；这个应用里现有的提示外观不变", en: "The shared info tip gains a small badge style at the top-right of text (small / medium / large); existing tips in this app look the same" },
   ] },

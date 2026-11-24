@@ -891,3 +891,20 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .crumb.route.mb .route-acts{display:none}
 .hl-li-group{margin:0 0 6px}
 .ask-att{margin-top:10px}
+/* 今天页顶上的滑动卡：问候卡 + 每种药一张「距上次用药」 */
+.herobox{margin-top:8px}
+.herotrack{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;border-radius:var(--radius-lg)}
+.herotrack::-webkit-scrollbar{display:none}
+.herotrack > .hero{flex:0 0 100%;scroll-snap-align:start;margin-top:0;box-sizing:border-box;min-height:150px}
+.herotrack:focus-visible{outline:3px solid var(--focus,#1D2733);outline-offset:2px}
+.medhero{background:linear-gradient(135deg,#B44B60,#8E3A4C)}
+.medhero.due{background:linear-gradient(135deg,#C8743A,#A85A28)}
+.medhero .big small{font-size:.5em;font-weight:500;margin:0 3px 0 1px}
+.medhero .big.num{font-variant-numeric:tabular-nums}
+.medact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;position:relative;z-index:1}
+.medact .hbtn.txt{min-height:44px;padding:0 16px}
+.herodots{display:flex;justify-content:center;gap:2px;margin-top:4px}
+.herodot{all:unset;box-sizing:border-box;width:28px;height:28px;display:grid;place-items:center;cursor:pointer}
+.herodot::after{content:"";width:18px;height:6px;border-radius:3px;background:var(--line)}
+.herodot[aria-current="true"]::after{background:var(--ink,#1D2733)}
+.herodot:focus-visible{outline:2px solid var(--focus,#1D2733);border-radius:6px}

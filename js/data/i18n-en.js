@@ -1209,6 +1209,21 @@ const EN = {
   "附件里的文字": "Text from the attachments",
   "（附了 {n} 张照片 / 文件，请一起看）": "({n} photos / files attached; please look at them too)",
   "看看这些照片 / 文件，告诉我要注意什么、可以怎么做。": "Look at these photos / files and tell me what to watch for and what I can do.",
+  "距上次": "Since last",
+  "还没记录": "Not logged yet",
+  "没有设时间点": "No times set",
+  "该服了 {time}": "Due {time}",
+  "下次 {time}": "Next {time}",
+  "下次 明天 {time}": "Next tomorrow {time}",
+  "下次 {day} {time}": "Next {day} {time}",
+  "上次 {time}": "Last {time}",
+  "不再显示": "Hide",
+  "分": "m",
+  "病好了、不用再吃时点这里；在「习惯与用药」里能重新打开": "Recovered or done with it? Hide the card; you can turn it back on under Habits & meds",
+  "今天：问候与用药": "Today: greeting and meds",
+  "切换卡片": "Switch card",
+  "已不再显示；在「习惯与用药」里能重新打开": "Hidden; turn it back on under Habits & meds",
+  "在今天页顶部显示「距上次」大卡片（病好了可以关掉）": "Show a Since-last card at the top of Today (turn off once you're better)",
 };
 export { EN };
 

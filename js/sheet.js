@@ -100,6 +100,7 @@ function practiceFields(){
     { k: "dose", label: "剂量", type: "text", ph: "1 片 / 2 粒", when: is("med", "supplement") },
     { k: "stock", label: "现在还剩多少（可空；每次“服了”自动减一）", type: "num", ph: "30", when: is("med", "supplement") },
     { k: "refillAt", label: "剩几天的量时提醒补货", type: "num", ph: "7", when: is("med", "supplement") },
+    { k: "hero", label: "在今天页顶部显示「距上次」大卡片（病好了可以关掉）", type: "check", when: is("med", "supplement") },
     { k: "h_time", type: "html", html: () => fh("日子与提醒") },
     { k: "days", label: "哪几天", type: "multi", raw: true, opts: weekdayOpts(), hint: "按周算目标的习惯，哪天做都算；这里的日子只决定提醒。" },
     { k: "times", label: "时间点（提醒用，多个用逗号隔开；用药按时间点分别打卡）", type: "text", ph: "07:00, 21:30" },
@@ -112,13 +113,13 @@ function practiceFields(){
 function practiceToDraft(p){
   const tg = p.target || {}, sc = p.schedule || {}, m = p.meta || {};
   return { id: p.id || null, kind: p.kind || "custom", name: p.name || "", per: tg.per || (p.kind === "exercise" ? "week" : "day"), count: tg.count ?? null, minutes: tg.minutes ?? null, max: tg.max ?? null, min: tg.min ?? null,
-    dose: m.dose || "", stock: m.stock ?? null, refillAt: m.refillAt ?? null, days: sc.days || ALL_DAYS, times: (sc.times || []).join(", "), remind: sc.remind !== false, share: p.share || "private", active: p.active !== false, archived: !!p.archived };
+    dose: m.dose || "", stock: m.stock ?? null, refillAt: m.refillAt ?? null, hero: m.hero ?? p.kind === "med", days: sc.days || ALL_DAYS, times: (sc.times || []).join(", "), remind: sc.remind !== false, share: p.share || "private", active: p.active !== false, archived: !!p.archived };
 }
 function draftToPractice(d){
   const times = String(d.times || "").split(/[,，;；\s]+/).map(s => s.trim()).filter(Boolean).map(s => { const m = s.match(/^(\d{1,2}):?(\d{2})$/); return m ? `${m[1].padStart(2, "0")}:${m[2]}` : null; }).filter(Boolean).sort();
   const per = ["exercise", "custom"].includes(d.kind) ? (d.per || "day") : "day";
   return { id: d.id || undefined, kind: d.kind, name: d.name, target: { per, count: d.count || null, minutes: d.minutes || null, max: d.max || null, min: d.min || null },
-    schedule: { days: (d.days || []).map(Number), times, remind: !!d.remind }, meta: { dose: d.dose || "", stock: d.stock, refillAt: d.refillAt }, share: d.share, active: d.active !== false, archived: !!d.archived };
+    schedule: { days: (d.days || []).map(Number), times, remind: !!d.remind }, meta: { dose: d.dose || "", stock: d.stock, refillAt: d.refillAt, hero: d.hero !== false && !!d.hero }, share: d.share, active: d.active !== false, archived: !!d.archived };
 }
 function openPractice(p){
   const isNew = !p || !p.id;

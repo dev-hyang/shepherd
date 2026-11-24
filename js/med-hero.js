@@ -1,0 +1,57 @@
+import { t } from "./core/i18n.js";
+import { S } from "./core/state.js";
+import { esc, hm } from "./core/util.js";
+import { kindOf } from "./data/kinds.js";
+import { heroMeds, lastTaken, nextDose } from "./med-hero-lib.js";
+
+/* ============ 今天页顶上的滑动卡：问候卡 + 每种药一张「距上次用药」 ============
+   左右滑（或点下面的小圆点）切换。每种药的卡片显示：多久没服、上次几点、下一个时间点（过了就变暖色）、剂量和库存，
+   「服了 / 跳过」直接记在下一个时间点上。康复了点「不再显示」，卡片就不出现（习惯与用药里随时能重新打开）。
+   只在看今天时出现；补记前几天时只剩问候卡。 */
+const GAP = 10;   // 和 app.css 里 .herotrack 的 gap 一致
+
+function bigDur(ms){
+  const m = Math.max(0, Math.floor(ms / 60000)), h = Math.floor(m / 60), d = Math.floor(h / 24);
+  return d ? `${d}<small>${t("天")}</small>${h % 24}<small>${t("小时")}</small>` : h ? `${h}<small>${t("小时")}</small>${m % 60}<small>${t("分")}</small>` : `${m}<small>${t("分钟")}</small>`;
+}
+function nextText(n){
+  if (!n) return t("没有设时间点");
+  if (n.overdue) return `<b>${t("该服了 {time}", { time: n.time })}</b>`;
+  return n.off === 0 ? t("下次 {time}", { time: n.time }) : n.off === 1 ? t("下次 明天 {time}", { time: n.time }) : t("下次 {day} {time}", { day: n.day.slice(5).replace("-", "/"), time: n.time });
+}
+function medCard(p, now){
+  const k = kindOf(p), m = p.meta || {}, last = lastTaken(S.wb.logs, p.id), n = nextDose(p, S.wb.logs, now);
+  const stock = m.stock != null && m.stock !== "" ? t("剩 {n}", { n: m.stock }) : "";
+  const meta = [last ? t("上次 {time}", { time: hm(last.ts) }) : "", nextText(n), m.dose ? esc(m.dose) : "", stock].filter(Boolean).map(x => `<span>${x}</span>`).join("");
+  const act = n && n.off === 0 ? `<button class="hbtn txt" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(n.time)}" data-v="taken">${t("服了")}</button><button class="hbtn txt" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(n.time)}" data-v="skip">${t("跳过")}</button>` : "";
+  return `<section class="hero medhero${n && n.overdue ? " due" : ""}" aria-label="${esc(p.name || t(k.label))}"><div class="moon"></div>
+    <div class="lbl">${k.icon} ${t("距上次")} ${esc(p.name || t(k.label))}</div>
+    <div class="big num">${last ? bigDur(now.getTime() - last.ts) : t("还没记录")}</div>
+    <div class="meta">${meta}</div>
+    <div class="medact">${act}<button class="hbtn txt" data-act="med-hero-off" data-pid="${esc(p.id)}" title="${esc(t("病好了、不用再吃时点这里；在「习惯与用药」里能重新打开"))}">${t("不再显示")}</button></div></section>`;
+}
+
+/** 问候卡 +（今天有药时）药卡，包成可滑动的一排；没有药卡就原样返回问候卡 */
+function heroTrackHTML(greetHero, past){
+  const meds = past ? [] : heroMeds(S.wb.practices);
+  if (!meds.length) return greetHero;
+  const now = new Date(), slides = [greetHero, ...meds.map(p => medCard(p, now))], cur = Math.min(S.heroIdx || 0, slides.length - 1);
+  return `<div class="herobox"><div class="herotrack" id="heroTrack" tabindex="0" role="region" aria-roledescription="carousel" aria-label="${esc(t("今天：问候与用药"))}">${slides.join("")}</div>
+    <div class="herodots" role="group" aria-label="${esc(t("切换卡片"))}">${slides.map((_, i) => `<button class="herodot" data-act="hero-go" data-i="${i}" aria-label="${i + 1}/${slides.length}" aria-current="${i === cur}"></button>`).join("")}</div></div>`;
+}
+
+const track = () => document.getElementById("heroTrack");
+/** render() 画完后调：滑回用户刚才停的那一张 */
+function restoreHero(){
+  const el = track(); if (!el || !el.clientWidth) return;
+  el.scrollTo({ left: (S.heroIdx || 0) * (el.clientWidth + GAP), behavior: "instant" });
+}
+function goHero(i){ const el = track(); if (el) el.scrollTo({ left: i * (el.clientWidth + GAP), behavior: "smooth" }); }
+// 手滑时记下停在哪一张、同步小圆点（scroll 不冒泡，用捕获）
+document.addEventListener("scroll", e => {
+  const el = e.target; if (!el || el.id !== "heroTrack") return;
+  const i = Math.round(el.scrollLeft / Math.max(1, el.clientWidth + GAP)); if (i === S.heroIdx) return;
+  S.heroIdx = i; document.querySelectorAll(".herodot").forEach((b, k) => b.setAttribute("aria-current", String(k === i)));
+}, true);
+
+export { heroTrackHTML, restoreHero, goHero };
