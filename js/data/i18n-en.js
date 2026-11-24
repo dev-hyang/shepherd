@@ -1224,6 +1224,16 @@ const EN = {
   "切换卡片": "Switch card",
   "已不再显示；在「习惯与用药」里能重新打开": "Hidden; turn it back on under Habits & meds",
   "在今天页顶部显示「距上次」大卡片（病好了可以关掉）": "Show a Since-last card at the top of Today (turn off once you're better)",
+  "服药时机（按医嘱 / 说明书）": "When to take it (as prescribed / on the label)",
+  "饭前 / 饭后多少分钟": "Minutes before / after meals",
+  "医嘱备注": "Doctor's note",
+  "如：胃不舒服就停、吃完这盒": "e.g. stop if it upsets your stomach, finish the box",
+  "饭前": "Before meals",
+  "饭后": "After meals",
+  "随餐": "With meals",
+  "睡前": "Bedtime",
+  "饭前 {n} 分钟": "{n} min before meals",
+  "饭后 {n} 分钟": "{n} min after meals",
 };
 export { EN };
 

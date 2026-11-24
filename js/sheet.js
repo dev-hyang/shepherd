@@ -98,6 +98,9 @@ function practiceFields(){
     { k: "min", label: "希望每晚睡几小时", type: "num", ph: "7", step: 0.5, when: is("sleep") },
     { k: "h_dose", type: "html", html: () => fh("剂量与库存"), when: is("med", "supplement") },
     { k: "dose", label: "剂量", type: "text", ph: "1 片 / 2 粒", when: is("med", "supplement") },
+    { k: "timing", label: "服药时机（按医嘱 / 说明书）", type: "seg", opts: [["", "不限"], ["空腹", "空腹"], ["饭前", "饭前"], ["饭后", "饭后"], ["随餐", "随餐"], ["睡前", "睡前"]], when: is("med", "supplement") },
+    { k: "mins", label: "饭前 / 饭后多少分钟", type: "num", ph: "30", when: d => ["med", "supplement"].includes(d.kind) && ["饭前", "饭后"].includes(d.timing) },
+    { k: "mednote", label: "医嘱备注", type: "text", ph: "如：胃不舒服就停、吃完这盒", when: is("med", "supplement") },
     { k: "stock", label: "现在还剩多少（可空；每次“服了”自动减一）", type: "num", ph: "30", when: is("med", "supplement") },
     { k: "refillAt", label: "剩几天的量时提醒补货", type: "num", ph: "7", when: is("med", "supplement") },
     { k: "hero", label: "在今天页顶部显示「距上次」大卡片（病好了可以关掉）", type: "check", when: is("med", "supplement") },
@@ -113,13 +116,13 @@ function practiceFields(){
 function practiceToDraft(p){
   const tg = p.target || {}, sc = p.schedule || {}, m = p.meta || {};
   return { id: p.id || null, kind: p.kind || "custom", name: p.name || "", per: tg.per || (p.kind === "exercise" ? "week" : "day"), count: tg.count ?? null, minutes: tg.minutes ?? null, max: tg.max ?? null, min: tg.min ?? null,
-    dose: m.dose || "", stock: m.stock ?? null, refillAt: m.refillAt ?? null, hero: m.hero ?? p.kind === "med", days: sc.days || ALL_DAYS, times: (sc.times || []).join(", "), remind: sc.remind !== false, share: p.share || "private", active: p.active !== false, archived: !!p.archived };
+    dose: m.dose || "", stock: m.stock ?? null, refillAt: m.refillAt ?? null, hero: m.hero ?? p.kind === "med", timing: m.timing || "", mins: m.mins ?? null, mednote: m.note || "", days: sc.days || ALL_DAYS, times: (sc.times || []).join(", "), remind: sc.remind !== false, share: p.share || "private", active: p.active !== false, archived: !!p.archived };
 }
 function draftToPractice(d){
   const times = String(d.times || "").split(/[,，;；\s]+/).map(s => s.trim()).filter(Boolean).map(s => { const m = s.match(/^(\d{1,2}):?(\d{2})$/); return m ? `${m[1].padStart(2, "0")}:${m[2]}` : null; }).filter(Boolean).sort();
   const per = ["exercise", "custom"].includes(d.kind) ? (d.per || "day") : "day";
   return { id: d.id || undefined, kind: d.kind, name: d.name, target: { per, count: d.count || null, minutes: d.minutes || null, max: d.max || null, min: d.min || null },
-    schedule: { days: (d.days || []).map(Number), times, remind: !!d.remind }, meta: { dose: d.dose || "", stock: d.stock, refillAt: d.refillAt, hero: d.hero !== false && !!d.hero }, share: d.share, active: d.active !== false, archived: !!d.archived };
+    schedule: { days: (d.days || []).map(Number), times, remind: !!d.remind }, meta: { dose: d.dose || "", stock: d.stock, refillAt: d.refillAt, timing: d.timing || "", mins: ["饭前", "饭后"].includes(d.timing) ? d.mins || null : null, note: d.mednote || "", hero: d.hero !== false && !!d.hero }, share: d.share, active: d.active !== false, archived: !!d.archived };
 }
 function openPractice(p){
   const isNew = !p || !p.id;

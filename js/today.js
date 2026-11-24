@@ -9,6 +9,7 @@ import { kindLabel, otdHTML } from "./notes.js";
 import { noteHeading } from "./notes-lib.js";
 import { askEntryHTML } from "./ask.js";
 import { heroTrackHTML } from "./med-hero.js";
+import { howText } from "./med-hero-lib.js";
 import { releaseBadgeHTML } from "./releases-ui.js";
 import { chipBtn, secHead } from "./ui.js";
 import { familyTasks, mitBlock, nudgeBar, tasksBlock } from "./tasks.js";
@@ -132,7 +133,7 @@ function habitsHTML(day, list){
         acts = `<span class="seg mini">${[3, 2, 1].map(v => `<button data-act="rate" data-pid="${esc(p.id)}" data-v="${v}" aria-pressed="${st.rating === v}">${t(RATINGS[v])}</button>`).join("")}</span>`; break;
       case "value": { const unit = t(k.unit || ""); meta = st.done ? `${st.value} ${unit}${tg.max ? ` / ${t("≤ {m}", { m: tg.max })}` : tg.min ? ` / ${t("≥ {m}", { m: tg.min })}` : ""}${st.over ? ` · <span style="color:var(--rose)">${t("超了")}</span>` : st.done ? " ✓" : ""}` : (p.kind === "screen" ? t("今天用了多久？晚上看一眼系统的屏幕使用时间填进来") : t("昨晚睡了几小时？"));
         acts = `<button class="chip" data-act="value-set" data-pid="${esc(p.id)}">${st.done ? t("改") : t("填")}</button>`; break; }
-      case "slots": meta = `${esc((p.meta || {}).dose || "")}${p.meta && p.meta.stock != null && p.meta.stock !== "" ? ` · ${t("剩 {n}", { n: p.meta.stock })}${+p.meta.stock <= (+p.meta.refillAt || 7) * st.expected ? ` <span style="color:var(--rose)">${t("该补货了")}</span>` : ""}` : ""}`;
+      case "slots": meta = `${esc([(p.meta || {}).dose, howText(p.meta, t)].filter(Boolean).join(" · "))}${p.meta && p.meta.stock != null && p.meta.stock !== "" ? ` · ${t("剩 {n}", { n: p.meta.stock })}${+p.meta.stock <= (+p.meta.refillAt || 7) * st.expected ? ` <span style="color:var(--rose)">${t("该补货了")}</span>` : ""}` : ""}`;
         acts = `<span class="slots">${st.slots.map(s => `<span class="slot"><span class="small muted">${esc(s.time)}</span>${s.log ? `<button class="chip" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(s.time)}" data-v="undo" aria-pressed="true">${s.taken ? t("服了 ✓") : t("跳过")}</button>` : `<button class="chip" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(s.time)}" data-v="taken">${t("服了")}</button><button class="chip" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(s.time)}" data-v="skip">${t("跳过")}</button>`}</span>`).join("")}</span>`; break;
     }
     return `<div class="habit ${st.done ? "done" : ""} ${["rating", "slots"].includes(st.mode) ? "stack" : ""}"><span class="hi" style="background:${k.color}22;color:${k.color}">${k.icon}</span>

@@ -2,7 +2,7 @@ import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc, hm } from "./core/util.js";
 import { kindOf } from "./data/kinds.js";
-import { heroMeds, lastTaken, nextDose } from "./med-hero-lib.js";
+import { heroMeds, howText, lastTaken, nextDose } from "./med-hero-lib.js";
 
 /* ============ 今天页顶上的滑动卡：问候卡 + 每种药一张「距上次用药」 ============
    左右滑（或点下面的小圆点）切换。每种药的卡片显示：多久没服、上次几点、下一个时间点（过了就变暖色）、剂量和库存，
@@ -22,7 +22,7 @@ function nextText(n){
 function medCard(p, now){
   const k = kindOf(p), m = p.meta || {}, last = lastTaken(S.wb.logs, p.id), n = nextDose(p, S.wb.logs, now);
   const stock = m.stock != null && m.stock !== "" ? t("剩 {n}", { n: m.stock }) : "";
-  const meta = [last ? t("上次 {time}", { time: hm(last.ts) }) : "", nextText(n), m.dose ? esc(m.dose) : "", stock].filter(Boolean).map(x => `<span>${x}</span>`).join("");
+  const meta = [last ? t("上次 {time}", { time: hm(last.ts) }) : "", nextText(n), m.dose ? esc(m.dose) : "", esc(howText(m, t)), stock].filter(Boolean).map(x => `<span>${x}</span>`).join("");
   const act = n && n.off === 0 ? `<button class="hbtn txt" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(n.time)}" data-v="taken">${t("服了")}</button><button class="hbtn txt" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(n.time)}" data-v="skip">${t("跳过")}</button>` : "";
   return `<section class="hero medhero${n && n.overdue ? " due" : ""}" aria-label="${esc(p.name || t(k.label))}"><div class="moon"></div>
     <div class="lbl">${k.icon} ${t("距上次")} ${esc(p.name || t(k.label))}</div>

@@ -1,7 +1,7 @@
 // node --test tests/med-hero-lib.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { heroOn, heroMeds, lastTaken, nextDose } from "../js/med-hero-lib.js";
+import { howText, heroOn, heroMeds, lastTaken, nextDose } from "../js/med-hero-lib.js";
 
 const med = (o = {}) => ({ id: "m1", kind: "med", active: true, schedule: { days: [0, 1, 2, 3, 4, 5, 6], times: ["08:00", "20:00"] }, meta: {}, ...o });
 const NOW = new Date(2026, 10, 24, 12, 0);   // 周二 12:00
@@ -42,6 +42,15 @@ test("nextDose rolls to tomorrow once today is done; null without times", () => 
   const n = nextDose(med(), done, NOW);
   assert.equal(n.off, 1); assert.equal(n.time, "08:00");
   assert.equal(nextDose(med({ schedule: { times: [] } }), [], NOW), null);
+});
+
+test("howText joins timing and note; minutes only for before / after meals", () => {
+  const t = (k, v) => k.replace(/\{(\w+)\}/g, (_, n) => v[n]);
+  assert.equal(howText({ timing: "饭后", mins: 30, note: "胃不舒服就停" }, t), "饭后 30 分钟 · 胃不舒服就停");
+  assert.equal(howText({ timing: "空腹", mins: 30 }, t), "空腹");
+  assert.equal(howText({ note: "吃完这盒" }, t), "吃完这盒");
+  assert.equal(howText({}, t), "");
+  assert.equal(howText(null, t), "");
 });
 
 test("nextDose respects the weekdays", () => {

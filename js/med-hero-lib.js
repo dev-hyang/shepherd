@@ -39,4 +39,11 @@ function nextDose(p, logs, now = new Date()){
   return null;
 }
 
-export { heroOn, heroMeds, lastTaken, nextDose, dayStr };
+/** 服药时机 + 医嘱备注，一句话：「饭后 30 分钟 · 胃不舒服就停」；都没填返回空字符串。t：翻译函数 */
+function howText(meta, t){
+  const m = meta || {}, tm = m.timing || "";
+  const when = !tm ? "" : ["饭前", "饭后"].includes(tm) && +m.mins > 0 ? t(tm === "饭前" ? "饭前 {n} 分钟" : "饭后 {n} 分钟", { n: +m.mins }) : t(tm);
+  return [when, m.note || ""].filter(Boolean).join(" · ");
+}
+
+export { howText, heroOn, heroMeds, lastTaken, nextDose, dayStr };

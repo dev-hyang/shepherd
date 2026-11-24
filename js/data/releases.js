@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.2", title: { zh: "用药：记服药时机和医嘱", en: "Meds: how-to-take notes and doctor's note" }, items: [
+    { k: "new", zh: "用药和保健品可以填服药时机（空腹 / 饭前 / 饭后 / 随餐 / 睡前，饭前饭后可填分钟）和医嘱备注", en: "Medicines and supplements can note when to take them (empty stomach / before / after meals / with meals / bedtime, with minutes) and a doctor's note" },
+    { k: "better", zh: "今天页的用药行和顶部药卡都会显示服药时机和医嘱", en: "The Today medicine rows and the top medicine cards show them too" },
+  ] },
   { v: "2026-11-24.1", title: { zh: "今天页顶部：每种药一张「距上次用药」大卡片", en: "Today: a Since-last-dose card for each medicine" }, items: [
     { k: "new", zh: "今天页顶上多了可左右滑的用药卡：每种药一张，显示多久没服、上次几点、下一个时间点（过了会变暖色）、剂量和库存", en: "Swipeable medicine cards on top of Today: time since the last dose, last time, the next time (turns warm when due), dose and stock" },
     { k: "new", zh: "卡片上直接点「服了 / 跳过」，记在下一个时间点上", en: "Tap Taken / Skip right on the card to log the next time slot" },
