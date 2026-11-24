@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.6", title: { zh: "顶部卡片：太久没记会变暖色提醒", en: "Top cards turn warm when it's been too long" }, items: [
+    { k: "new", zh: "读经祷告、锻炼、陪伴妻子、陪伴孩子、休息这几张卡片，超过各自的时间没记（读经祷告 30 小时、锻炼 3 天、陪伴妻子 2 天、陪伴孩子 1 天、喝水 4 小时、放松眼睛 3 小时、起身活动 2 小时）就变成暖色并写上提醒", en: "Reading & prayer, exercise, time with my wife, time with the kids and break cards turn warm with a note when they pass their limit (reading/prayer 30 h, exercise 3 days, wife 2 days, kids 1 day, water 4 h, eye rest 3 h, standing up 2 h)" },
+    { k: "better", zh: "休息类的提醒只在白天（8 点到 22 点）；在「今天 → 顶部卡片」里可以给每张卡关掉提醒", en: "Break alerts only run in the daytime (8:00–22:00); turn the alert off per card under Today → Top cards" },
+  ] },
   { v: "2026-11-24.5", title: { zh: "顶部新增：读经祷告、锻炼、陪伴、休息卡片", en: "New top cards: reading & prayer, exercise, time together, breaks" }, items: [
     { k: "new", zh: "今天页顶部可以添加五种「距上次」卡片：读经祷告（合并）、锻炼、陪伴妻子、陪伴孩子、休息（喝水 / 放松眼睛 / 上厕所 / 起身活动，各记各的）", en: "Five new Since-last cards: reading & prayer (combined), exercise, time with my wife, time with the kids, and breaks (water / eye rest / restroom / standing up, each logged on its own)" },
     { k: "new", zh: "在「今天 → 顶部卡片」里打开、隐藏、调顺序；还没有对应习惯的，打开时自动建一个；点卡片上的「记一次」就记一条，「补记」可以指定几点", en: "Turn them on, hide or reorder them under Today → Top cards; a missing habit is created when you turn one on; tap Log one to record, or Back-fill to pick the time" },

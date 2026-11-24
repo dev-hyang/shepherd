@@ -949,3 +949,6 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .hpi{grid-row:1 / span 2;font-size:22px}
 .hpn{font-size:15px;font-weight:600}
 .hpd{font-size:12.5px;opacity:.9}
+.hpcard.due{background:linear-gradient(135deg,#C8743A,#A85A28)}
+.hptile.due{background:rgba(255,245,209,.28);border-color:#FFF5D1}
+.hptile.due .hpd{font-weight:700}

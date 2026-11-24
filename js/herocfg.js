@@ -2,7 +2,7 @@ import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc, toast } from "./core/util.js";
 import { kindOf } from "./data/kinds.js";
-import { PRESETS, allCards, hasPractice, keyOf, practiceFor } from "./hero-presets-lib.js";
+import { PRESETS, alertOff, allCards, hasPractice, keyOf, practiceFor } from "./hero-presets-lib.js";
 import { ensurePreset } from "./hero-presets.js";
 import { howText, moveId } from "./med-hero-lib.js";
 import * as wb from "./wb.js";
@@ -20,14 +20,14 @@ function medRow(c, i, n){
 }
 function presetRow(c, i, n){
   const P = PRESETS[c.key], pid = (practiceFor(S.wb.practices, c.key, P.items[0]) || {}).id;
-  return rowHTML({ id: c.id, on: c.on, i, n, icon: P.icon, color: "#6B7F5C", name: t(P.label), sub: t(P.desc), edit: pid, add: !c.on && !hasPractice(S.wb.practices, c.key) });
+  return rowHTML({ id: c.id, on: c.on, i, n, icon: P.icon, color: "#6B7F5C", name: t(P.label), sub: t(P.desc), edit: pid, add: !c.on && !hasPractice(S.wb.practices, c.key), alert: P.items.some(x => x.warn) ? { id: c.id, on: !alertOff(c.key, settingsNow()) } : null });
 }
-function rowHTML({ id, on, i, n, icon, color, name, sub, edit, add }){
+function rowHTML({ id, on, i, n, icon, color, name, sub, edit, add, alert }){
   const mv = (dir, label, ch, off) => `<button class="iconbtn" data-act="hc-move" data-id="${esc(id)}" data-dir="${dir}" aria-label="${esc(t(label))} ${esc(name)}" ${off ? "disabled" : ""}>${ch}</button>`;
   return `<div class="hcrow ${on ? "" : "off"}"><span class="hi" style="background:${color}22;color:${color}" aria-hidden="true">${icon}</span>
     <div class="hc-main"><b>${esc(name)}</b><small class="muted">${esc(sub)}</small></div>
     <span class="hc-acts"><button class="chip" data-act="hc-toggle" data-id="${esc(id)}" aria-pressed="${on}">${on ? t("显示中") : add ? t("添加") : t("已隐藏")}</button>
-      ${mv(-1, "上移", "↑", i === 0)}${mv(1, "下移", "↓", i === n - 1)}${edit ? `<button class="chip" data-act="habit-edit" data-pid="${esc(edit)}">${t("编辑")}</button>` : ""}</span></div>`;
+      ${alert ? `<button class="chip" data-act="hc-alert" data-id="${esc(alert.id)}" aria-pressed="${alert.on}" title="${esc(t("很久没记就把卡片变成暖色提醒"))}">${t("提醒")}${alert.on ? " ✓" : ""}</button>` : ""}${mv(-1, "上移", "↑", i === 0)}${mv(1, "下移", "↓", i === n - 1)}${edit ? `<button class="chip" data-act="habit-edit" data-pid="${esc(edit)}">${t("编辑")}</button>` : ""}</span></div>`;
 }
 function viewHeroCfg(){
   const list = cardsNow();
@@ -46,6 +46,7 @@ async function heroCfgAct(act, d){
     await wb.saveSettings({ heroPresets: { ...(settingsNow().heroPresets || {}), [key]: !c.on } });
     toast(c.on ? t("已隐藏") : t("已显示"));
   }
+  if (act === "hc-alert" && c && c.type === "preset") { const key = keyOf(c.id), off = settingsNow().heroAlertOff || []; await wb.saveSettings({ heroAlertOff: off.includes(key) ? off.filter(k => k !== key) : [...off, key] }); }
   if (act === "hc-move" && c) await wb.saveSettings({ heroOrder: moveId(cardsNow().map(x => x.id), c.id, +d.dir) });
 }
 export { viewHeroCfg, heroCfgAct };

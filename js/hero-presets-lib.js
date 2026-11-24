@@ -7,12 +7,12 @@ import { heroOn, medCandidates, orderBy } from "./med-hero-lib.js";
 
 const PRESETS = {
   faith:    { icon: "📖", label: "读经祷告", desc: "距上次读经、距上次祷告；点一下记一次", kinds: ["scripture", "prayer"],
-              items: [{ k: "scripture", icon: "📖", label: "读经" }, { k: "prayer", icon: "🕊", label: "祷告" }] },
-  exercise: { icon: "🏃", label: "锻炼", desc: "距上次锻炼；点一下记分钟数", kinds: ["exercise"], items: [{ k: "exercise", icon: "🏃", label: "锻炼" }] },
-  spouse:   { icon: "💑", label: "陪伴妻子", desc: "距上次陪妻子聊天、相处", items: [{ k: "spouse", icon: "💑", label: "陪伴妻子" }] },
-  kid:      { icon: "🧒", label: "陪伴孩子", desc: "距上次陪孩子玩、聊天、读书", items: [{ k: "kid", icon: "🧒", label: "陪伴孩子" }] },
+              items: [{ k: "scripture", icon: "📖", label: "读经", warn: 30 }, { k: "prayer", icon: "🕊", label: "祷告", warn: 30 }] },
+  exercise: { icon: "🏃", label: "锻炼", desc: "距上次锻炼；点一下记分钟数", kinds: ["exercise"], items: [{ k: "exercise", icon: "🏃", label: "锻炼", warn: 72 }] },
+  spouse:   { icon: "💑", label: "陪伴妻子", desc: "距上次陪妻子聊天、相处", items: [{ k: "spouse", icon: "💑", label: "陪伴妻子", warn: 48 }] },
+  kid:      { icon: "🧒", label: "陪伴孩子", desc: "距上次陪孩子玩、聊天、读书", items: [{ k: "kid", icon: "🧒", label: "陪伴孩子", warn: 24 }] },
   rest:     { icon: "☕", label: "休息", desc: "喝水、放松眼睛、上厕所、起身活动，各记各的",
-              items: [{ k: "water", icon: "💧", label: "喝水" }, { k: "eyes", icon: "👀", label: "放松眼睛" }, { k: "wc", icon: "🚻", label: "上厕所" }, { k: "move", icon: "🚶", label: "起身活动" }] }
+              items: [{ k: "water", icon: "💧", label: "喝水", warn: 4 }, { k: "eyes", icon: "👀", label: "放松眼睛", warn: 3 }, { k: "wc", icon: "🚻", label: "上厕所" }, { k: "move", icon: "🚶", label: "起身活动", warn: 2 }] }
 };
 const PRESET_KEYS = Object.keys(PRESETS);
 const cardId = key => "preset:" + key;
@@ -41,6 +41,15 @@ function lastTs(logs, practices, key, item){
   else { const p = practiceOf(practices, key); if (!p) return null; list = (logs || []).filter(l => l.practice_id === p.id && (key !== "rest" || (l.data && l.data.what) === item.k)); }
   return list.reduce((m, l) => Math.max(m, l.ts), 0) || null;
 }
+/** 这张预设卡的提醒关了吗（个人设置 heroAlertOff：关掉提醒的预设 key 列表） */
+const alertOff = (key, settings) => ((settings || {}).heroAlertOff || []).includes(key);
+/** 这一项多久没记了、超过没有：超过返回 { hours, warn }（小时），没超过 / 没记录过 / 关了提醒 / 休息类在夜里（22:00–08:00）返回 null。item.warn = 默认几小时算该留意 */
+function overdue(key, item, ts, now, settings){
+  if (!item.warn || ts == null || alertOff(key, settings)) return null;
+  if (key === "rest") { const h = new Date(now).getHours(); if (h < 8 || h >= 22) return null; }
+  const gap = now - ts;
+  return gap > item.warn * 3600e3 ? { hours: Math.floor(gap / 3600e3), warn: item.warn } : null;
+}
 /** 记一次要写的内容：休息类带上是哪一项 */
 const logData = (key, item) => (key === "rest" ? { what: item.k } : {});
 /** 休息记录里 what 对应的中文名（记录页显示用） */
@@ -61,4 +70,4 @@ function allCards(practices, settings){
 /** 新建「陪伴 / 休息」习惯的内容（读经祷告 / 锻炼用 data/kinds.js 的起步模板补，不在这里） */
 const presetPractice = key => ({ kind: "custom", name: PRESETS[key].label, target: { per: "day", count: 1 }, schedule: { days: [0, 1, 2, 3, 4, 5, 6], times: [], remind: false }, meta: { preset: key }, share: "private" });
 
-export { PRESETS, PRESET_KEYS, cardId, keyOf, practiceOf, practiceFor, hasPractice, presetOn, lastTs, logData, whatLabel, shownCards, allCards, presetPractice };
+export { alertOff, overdue, PRESETS, PRESET_KEYS, cardId, keyOf, practiceOf, practiceFor, hasPractice, presetOn, lastTs, logData, whatLabel, shownCards, allCards, presetPractice };
