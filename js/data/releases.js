@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.8", title: { zh: "陪伴、休息不再占「今日习惯」", en: "Time together and breaks no longer clutter Today habits" }, items: [
+    { k: "fix", zh: "陪伴妻子、陪伴孩子、休息这几项只在顶部卡片和「回顾 → 记录」里出现，不再列进今天页的「今日习惯」和习惯统计，也不会显示成「还剩」", en: "Time with my wife, time with the kids and breaks now live only in the top cards and Review → Records; they no longer appear in Today habits or its counts, or show as remaining" },
+  ] },
   { v: "2026-11-24.7", title: { zh: "顶部卡片更紧凑：和问候卡高度协调", en: "Top cards are more compact, in proportion with the greeting card" }, items: [
     { k: "better", zh: "药卡、读经祷告、休息等顶部卡片压缩到和问候卡差不多高：服药时机和医嘱收成一行，休息卡的四个小格子排成一排，按钮名字改短（历史、隐藏）", en: "Medicine, reading & prayer and break cards now sit close to the greeting card's height: timing and notes shrink to one line, the four break tiles share a row, and button labels are shorter (History, Hide)" },
     { k: "fix", zh: "「回顾 → 记录」里的表格 / 时间线切换按钮加高到 44px，陪伴和休息的记录用各自的图标", en: "The table / timeline switch on Review → Records is now 44 px tall, and companion and break records use their own icons" },

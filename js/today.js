@@ -22,7 +22,7 @@ import { familyTasks, mitBlock, nudgeBar, tasksBlock } from "./tasks.js";
 function viewToday(){
   const day = wb.viewDay(), past = day !== S.day, now = new Date(), h = now.getHours(), dt = new Date(day + "T12:00:00");
   const greet = h < 5 ? t("夜深了") : h < 11 ? t("早安") : h < 14 ? t("午安") : h < 18 ? t("下午好") : t("晚上好");
-  const list = wb.forDay(day);
+  const list = wb.forDay(day).filter(p => !(p.meta && p.meta.preset));   // 陪伴 / 休息是顶部卡片的记录，不进「今日习惯」和统计（回顾 → 记录里照常查）
   /* 日期选择放在大卡片里：‹ 日期 ›（补记时多一个“回到今天”） */
   const hero = `<section class="hero"><div class="moon"></div>
     <div class="hero-top"><span class="lbl">${t("周{d}", { d: t(WEEKDAY[dt.getDay()]) })}${past ? ` · ${t("补记")}` : ""}</span>
