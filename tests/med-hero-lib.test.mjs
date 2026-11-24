@@ -1,7 +1,7 @@
 // node --test tests/med-hero-lib.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { moveId, orderBy, medCandidates, howText, heroOn, heroMeds, lastTaken, nextDose } from "../js/med-hero-lib.js";
+import { moveId, orderBy, medCandidates, howText, heroOn, heroMeds, lastTaken, nextDose, hoursOf, bySlots, nextByHours } from "../js/med-hero-lib.js";
 
 const med = (o = {}) => ({ id: "m1", kind: "med", active: true, schedule: { days: [0, 1, 2, 3, 4, 5, 6], times: ["08:00", "20:00"] }, meta: {}, ...o });
 const NOW = new Date(2026, 10, 24, 12, 0);   // 周二 12:00
@@ -68,4 +68,17 @@ test("nextDose respects the weekdays", () => {
   const onlyThu = med({ schedule: { days: [4], times: ["09:00"] } });
   const n = nextDose(onlyThu, [], NOW);   // 周二 → 周四
   assert.equal(n.off, 2); assert.equal(n.day, "2026-11-26");
+});
+
+test("interval medicines: hours set → no slots; next dose = last + hours", () => {
+  const p = med({ schedule: { times: [] }, meta: { hours: "6" } });
+  assert.equal(hoursOf(p), 6); assert.equal(bySlots(p), false);
+  assert.equal(nextByHours(p, { ts: 1000 }), 1000 + 6 * 3600e3);
+  assert.equal(nextByHours(p, null), null); assert.equal(nextByHours(med({ schedule: { times: [] } }), { ts: 1000 }), null);
+});
+
+test("legacy medicines with times and no hours keep the slot card", () => {
+  assert.equal(bySlots(med()), true);
+  assert.equal(bySlots(med({ meta: { hours: 8 } })), false);
+  assert.equal(hoursOf(med({ meta: { hours: "abc" } })), 0);
 });

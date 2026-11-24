@@ -191,6 +191,8 @@ async function setSlot(p, slot, taken, day = viewDay()){
   if (taken == null) { if (l) await deleteLog(l.id); } else if (l) await updateLog(l.id, { taken }); else await addLog(p.kind, p.id, { slot, taken }, day);
   await adjustStock(p, l ? !!l.data.taken : false, !!taken);
 }
+/** 按最短间隔吃的药：每点一次「服了」就记一次（不挂时间点；一天可以好几次） */
+async function takeDose(p){ await addLog(p.kind, p.id, { slot: "--:--", taken: true }); await adjustStock(p, false, true); }
 // 库存：服了减一，撤销加回；跳过不动（只有用药 / 保健品填了库存才算）
 async function adjustStock(p, was, now){
   if (!p.meta || p.meta.stock == null || p.meta.stock === "" || !["med", "supplement"].includes(p.kind)) return;
@@ -276,6 +278,6 @@ function familyToday(day = today()){
 
 export { HISTORY_DAYS, today, viewDay, dayAdd, weekday, weekStartOf, loadAll, attachRealtime, settings, saveSettings, resetIcsToken,
   practice, activePractices, editLog, deleteLogWithStock, adjustStock, scheduledOn, forDay, logsFor, logsOfKind, firstOfKind, statusOf, weekOf, streak, upsertPractice, deletePractice, applyTemplate,
-  addLog, updateLog, deleteLog, setDaily, toggleCheck, setSlot,
+  addLog, updateLog, deleteLog, setDaily, toggleCheck, setSlot, takeDose,
   prayerOf, upsertPrayer, prayed, answerPrayer, reopenPrayer, deletePrayer,
   planState, currentPlan, todayPassage, choosePlan, movePlan, setPlanIndex, importPlan, readingLog, markRead, unmarkRead, logReading, passageText, familyToday };

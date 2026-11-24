@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.9", title: { zh: "用药设置改成和小月亮一样：只填最短间隔", en: "Medicine settings now match Baby Log: just a minimum gap" }, items: [
+    { k: "better", zh: "用药 / 保健品不再填时间点和日历提醒，改成填「最短间隔（小时）」「服药时机」「医嘱备注」；药卡上显示距上次、几点后可再服，点「服了」就记一次，一天可以好几次", en: "Medicines and supplements no longer ask for times or calendar reminders; set a minimum gap (hours), when to take it and the doctor's note. The card shows time since the last dose and when the next is OK, and Taken logs a dose any time" },
+    { k: "better", zh: "以前设了时间点的药照常按时间点显示，打开编辑保存一次就换成新写法", en: "Medicines that already have times keep working; open and save one to switch to the new style" },
+  ] },
   { v: "2026-11-24.8", title: { zh: "陪伴、休息不再占「今日习惯」", en: "Time together and breaks no longer clutter Today habits" }, items: [
     { k: "fix", zh: "陪伴妻子、陪伴孩子、休息这几项只在顶部卡片和「回顾 → 记录」里出现，不再列进今天页的「今日习惯」和习惯统计，也不会显示成「还剩」", en: "Time with my wife, time with the kids and breaks now live only in the top cards and Review → Records; they no longer appear in Today habits or its counts, or show as remaining" },
   ] },

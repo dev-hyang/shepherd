@@ -4,7 +4,7 @@ import { esc, toast } from "./core/util.js";
 import { kindOf } from "./data/kinds.js";
 import { PRESETS, alertOff, allCards, hasPractice, keyOf, practiceFor } from "./hero-presets-lib.js";
 import { ensurePreset } from "./hero-presets.js";
-import { howText, moveId } from "./med-hero-lib.js";
+import { hoursOf, howText, moveId } from "./med-hero-lib.js";
 import * as wb from "./wb.js";
 
 /* ============ 今天 → 顶部卡片：管什么卡片出现、什么顺序 ============
@@ -15,7 +15,7 @@ const settingsNow = () => (S.wb.profile || {}).settings || {};
 const cardsNow = () => allCards(S.wb.practices, settingsNow());
 
 function medRow(c, i, n){
-  const p = c.p, k = kindOf(p), sub = [((p.schedule || {}).times || []).join("、"), (p.meta || {}).dose, howText(p.meta, t)].filter(Boolean).join(" · ");
+  const p = c.p, k = kindOf(p), sub = [((p.schedule || {}).times || []).join("、"), hoursOf(p) ? t("至少隔 {n} 小时", { n: hoursOf(p) }) : "", (p.meta || {}).dose, howText(p.meta, t)].filter(Boolean).join(" · ");
   return rowHTML({ id: c.id, on: c.on, i, n, icon: k.icon, color: k.color, name: p.name || t(k.label), sub: sub || t("没有设时间点"), edit: p.id });
 }
 function presetRow(c, i, n){

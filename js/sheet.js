@@ -83,7 +83,7 @@ const weekdayOpts = () => [1, 2, 3, 4, 5, 6, 0].map(d => [d, t("周{d}", { d: t(
 const kindOpts = () => Object.entries(KINDS).map(([k, v]) => [k, `${v.icon} ${v.label}`]);
 const fh = title => `<div class="fh">${t(title)}</div>`;   // 表单里的分段小标题
 function practiceFields(){
-  const is = (...ks) => d => ks.includes(d.kind);
+  const is = (...ks) => d => ks.includes(d.kind), notMed = d => !["med", "supplement"].includes(d.kind);   // 用药不用时间点和日历提醒：只填最短间隔
   return [
     { k: "h_basic", type: "html", html: () => fh("基本信息") },
     { k: "kind", label: "种类", type: "seg", opts: kindOpts(), when: d => !d.id },
@@ -98,16 +98,17 @@ function practiceFields(){
     { k: "min", label: "希望每晚睡几小时", type: "num", ph: "7", step: 0.5, when: is("sleep") },
     { k: "h_dose", type: "html", html: () => fh("剂量与库存"), when: is("med", "supplement") },
     { k: "dose", label: "剂量", type: "text", ph: "1 片 / 2 粒", when: is("med", "supplement") },
+    { k: "hours", label: "最短间隔（小时，按医嘱；填了今天页的药卡会显示下次可以服药的时间）", type: "num", ph: "6", step: 0.5, when: is("med", "supplement") },
     { k: "timing", label: "服药时机（按医嘱 / 说明书）", type: "seg", opts: [["", "不限"], ["空腹", "空腹"], ["饭前", "饭前"], ["饭后", "饭后"], ["随餐", "随餐"], ["睡前", "睡前"]], when: is("med", "supplement") },
     { k: "mins", label: "饭前 / 饭后多少分钟", type: "num", ph: "30", when: d => ["med", "supplement"].includes(d.kind) && ["饭前", "饭后"].includes(d.timing) },
     { k: "mednote", label: "医嘱备注", type: "text", ph: "如：胃不舒服就停、吃完这盒", when: is("med", "supplement") },
     { k: "stock", label: "现在还剩多少（可空；每次“服了”自动减一）", type: "num", ph: "30", when: is("med", "supplement") },
     { k: "refillAt", label: "剩几天的量时提醒补货", type: "num", ph: "7", when: is("med", "supplement") },
     { k: "hero", label: "在今天页顶部显示「距上次」大卡片（病好了可以关掉）", type: "check", when: is("med", "supplement") },
-    { k: "h_time", type: "html", html: () => fh("日子与提醒") },
-    { k: "days", label: "哪几天", type: "multi", raw: true, opts: weekdayOpts(), hint: "按周算目标的习惯，哪天做都算；这里的日子只决定提醒。" },
-    { k: "times", label: "时间点（提醒用，多个用逗号隔开；用药按时间点分别打卡）", type: "text", ph: "07:00, 21:30" },
-    { k: "remind", label: "进日历订阅提醒", type: "check" },
+    { k: "h_time", type: "html", html: () => fh("日子与提醒"), when: notMed },
+    { k: "days", label: "哪几天", type: "multi", raw: true, opts: weekdayOpts(), hint: "按周算目标的习惯，哪天做都算；这里的日子只决定提醒。", when: notMed },
+    { k: "times", label: "时间点（提醒用，多个用逗号隔开）", type: "text", ph: "07:00, 21:30", when: notMed },
+    { k: "remind", label: "进日历订阅提醒", type: "check", when: notMed },
     { k: "h_share", type: "html", html: () => fh("分享与状态") },
     { k: "share", label: "完成情况开给家人看", type: "seg", opts: [["private", "仅自己"], ["family", "家人可见"]], hint: "家人只看到这项做了没有、分钟数和备注。祷告清单的内容永远只有你自己看得到。" },
     { k: "active", label: "进行中", type: "check" }
@@ -116,13 +117,13 @@ function practiceFields(){
 function practiceToDraft(p){
   const tg = p.target || {}, sc = p.schedule || {}, m = p.meta || {};
   return { id: p.id || null, kind: p.kind || "custom", name: p.name || "", per: tg.per || (p.kind === "exercise" ? "week" : "day"), count: tg.count ?? null, minutes: tg.minutes ?? null, max: tg.max ?? null, min: tg.min ?? null,
-    dose: m.dose || "", stock: m.stock ?? null, refillAt: m.refillAt ?? null, hero: m.hero ?? p.kind === "med", timing: m.timing || "", mins: m.mins ?? null, mednote: m.note || "", days: sc.days || ALL_DAYS, times: (sc.times || []).join(", "), remind: sc.remind !== false, share: p.share || "private", active: p.active !== false, archived: !!p.archived };
+    dose: m.dose || "", hours: m.hours ?? null, stock: m.stock ?? null, refillAt: m.refillAt ?? null, hero: m.hero ?? p.kind === "med", timing: m.timing || "", mins: m.mins ?? null, mednote: m.note || "", days: sc.days || ALL_DAYS, times: (sc.times || []).join(", "), remind: sc.remind !== false, share: p.share || "private", active: p.active !== false, archived: !!p.archived };
 }
 function draftToPractice(d){
   const times = String(d.times || "").split(/[,，;；\s]+/).map(s => s.trim()).filter(Boolean).map(s => { const m = s.match(/^(\d{1,2}):?(\d{2})$/); return m ? `${m[1].padStart(2, "0")}:${m[2]}` : null; }).filter(Boolean).sort();
-  const per = ["exercise", "custom"].includes(d.kind) ? (d.per || "day") : "day";
+  const per = ["exercise", "custom"].includes(d.kind) ? (d.per || "day") : "day", med = ["med", "supplement"].includes(d.kind);
   return { id: d.id || undefined, kind: d.kind, name: d.name, target: { per, count: d.count || null, minutes: d.minutes || null, max: d.max || null, min: d.min || null },
-    schedule: { days: (d.days || []).map(Number), times, remind: !!d.remind }, meta: { dose: d.dose || "", stock: d.stock, refillAt: d.refillAt, timing: d.timing || "", mins: ["饭前", "饭后"].includes(d.timing) ? d.mins || null : null, note: d.mednote || "", hero: d.hero !== false && !!d.hero }, share: d.share, active: d.active !== false, archived: !!d.archived };
+    schedule: { days: (d.days || []).map(Number), times: med ? [] : times, remind: med ? false : !!d.remind }, meta: { dose: d.dose || "", hours: med ? d.hours || null : null, stock: d.stock, refillAt: d.refillAt, timing: d.timing || "", mins: ["饭前", "饭后"].includes(d.timing) ? d.mins || null : null, note: d.mednote || "", hero: d.hero !== false && !!d.hero }, share: d.share, active: d.active !== false, archived: !!d.archived };
 }
 function openPractice(p){
   const isNew = !p || !p.id;
@@ -154,7 +155,7 @@ function openHabits(filter){
       : isMed(p) ? esc(m.dose || "") : "";
     const stock = isMed(p) && m.stock != null && m.stock !== "" ? `${t("剩 {n}", { n: m.stock })}${(sc.times || []).length ? ` · ${t("约 {d} 天", { d: daysLeft(p) })}` : ""}` : "";
     const days = (sc.days || ALL_DAYS).length === 7 ? t("每天") : (sc.days || []).map(d => t(WEEKDAY[d])).join("");
-    const tags = [days, sc.times && sc.times.length ? sc.times.join(" ") + (sc.remind === false ? "" : " ⏰") : ""].filter(Boolean).map(x => `<span class="ui-badge" data-tone="neutral" data-outline>${esc(x)}</span>`).join("");
+    const tags = [isMed(p) ? "" : days, isMed(p) && +m.hours > 0 ? t("至少隔 {n} 小时", { n: m.hours }) : "", sc.times && sc.times.length ? sc.times.join(" ") + (sc.remind === false ? "" : " ⏰") : ""].filter(Boolean).map(x => `<span class="ui-badge" data-tone="neutral" data-outline>${esc(x)}</span>`).join("");
     return `<div class="habit hrow ${p.active === false && !p.archived ? "paused" : ""}"><span class="hi" style="background:${k.color}22;color:${k.color}">${k.icon}</span>
       <button class="main" data-act="habit-edit" data-pid="${esc(p.id)}"><span class="title">${esc(p.name || t(k.label))}${p.active === false && !p.archived ? ` <span class="ui-badge" data-tone="neutral">${t("暂停")}</span>` : ""}${!p.archived && lowStock(p) ? ` <span class="warn">${t("该补货了")}</span>` : ""}</span>
         ${goal || stock ? `<span class="meta">${[goal, stock].filter(Boolean).join(" · ")}</span>` : ""}${tags ? `<span class="tags">${tags}</span>` : ""}</button>

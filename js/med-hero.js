@@ -5,7 +5,7 @@ import { kindOf } from "./data/kinds.js";
 import { bigDur } from "./hero-dur.js";
 import { presetCard } from "./hero-presets.js";
 import { shownCards } from "./hero-presets-lib.js";
-import { howText, lastTaken, nextDose } from "./med-hero-lib.js";
+import { bySlots, howText, lastTaken, nextByHours, nextDose } from "./med-hero-lib.js";
 
 /* ============ 今天页顶上的滑动卡：问候卡 + 每种药一张「距上次用药」 ============
    左右滑（或点下面的小圆点）切换。每种药的卡片显示：多久没服、上次几点、下一个时间点（过了就变暖色）、剂量和库存，
@@ -18,12 +18,18 @@ function nextText(n){
   if (n.overdue) return `<b>${t("该服了 {time}", { time: n.time })}</b>`;
   return n.off === 0 ? t("下次 {time}", { time: n.time }) : n.off === 1 ? t("下次 明天 {time}", { time: n.time }) : t("下次 {day} {time}", { day: n.day.slice(5).replace("-", "/"), time: n.time });
 }
+/** 按最短间隔：几点后可再服 / 已过医嘱间隔；没填间隔就没有这句 */
+function waitText(nx, now){
+  if (!nx) return "";
+  if (nx <= now.getTime()) return t("已过医嘱间隔");
+  return t("{time} 后可再服", { time: `${new Date(nx).toDateString() === now.toDateString() ? "" : t("明天") + " "}${hm(nx)}` });
+}
 function medCard(p, now){
-  const k = kindOf(p), m = p.meta || {}, last = lastTaken(S.wb.logs, p.id), n = nextDose(p, S.wb.logs, now);
+  const k = kindOf(p), m = p.meta || {}, last = lastTaken(S.wb.logs, p.id), slots = bySlots(p), n = slots ? nextDose(p, S.wb.logs, now) : null;
   const stock = m.stock != null && m.stock !== "" ? t("剩 {n}", { n: m.stock }) : "";
-  const meta = [last ? t("上次 {time}", { time: hm(last.ts) }) : "", nextText(n), m.dose ? esc(m.dose) : "", stock].filter(Boolean).map(x => `<span>${x}</span>`).join("");
+  const meta = [last ? t("上次 {time}", { time: hm(last.ts) }) : "", slots ? nextText(n) : waitText(nextByHours(p, last), now), m.dose ? esc(m.dose) : "", stock].filter(Boolean).map(x => `<span>${x}</span>`).join("");
   const how = howText(m, t);   // 服药时机 + 医嘱：一行，放不下就省略号（完整内容在习惯里看）
-  const act = n && n.off === 0 ? `<button class="hbtn txt" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(n.time)}" data-v="taken">${t("服了")}</button><button class="hbtn txt" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(n.time)}" data-v="skip">${t("跳过")}</button>` : "";
+  const act = !slots ? `<button class="hbtn txt" data-act="dose" data-pid="${esc(p.id)}">${t("服了")}</button>` : n && n.off === 0 ? `<button class="hbtn txt" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(n.time)}" data-v="taken">${t("服了")}</button><button class="hbtn txt" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(n.time)}" data-v="skip">${t("跳过")}</button>` : "";
   return `<section class="hero medhero${n && n.overdue ? " due" : ""}" aria-label="${esc(p.name || t(k.label))}"><div class="moon"></div>
     <div class="lbl">${k.icon} ${t("距上次")} ${esc(p.name || t(k.label))}</div>
     <div class="big num">${last ? bigDur(now.getTime() - last.ts) : t("还没记录")}</div>

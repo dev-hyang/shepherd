@@ -1296,6 +1296,12 @@ const EN = {
   "很久没记就把卡片变成暖色提醒": "Turn the card warm when it's been a long time since the last record",
   "历史": "History",
   "隐藏": "Hide",
+  "至少隔 {n} 小时": "At least {n} h apart",
+  "{time} 后可再服": "OK again after {time}",
+  "已过医嘱间隔": "Past the minimum gap",
+  "已记录": "Logged",
+  "最短间隔（小时，按医嘱；填了今天页的药卡会显示下次可以服药的时间）": "Minimum gap (hours, per doctor; the Today card then shows when the next dose is OK)",
+  "时间点（提醒用，多个用逗号隔开）": "Times (for reminders, comma-separated)",
 };
 export { EN };
 

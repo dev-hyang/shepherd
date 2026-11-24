@@ -48,6 +48,13 @@ function nextDose(p, logs, now = new Date()){
   return null;
 }
 
+/** 最短间隔（小时，按医嘱填）；没填是 0 */
+const hoursOf = p => { const n = parseFloat(((p && p.meta) || {}).hours); return Number.isFinite(n) && n > 0 ? n : 0; };
+/** 旧写法：还留着时间点、又没填最短间隔的药，卡片继续按时间点走；新填的药只看「距上次」和最短间隔，不用时间点和日历提醒 */
+const bySlots = p => !hoursOf(p) && !!(p && p.schedule && p.schedule.times && p.schedule.times.length);
+/** 下次可以再服的时间（毫秒）；没填最短间隔或没服过返回 null */
+const nextByHours = (p, last) => last && hoursOf(p) ? last.ts + hoursOf(p) * 3600e3 : null;
+
 /** 服药时机 + 医嘱备注，一句话：「饭后 30 分钟 · 胃不舒服就停」；都没填返回空字符串。t：翻译函数 */
 function howText(meta, t){
   const m = meta || {}, tm = m.timing || "";
@@ -55,4 +62,4 @@ function howText(meta, t){
   return [when, m.note || ""].filter(Boolean).join(" · ");
 }
 
-export { howText, heroOn, medCandidates, orderBy, moveId, heroMeds, lastTaken, nextDose, dayStr };
+export { hoursOf, bySlots, nextByHours, howText, heroOn, medCandidates, orderBy, moveId, heroMeds, lastTaken, nextDose, dayStr };

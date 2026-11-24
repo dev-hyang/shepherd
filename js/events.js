@@ -185,6 +185,7 @@ document.addEventListener("click", async ev => {
           { value: st.value, quick: "" }, async f => { const v = f.value != null ? f.value : (f.quick ? +f.quick : null); if (v == null) { toast(t("请填一个数")); return; } await wb.setDaily(p, { value: v }); back(); }); break; }
       case "hero-go": goHero(+d.i); break;
       case "med-hero-off": { const p = pidOf(d); if (!p) break; await wb.upsertPractice({ ...p, meta: { ...(p.meta || {}), hero: false } }); render(); toast(t("已不再显示；在「习惯与用药」里能重新打开")); break; }
+      case "dose": { const p = pidOf(d); if (!p) break; await wb.takeDose(p); render(); toast(t("已记录")); break; }
       case "slot": { const p = pidOf(d); if (!p) break; await wb.setSlot(p, d.slot, d.v === "undo" ? null : d.v === "taken"); render(); break; }
       case "template-apply": { const n = await wb.applyTemplate(); if ($("#sheet").open) openHabits(); else render(); toast(n ? t("已建立 {n} 项习惯，点一项可以改", { n }) : t("这些习惯都已经有了")); break; }
 
@@ -192,7 +193,7 @@ document.addEventListener("click", async ev => {
       case "habits": openHabits("habits"); break;
       case "meds": openHabits("meds"); break;
       case "habit-add": openPractice(null); break;
-      case "habit-add-kind": openPractice({ kind: d.kind, schedule: { days: [0, 1, 2, 3, 4, 5, 6], times: ["08:00"], remind: true } }); break;
+      case "habit-add-kind": openPractice({ kind: d.kind, schedule: { days: [0, 1, 2, 3, 4, 5, 6], times: [], remind: false } }); break;
       case "habit-edit": { const p = pidOf(d); if (p) openPractice(p); break; }
       case "habit-restore": { const p = pidOf(d); if (p) { await wb.upsertPractice({ ...p, archived: false, active: true }); openHabits(); } break; }
       case "habit-share": { const p = pidOf(d); if (!p) break; if (p.share !== "family" && !S.family) { toast(t("先在设置里加入家庭")); break; }
