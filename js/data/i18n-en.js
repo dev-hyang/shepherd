@@ -1294,6 +1294,8 @@ const EN = {
   "陪伴、休息和读经祷告、锻炼的记录都在「回顾 → 记录」里查、改、删、补记。": "Records for time together, breaks, reading, prayer and exercise are under Review → Records, where you can view, edit, delete and back-fill them.",
   "已超过 {n} 小时，该留意了": "Over {n} hours; time to check in",
   "很久没记就把卡片变成暖色提醒": "Turn the card warm when it's been a long time since the last record",
+  "历史": "History",
+  "隐藏": "Hide",
 };
 export { EN };
 

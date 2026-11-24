@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.7", title: { zh: "顶部卡片更紧凑：和问候卡高度协调", en: "Top cards are more compact, in proportion with the greeting card" }, items: [
+    { k: "better", zh: "药卡、读经祷告、休息等顶部卡片压缩到和问候卡差不多高：服药时机和医嘱收成一行，休息卡的四个小格子排成一排，按钮名字改短（历史、隐藏）", en: "Medicine, reading & prayer and break cards now sit close to the greeting card's height: timing and notes shrink to one line, the four break tiles share a row, and button labels are shorter (History, Hide)" },
+    { k: "fix", zh: "「回顾 → 记录」里的表格 / 时间线切换按钮加高到 44px，陪伴和休息的记录用各自的图标", en: "The table / timeline switch on Review → Records is now 44 px tall, and companion and break records use their own icons" },
+  ] },
   { v: "2026-11-24.6", title: { zh: "顶部卡片：太久没记会变暖色提醒", en: "Top cards turn warm when it's been too long" }, items: [
     { k: "new", zh: "读经祷告、锻炼、陪伴妻子、陪伴孩子、休息这几张卡片，超过各自的时间没记（读经祷告 30 小时、锻炼 3 天、陪伴妻子 2 天、陪伴孩子 1 天、喝水 4 小时、放松眼睛 3 小时、起身活动 2 小时）就变成暖色并写上提醒", en: "Reading & prayer, exercise, time with my wife, time with the kids and break cards turn warm with a note when they pass their limit (reading/prayer 30 h, exercise 3 days, wife 2 days, kids 1 day, water 4 h, eye rest 3 h, standing up 2 h)" },
     { k: "better", zh: "休息类的提醒只在白天（8 点到 22 点）；在「今天 → 顶部卡片」里可以给每张卡关掉提醒", en: "Break alerts only run in the daytime (8:00–22:00); turn the alert off per card under Today → Top cards" },

@@ -21,7 +21,7 @@ function singleCard(key, now){
     <div class="lbl">${it.icon} ${t("距上次")} ${esc(t(it.label))}</div>
     <div class="big num">${ts ? bigDur(now.getTime() - ts) : t("还没记录")}</div>
     <div class="meta"><span>${ts ? t("上次 {time}", { time: hm(ts) }) : t("点「记一次」开始记")}</span>${due ? `<span class="side">${t("已超过 {n} 小时，该留意了", { n: due.warn })}</span>` : ""}</div>
-    <div class="medact">${main}${pid ? `<button class="hbtn txt" data-act="rec-new" data-pid="${pid}">${t("补记")}</button>` : ""}<button class="hbtn txt" data-act="rec-open" data-pid="${pid}">${t("历史记录")}</button></div></section>`;
+    <div class="medact">${main}${pid ? `<button class="hbtn txt" data-act="rec-new" data-pid="${pid}">${t("补记")}</button>` : ""}<button class="hbtn txt" data-act="rec-open" data-pid="${pid}">${t("历史")}</button></div></section>`;
 }
 function gridCard(key, now){
   const P = PRESETS[key];
@@ -30,8 +30,8 @@ function gridCard(key, now){
   const pid = pidFor(key, P.items[0]);
   return `<section class="hero hpcard" aria-label="${esc(t(P.label))}"><div class="moon"></div>
     <div class="lbl">${P.icon} ${t("距上次")} · ${esc(t(P.label))}</div>
-    <div class="hpgrid">${tiles}</div>
-    <div class="medact">${key === "rest" && pid ? `<button class="hbtn txt" data-act="rec-new" data-pid="${pid}">${t("补记")}</button>` : ""}<button class="hbtn txt" data-act="rec-open" data-pid="${key === "rest" ? pid : ""}">${t("历史记录")}</button></div></section>`;
+    <div class="hpgrid${P.items.length === 4 ? " four" : ""}">${tiles}</div>
+    <div class="medact">${key === "rest" && pid ? `<button class="hbtn txt" data-act="rec-new" data-pid="${pid}">${t("补记")}</button>` : ""}<button class="hbtn txt" data-act="rec-open" data-pid="${key === "rest" ? pid : ""}">${t("历史")}</button></div></section>`;
 }
 const presetCard = (key, now) => (PRESETS[key].items.length > 1 ? gridCard : singleCard)(key, now);
 

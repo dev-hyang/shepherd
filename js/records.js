@@ -2,6 +2,7 @@ import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc, hm, toast } from "./core/util.js";
 import { WEEKDAY, kindOf } from "./data/kinds.js";
+import { PRESETS } from "./hero-presets-lib.js";
 import { draftToLog, filterLogs, groupByDay, logLine, logToDraft, modeFor, nameFor, recFields, recProblem, toTs } from "./records-lib.js";
 import * as pg from "./pager.js";
 import { closeSheet, openForm } from "./sheet.js";
@@ -17,7 +18,7 @@ const RANGES = [[7, "近 7 天"], [30, "近 30 天"], [0, "全部"]];
 const ui = () => (S.rec ||= { pid: "all", days: 30, view: "table", q: "" });
 const pOf = l => (l.practice_id ? wb.practice(l.practice_id) : null);
 const lineOf = l => logLine(l, pOf(l), t);
-const iconOf = l => kindOf(pOf(l) || { kind: l.kind }).icon;
+const iconOf = l => { const p = pOf(l), pr = p && p.meta && PRESETS[p.meta.preset]; return pr ? pr.icon : kindOf(p || { kind: l.kind }).icon; };   // 陪伴 / 休息用预设自己的图标
 const rowsAll = () => filterLogs(S.wb.logs, { pid: ui().pid, days: ui().days, q: ui().q, today: S.day, line: lineOf });
 
 function filterBar(){
@@ -27,7 +28,7 @@ function filterBar(){
     { label: "习惯", opts: [{ label: t("全部"), attrs: act("pid", "all"), on: u.pid === "all" }, ...ps.map(p => ({ label: `${kindOf(p).icon} ${esc(p.name || t(kindOf(p).label))}`, attrs: act("pid", p.id), on: u.pid === p.id }))] },
     { label: "范围", opts: RANGES.map(([d, l]) => ({ label: t(l), attrs: act("days", d), on: u.days === d })) }] });
 }
-const viewSwitch = () => `<div class="chips" style="margin:0" role="group" aria-label="${esc(t("显示方式"))}">${[["table", "表格"], ["line", "时间线"]].map(([v, l]) => `<button class="chip" data-act="rec-f" data-k="view" data-v="${v}" aria-pressed="${ui().view === v}">${t(l)}</button>`).join("")}</div>`;
+const viewSwitch = () => `<div class="chips recsw" style="margin:0" role="group" aria-label="${esc(t("显示方式"))}">${[["table", "表格"], ["line", "时间线"]].map(([v, l]) => `<button class="chip" data-act="rec-f" data-k="view" data-v="${v}" aria-pressed="${ui().view === v}">${t(l)}</button>`).join("")}</div>`;
 const editBtn = l => `<button class="chip" data-act="rec-edit" data-id="${esc(l.id)}" aria-label="${esc(t("编辑"))}">${t("编辑")}</button>`;
 const wd = day => t("周{d}", { d: t(WEEKDAY[new Date(toTs(day, "")).getDay()]) });
 const who = l => `${iconOf(l)} ${esc(nameFor(l, pOf(l), t))}`;

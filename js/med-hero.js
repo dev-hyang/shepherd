@@ -21,13 +21,15 @@ function nextText(n){
 function medCard(p, now){
   const k = kindOf(p), m = p.meta || {}, last = lastTaken(S.wb.logs, p.id), n = nextDose(p, S.wb.logs, now);
   const stock = m.stock != null && m.stock !== "" ? t("剩 {n}", { n: m.stock }) : "";
-  const meta = [last ? t("上次 {time}", { time: hm(last.ts) }) : "", nextText(n), m.dose ? esc(m.dose) : "", esc(howText(m, t)), stock].filter(Boolean).map(x => `<span>${x}</span>`).join("");
+  const meta = [last ? t("上次 {time}", { time: hm(last.ts) }) : "", nextText(n), m.dose ? esc(m.dose) : "", stock].filter(Boolean).map(x => `<span>${x}</span>`).join("");
+  const how = howText(m, t);   // 服药时机 + 医嘱：一行，放不下就省略号（完整内容在习惯里看）
   const act = n && n.off === 0 ? `<button class="hbtn txt" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(n.time)}" data-v="taken">${t("服了")}</button><button class="hbtn txt" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(n.time)}" data-v="skip">${t("跳过")}</button>` : "";
   return `<section class="hero medhero${n && n.overdue ? " due" : ""}" aria-label="${esc(p.name || t(k.label))}"><div class="moon"></div>
     <div class="lbl">${k.icon} ${t("距上次")} ${esc(p.name || t(k.label))}</div>
     <div class="big num">${last ? bigDur(now.getTime() - last.ts) : t("还没记录")}</div>
     <div class="meta">${meta}</div>
-    <div class="medact">${act}<button class="hbtn txt" data-act="rec-open" data-pid="${esc(p.id)}">${t("历史记录")}</button><button class="hbtn txt" data-act="med-hero-off" data-pid="${esc(p.id)}" title="${esc(t("病好了、不用再吃时点这里；在「习惯与用药」里能重新打开"))}">${t("不再显示")}</button></div></section>`;
+    ${how ? `<div class="hero-sub" title="${esc(how)}">${esc(how)}</div>` : ""}
+    <div class="medact">${act}<button class="hbtn txt" data-act="rec-open" data-pid="${esc(p.id)}">${t("历史")}</button><button class="hbtn txt" data-act="med-hero-off" data-pid="${esc(p.id)}" title="${esc(t("病好了、不用再吃时点这里；在「习惯与用药」里能重新打开"))}">${t("隐藏")}</button></div></section>`;
 }
 
 /** 问候卡 +（今天有药时）药卡，包成可滑动的一排；没有药卡就原样返回问候卡 */

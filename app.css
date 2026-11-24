@@ -952,3 +952,14 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .hpcard.due{background:linear-gradient(135deg,#C8743A,#A85A28)}
 .hptile.due{background:rgba(255,245,209,.28);border-color:#FFF5D1}
 .hptile.due .hpd{font-weight:700}
+.recsw .chip{min-height:44px;padding:0 16px}
+/* 顶部卡片：内容少的卡被拉到和最高那张一样高时，内容居中，不留一大片空白 */
+.herotrack > .hero{display:flex;flex-direction:column;justify-content:center}
+/* 休息卡：四个小格子排一行（图标在上、名字、多久前），手机上也不换行 */
+.hpgrid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.hpgrid.four .hptile{grid-template-columns:1fr;grid-template-rows:auto auto auto;justify-items:center;text-align:center;row-gap:1px;padding:6px 4px;min-height:68px}
+.hpgrid.four .hpi{grid-row:auto;font-size:20px}
+.hpgrid.four .hpn{font-size:13px;white-space:nowrap}
+.hpgrid.four .hpd{font-size:11.5px;white-space:nowrap}
+.medact .hbtn.txt{padding:0 14px;white-space:nowrap}
+.hero-sub{margin-top:4px;font-size:13px;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;z-index:1}
