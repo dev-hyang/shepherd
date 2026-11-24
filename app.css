@@ -1,5 +1,5 @@
-/* 牧羊人的视觉：和小月亮、家庭学堂同一套组件，换一身草场的颜色——米白底、深青墨色、橄榄绿强调、衬线标题。
-   小月亮是灰白底 + 蜂蜜黄，学堂是浅蓝底 + 海军蓝；三个站并排打开一眼能分清。对比度：墨色/米白 ≈ 14:1，橄榄绿/白 ≈ 5:1。 */
+/* ç‰§ç¾Šäººçš„è§†è§‰ï¼šå’Œå°æœˆäº®ã€å®¶åº­å­¦å ‚åŒä¸€å¥—ç»„ä»¶ï¼Œæ¢ä¸€èº«è‰åœºçš„é¢œè‰²â€”â€”ç±³ç™½åº•ã€æ·±é’å¢¨è‰²ã€æ©„æ¦„ç»¿å¼ºè°ƒã€è¡¬çº¿æ ‡é¢˜ã€‚
+   å°æœˆäº®æ˜¯ç°ç™½åº• + èœ‚èœœé»„ï¼Œå­¦å ‚æ˜¯æµ…è“åº• + æµ·å†›è“ï¼›ä¸‰ä¸ªç«™å¹¶æŽ’æ‰“å¼€ä¸€çœ¼èƒ½åˆ†æ¸…ã€‚å¯¹æ¯”åº¦ï¼šå¢¨è‰²/ç±³ç™½ â‰ˆ 14:1ï¼Œæ©„æ¦„ç»¿/ç™½ â‰ˆ 5:1ã€‚ */
 :root{
   --bg:#F4F2EA; --surface:#FFFFFF; --field:#F8F7F1; --ink:#1F2A1B; --muted:#5E6B58; --line:#DDD9C8;
   --slate:#4C7A3F; --slate-soft:#E3EEDC; --hero-a:#3F6B34; --hero-b:#7FA86A; --honey:#D9A441; --honey-soft:#FBF0D3;
@@ -8,8 +8,8 @@
   --f-body:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
   --f-head:"Lora","Noto Serif SC","Songti SC","STSong","SimSun",Georgia,serif;
   --f-num:"Outfit","Noto Sans SC",system-ui,sans-serif;
-  /* 共享控件（shared/ui.css）读的语义变量：对应到本站自己的色板，深色模式跟着色板变。
-     文字色往墨色靠一点，保证在浅底上对比度 ≥ 4.5:1 */
+  /* å…±äº«æŽ§ä»¶ï¼ˆshared/ui.cssï¼‰è¯»çš„è¯­ä¹‰å˜é‡ï¼šå¯¹åº”åˆ°æœ¬ç«™è‡ªå·±çš„è‰²æ¿ï¼Œæ·±è‰²æ¨¡å¼è·Ÿç€è‰²æ¿å˜ã€‚
+     æ–‡å­—è‰²å¾€å¢¨è‰²é ä¸€ç‚¹ï¼Œä¿è¯åœ¨æµ…åº•ä¸Šå¯¹æ¯”åº¦ â‰¥ 4.5:1 */
   --ok:color-mix(in srgb,var(--sage) 70%,var(--ink)); --ok-bg:var(--sage-soft);
   --out:color-mix(in srgb,var(--rose) 75%,var(--ink)); --out-bg:var(--rose-soft);
   --low:color-mix(in srgb,var(--honey) 40%,var(--ink)); --low-bg:var(--honey-soft);
@@ -59,7 +59,7 @@ p{margin:0 0 8px}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 a{color:var(--slate)}
 
-/* “我的”页的入口列表 */
+/* â€œæˆ‘çš„â€é¡µçš„å…¥å£åˆ—è¡¨ */
 .mlist{padding:4px 6px}
 .mrow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:10px 10px;border-radius:var(--radius-sm);color:var(--ink);border-bottom:1px solid var(--line)}
 .mrow:last-child{border-bottom:0}
@@ -71,7 +71,7 @@ a{color:var(--slate)}
 .mrow .mt small{font-size:12.5px;color:var(--muted);line-height:1.4}
 .mrow .mch{color:var(--muted);font-size:18px}
 
-/* 今天页头：橄榄绿渐变 + 白字；右上角一轮淡淡的太阳 */
+/* ä»Šå¤©é¡µå¤´ï¼šæ©„æ¦„ç»¿æ¸å˜ + ç™½å­—ï¼›å³ä¸Šè§’ä¸€è½®æ·¡æ·¡çš„å¤ªé˜³ */
 .hero{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:#fff;border-radius:var(--radius-lg);padding:22px 22px 18px;margin-top:8px;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(63,107,52,.18)}
 .hero .lbl{font-size:15px;font-weight:500;opacity:.9}
 .hero .big{font-family:var(--f-head);font-weight:700;font-size:clamp(26px,7vw,40px);line-height:1.2;letter-spacing:0;margin:6px 0 10px}
@@ -109,7 +109,7 @@ nav.tabs button i{font-style:normal;font-size:20px}
 nav.tabs button[aria-current="page"]{color:var(--slate);font-weight:700}
 nav.tabs button[aria-current="page"] i{transform:translateY(-1px)}
 
-/* sheet → full-screen page in normal flow（nothing floats over iOS toolbars） */
+/* sheet â†’ full-screen page in normal flowï¼ˆnothing floats over iOS toolbarsï¼‰ */
 dialog.sheet{position:static;display:none;inset:auto;transform:none;margin:0 auto;width:100%;max-width:720px;max-height:none;overflow:visible;border:0;padding:0;background:var(--bg);color:var(--ink)}
 dialog.sheet[open]{display:block}
 body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
@@ -119,7 +119,7 @@ body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 .field{margin:12px 0}
 .field > label,.field > .lab{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
 .field input[type=text],.field input[type=password],.field input[type=number],.field input[type=date],.field input[type=time],.field textarea,.field select{width:100%;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:11px 12px;font-size:16px;min-height:46px}
-.field input[type=text],.field input[type=password],.field input[type=number],.field input[type=date],.field input[type=time],.field input[type=search],.field select{height:48px}   /* 输入框 / 下拉 / 日期原生行高不同：同一张表单里统一成一样高 */
+.field input[type=text],.field input[type=password],.field input[type=number],.field input[type=date],.field input[type=time],.field input[type=search],.field select{height:48px}   /* è¾“å…¥æ¡† / ä¸‹æ‹‰ / æ—¥æœŸåŽŸç”Ÿè¡Œé«˜ä¸åŒï¼šåŒä¸€å¼ è¡¨å•é‡Œç»Ÿä¸€æˆä¸€æ ·é«˜ */
 .field textarea{min-height:70px;resize:vertical}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg button{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-sm);padding:9px 12px;cursor:pointer;min-height:42px;font-size:15px}
@@ -129,7 +129,7 @@ body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 .seg.mini{gap:4px}
 .seg.mini button{padding:5px 10px;min-height:34px;font-size:13px;border-radius:999px}
 .btns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
-/* 习惯与用药：筛选和“新增”同一行；筛选可换行，新增始终贴右 */
+/* ä¹ æƒ¯ä¸Žç”¨è¯ï¼šç­›é€‰å’Œâ€œæ–°å¢žâ€åŒä¸€è¡Œï¼›ç­›é€‰å¯æ¢è¡Œï¼Œæ–°å¢žå§‹ç»ˆè´´å³ */
 .toolbar{display:flex;gap:8px;align-items:flex-start;margin:10px 0}
 .toolbar .chips{flex:1;min-width:0;margin:0}
 .toolbar .btn{flex:none;min-height:36px;padding:6px 14px;font-size:14px}
@@ -145,7 +145,7 @@ body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 .check{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .check input{width:20px;height:20px}
 
-/* 习惯行：图标 + 名字和状态 + 操作 */
+/* ä¹ æƒ¯è¡Œï¼šå›¾æ ‡ + åå­—å’ŒçŠ¶æ€ + æ“ä½œ */
 .habit{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .habit:last-child{border-bottom:0}
 .habit .hi{width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:18px}
@@ -162,13 +162,13 @@ body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 .slot .chip{padding:4px 10px;min-height:32px;font-size:13px}
 
 
-/* 经文正文 */
+/* ç»æ–‡æ­£æ–‡ */
 .passage{margin-top:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--field);max-height:60vh;overflow:auto;font-size:16px;line-height:1.8}
 .passage .verse{margin:0 0 4px;text-indent:0}
 .passage .verse sup{font-family:var(--f-num);color:var(--muted);font-size:11px;margin-right:4px}
 .passage .verse .en{display:block;font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:6px}
 
-/* 祷告清单 */
+/* ç¥·å‘Šæ¸…å• */
 .pray{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .pray:last-child{border-bottom:0}
 .pray .main{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0}
@@ -179,14 +179,14 @@ body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 .pray .acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 @media (max-width:420px){.pray{grid-template-columns:1fr}.pray .acts{justify-content:flex-start}}
 
-/* 家人 */
+/* å®¶äºº */
 .fam{padding:6px 0;border-bottom:1px solid var(--line)}
 .fam:last-child{border-bottom:0}
 .fam-items{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .fam-item{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px}
 .fam-item.done{background:var(--sage-soft);border-color:var(--sage-soft)}
 
-/* 回顾：方块 + 格子 */
+/* å›žé¡¾ï¼šæ–¹å— + æ ¼å­ */
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
 .stat{background:var(--surface);padding:12px 14px}
 @media (min-width:600px){.stats{grid-template-columns:repeat(4,1fr)}}
@@ -216,9 +216,9 @@ svg text{font-family:var(--f-num);font-size:11px;fill:var(--muted)}
 .toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-.hdr-tools{display:inline-flex;align-items:center;gap:2px;margin:-4px -6px -2px 0}   /* 语言、应用两个 44px 触控按钮并排，顶栏保持紧凑 */
+.hdr-tools{display:inline-flex;align-items:center;gap:2px;margin:-4px -6px -2px 0}   /* è¯­è¨€ã€åº”ç”¨ä¸¤ä¸ª 44px è§¦æŽ§æŒ‰é’®å¹¶æŽ’ï¼Œé¡¶æ ä¿æŒç´§å‡‘ */
 
-/* 专注计时：圆环倒计时 + 护眼全屏浮层 */
+/* ä¸“æ³¨è®¡æ—¶ï¼šåœ†çŽ¯å€’è®¡æ—¶ + æŠ¤çœ¼å…¨å±æµ®å±‚ */
 .fz{text-align:center;padding:8px 0 0}
 .fz-phase{font-size:14px;color:var(--muted);margin-bottom:6px}
 .fz-ring{position:relative;width:min(62vw,240px);margin:0 auto}
@@ -238,18 +238,18 @@ svg text{font-family:var(--f-num);font-size:11px;fill:var(--muted)}
 /* app version next to the sync status (the same line in all four sister apps), so an update can be checked without scrolling to the About page */
 .hdr-line{display:inline-flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:2px 8px}
 .appver{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-/* 版本号可以点：打开 我的 → 发布日志（外观不变，悬停加下划线，键盘有焦点框） */
+/* ç‰ˆæœ¬å·å¯ä»¥ç‚¹ï¼šæ‰“å¼€ æˆ‘çš„ â†’ å‘å¸ƒæ—¥å¿—ï¼ˆå¤–è§‚ä¸å˜ï¼Œæ‚¬åœåŠ ä¸‹åˆ’çº¿ï¼Œé”®ç›˜æœ‰ç„¦ç‚¹æ¡†ï¼‰ */
 button.appver,.vlink{background:none;border:0;margin:-2px -4px;padding:2px 4px;border-radius:6px;font:inherit;color:inherit;cursor:pointer;text-underline-offset:3px}
 button.appver{font-size:11px;color:var(--muted)}
 button.appver:hover,.vlink:hover{text-decoration:underline;color:var(--ink)}
 button.appver:focus-visible,.vlink:focus-visible{outline:2px solid var(--slate);outline-offset:1px;text-decoration:underline}
-/* 发布日志：今天页大卡片下面的新版本提示，和下面的提醒、统计卡同样间距 */
+/* å‘å¸ƒæ—¥å¿—ï¼šä»Šå¤©é¡µå¤§å¡ç‰‡ä¸‹é¢çš„æ–°ç‰ˆæœ¬æç¤ºï¼Œå’Œä¸‹é¢çš„æé†’ã€ç»Ÿè®¡å¡åŒæ ·é—´è· */
 #main .rl-badge{margin:12px 0 0}
 /* version vs sync status: stacked on a phone (status on top, version under it), side by side once there is room */
 .hdr-line{flex-direction:column;align-items:flex-end;gap:0}
 @media (min-width:600px){.hdr-line{flex-direction:row;align-items:center;gap:0 8px}}
 
-/* ── 任务：行、催办条、快速添加、计划（日 / 周 / 月）、分类清单 ── */
+/* â”€â”€ ä»»åŠ¡ï¼šè¡Œã€å‚¬åŠžæ¡ã€å¿«é€Ÿæ·»åŠ ã€è®¡åˆ’ï¼ˆæ—¥ / å‘¨ / æœˆï¼‰ã€åˆ†ç±»æ¸…å• â”€â”€ */
 nav.tabs button{position:relative}
 .tabbadge{position:absolute;top:4px;left:calc(50% + 8px);min-width:18px;height:18px;border-radius:9px;background:var(--rose);color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center;padding:0 4px}
 .tabbadge[hidden]{display:none}
@@ -309,8 +309,8 @@ nav.tabs button{position:relative}
 .lib-group{margin-top:10px}
 .lib-group > summary{cursor:pointer;padding:8px 2px;list-style:none;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;border-bottom:1px solid var(--line)}
 .lib-group > summary::-webkit-details-marker{display:none}
-.lib-group > summary::before{content:"▸";color:var(--muted)}
-.lib-group[open] > summary::before{content:"▾"}
+.lib-group > summary::before{content:"â–¸";color:var(--muted)}
+.lib-group[open] > summary::before{content:"â–¾"}
 .tk-head .btn{flex:none;min-height:42px;padding:8px 16px}
 /* the narrow bar that holds the title and the way back once the header has scrolled away (js/minibar.js) */
 .minibar{position:fixed;top:0;left:0;right:0;z-index:12;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);transform:translateY(-100%);visibility:hidden;transition:transform .18s ease,visibility 0s linear .18s}
@@ -322,9 +322,9 @@ nav.tabs button{position:relative}
 body.sheet-open .minibar,body.printview .minibar{display:none}
 @media (prefers-reduced-motion:reduce){.minibar,.minibar.show{transition:none}}
 @media print{.minibar{display:none}}
-/* 行记录左滑删除（js/swipe-rows.js）：行里的内容整体向左滑，右边露出一条红色的「删除」（宽度跟着滑动的距离走）。
-   对行零改动：不换标签、不套层、不加子元素，红色区域是 ::after 伪元素；原来的 li / 按钮 / 行样式（flex、grid、分隔线、:last-child…）全部照旧。
-   只横向裁切（overflow-x: clip，不形成滚动容器、不裁竖向）；不认 clip 的旧浏览器退回 overflow: hidden。 */
+/* è¡Œè®°å½•å·¦æ»‘åˆ é™¤ï¼ˆjs/swipe-rows.jsï¼‰ï¼šè¡Œé‡Œçš„å†…å®¹æ•´ä½“å‘å·¦æ»‘ï¼Œå³è¾¹éœ²å‡ºä¸€æ¡çº¢è‰²çš„ã€Œåˆ é™¤ã€ï¼ˆå®½åº¦è·Ÿç€æ»‘åŠ¨çš„è·ç¦»èµ°ï¼‰ã€‚
+   å¯¹è¡Œé›¶æ”¹åŠ¨ï¼šä¸æ¢æ ‡ç­¾ã€ä¸å¥—å±‚ã€ä¸åŠ å­å…ƒç´ ï¼Œçº¢è‰²åŒºåŸŸæ˜¯ ::after ä¼ªå…ƒç´ ï¼›åŽŸæ¥çš„ li / æŒ‰é’® / è¡Œæ ·å¼ï¼ˆflexã€gridã€åˆ†éš”çº¿ã€:last-childâ€¦ï¼‰å…¨éƒ¨ç…§æ—§ã€‚
+   åªæ¨ªå‘è£åˆ‡ï¼ˆoverflow-x: clipï¼Œä¸å½¢æˆæ»šåŠ¨å®¹å™¨ã€ä¸è£ç«–å‘ï¼‰ï¼›ä¸è®¤ clip çš„æ—§æµè§ˆå™¨é€€å›ž overflow: hiddenã€‚ */
 .swipe-row { position: relative; overflow: hidden; overflow-x: clip; overflow-y: visible; touch-action: pan-y; }
 .swipe-row.shift > * { transform: translateX(var(--sx, 0px)); }
 .swipe-row > * { transition: transform .18s ease; }
@@ -332,13 +332,13 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .swipe-row.swiping { user-select: none; -webkit-user-select: none; }
 .swipe-row::after { content: var(--swipe-del); position: absolute; top: 0; right: 0; bottom: 0; width: var(--sw, 0px); z-index: 3; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #b3261e; color: #fff; font-weight: 700; font-size: 14px; line-height: 1; white-space: nowrap; cursor: pointer; transition: width .18s ease; }
 .swipe-row.ready::after { content: var(--swipe-go); background: #8e1a14; }
-/* 原来的删除按钮留着（给键盘和读屏用），平时视觉隐藏，Tab 到它时显示 */
+/* åŽŸæ¥çš„åˆ é™¤æŒ‰é’®ç•™ç€ï¼ˆç»™é”®ç›˜å’Œè¯»å±ç”¨ï¼‰ï¼Œå¹³æ—¶è§†è§‰éšè—ï¼ŒTab åˆ°å®ƒæ—¶æ˜¾ç¤º */
 .swipe-src { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .swipe-src:focus, .swipe-src:focus-visible { position: static !important; width: auto; height: auto; margin: 0; padding: revert; border: revert; overflow: visible; clip: auto; }
 @media (prefers-reduced-motion: reduce) { .swipe-row > *, .swipe-row::after { transition: none; } }
 @media print { .swipe-row::after { display: none; } }
 
-/* 灵修笔记 */
+/* çµä¿®ç¬”è®° */
 .field input[type=search]{width:100%;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:11px 12px;font-size:16px;min-height:46px;-webkit-appearance:none;appearance:none}
 .nrow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:flex-start;width:100%;padding:10px 6px;border-bottom:1px solid var(--line);color:var(--ink)}
 .nrow:last-child{border-bottom:0}
@@ -371,7 +371,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
   .notedoc h1{margin-top:0}
 }
 
-/* Markdown 心得：编辑区与渲染 */
+/* Markdown å¿ƒå¾—ï¼šç¼–è¾‘åŒºä¸Žæ¸²æŸ“ */
 .mdbox .mdhead{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px}
 .mdtools{display:flex;gap:4px;flex-wrap:wrap}
 .mdb{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-sm);min-width:38px;min-height:38px;padding:4px 8px;cursor:pointer;font-weight:600;font-size:15px}
@@ -394,7 +394,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .md a{color:var(--slate);text-decoration:underline}
 @media print{.md a{color:#000}}
 
-/* 笔记：月份翻页、历史上的今天 */
+/* ç¬”è®°ï¼šæœˆä»½ç¿»é¡µã€åŽ†å²ä¸Šçš„ä»Šå¤© */
 .monthnav{display:flex;gap:6px;align-items:center;margin:8px 0}
 .monthnav select{flex:1;min-width:0;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:8px 10px;font-size:16px;min-height:42px}
 .monthnav .chip{min-width:42px;min-height:42px;font-size:18px}
@@ -402,7 +402,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .otd{border-color:var(--honey);background:var(--honey-soft)}
 .otd .nrow:hover{background:transparent}
 
-/* ===== 共用版式：区块标题、页面标题、筛选栏 ===== */
+/* ===== å…±ç”¨ç‰ˆå¼ï¼šåŒºå—æ ‡é¢˜ã€é¡µé¢æ ‡é¢˜ã€ç­›é€‰æ  ===== */
 .sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:24px 0 10px;min-height:36px}
 .sec-head h2{margin:0}
 .sec-sub{font-family:var(--f-num);font-size:13px;font-weight:600;color:var(--muted);background:var(--slate-soft);border-radius:999px;padding:1px 9px;vertical-align:2px}
@@ -433,7 +433,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .fsum{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .fchip{border:1px solid var(--slate);background:var(--slate-soft);color:var(--slate);border-radius:999px;padding:3px 10px;font-size:13px;cursor:pointer;min-height:32px}
 
-/* ===== 今天页：日期在大卡片里；宽屏两栏 ===== */
+/* ===== ä»Šå¤©é¡µï¼šæ—¥æœŸåœ¨å¤§å¡ç‰‡é‡Œï¼›å®½å±ä¸¤æ  ===== */
 .hero-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;position:relative;z-index:1}
 .hero-date{display:inline-flex;align-items:center;gap:6px}
 .hbtn{border:1px solid rgba(255,255,255,.42);background:rgba(255,255,255,.16);color:#fff;border-radius:999px;min-width:40px;min-height:40px;padding:0 12px;cursor:pointer;font-size:17px;line-height:1}
@@ -451,7 +451,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
   .tsec .sec-head:first-child{margin-top:20px}
 }
 
-/* ===== 习惯行：简单的（打卡 / 记一次 / 分钟 / 填数）按钮靠右，多按钮的（饮食三档、用药时间点）整行放在下面 ===== */
+/* ===== ä¹ æƒ¯è¡Œï¼šç®€å•çš„ï¼ˆæ‰“å¡ / è®°ä¸€æ¬¡ / åˆ†é’Ÿ / å¡«æ•°ï¼‰æŒ‰é’®é å³ï¼Œå¤šæŒ‰é’®çš„ï¼ˆé¥®é£Ÿä¸‰æ¡£ã€ç”¨è¯æ—¶é—´ç‚¹ï¼‰æ•´è¡Œæ”¾åœ¨ä¸‹é¢ ===== */
 .habit{grid-template-columns:36px minmax(0,1fr) auto}
 .habit .title{overflow-wrap:anywhere}
 .habit .acts .iconbtn{min-width:44px;height:44px}
@@ -460,13 +460,13 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .habit.stack .seg.mini{flex-wrap:nowrap}
 @media (max-width:420px){.habit{grid-template-columns:36px minmax(0,1fr) auto}.habit .acts{gap:4px}}
 
-/* 祷告统计：手机上四个数字一行，少占高度 */
+/* ç¥·å‘Šç»Ÿè®¡ï¼šæ‰‹æœºä¸Šå››ä¸ªæ•°å­—ä¸€è¡Œï¼Œå°‘å é«˜åº¦ */
 .stats.compact{grid-template-columns:repeat(4,1fr)}
 .stats.compact .stat{padding:10px 8px}
 .stats.compact .stat .v{font-size:22px}
 .stats.compact .stat .k{font-size:12px;line-height:1.3}
 
-/* ===== 习惯与用药列表 ===== */
+/* ===== ä¹ æƒ¯ä¸Žç”¨è¯åˆ—è¡¨ ===== */
 .hrow{grid-template-columns:40px minmax(0,1fr) auto;align-items:flex-start;padding:12px 0}
 .hrow .hi{width:40px;height:40px;font-size:20px}
 .hrow .main{gap:2px}
@@ -481,7 +481,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .fh{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em;margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
 @media (max-width:420px){.hrow .chip.share{padding:6px 10px;font-size:13px}}
 
-/* 备份与恢复（js/backup.js） */
+/* å¤‡ä»½ä¸Žæ¢å¤ï¼ˆjs/backup.jsï¼‰ */
 .bk-notice{background:var(--honey-soft,#fff6d6);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px}
 .bk-notice.bad{background:#fde8e8}
 .bk-notice p{margin:4px 0 0}
@@ -510,7 +510,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 @media (max-width:520px){.bk-status{flex-direction:column;align-items:stretch}.bk-status .bk-row .btn{flex:1 1 0}}
 @media (min-width:760px){.bk-cards{grid-template-columns:1fr 1fr}.bk-cards .bk-card:first-child{grid-column:1/-1}}
 
-/* ===== 今天页：统计卡 + 内容区 ===== */
+/* ===== ä»Šå¤©é¡µï¼šç»Ÿè®¡å¡ + å†…å®¹åŒº ===== */
 .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 @media (min-width:600px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .kpi{all:unset;box-sizing:border-box;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0;min-height:96px}
@@ -528,7 +528,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .kpi.done .kbar i{background:var(--sage)}
 .kpi.warn .kbar i{background:var(--rose)}
 .nudge{margin-top:12px}
-/* 内容区：手机一栏按 --o 排序；电脑两栏（左：习惯 + 家人；右：读经、任务、笔记、家人的安排） */
+/* å†…å®¹åŒºï¼šæ‰‹æœºä¸€æ æŒ‰ --o æŽ’åºï¼›ç”µè„‘ä¸¤æ ï¼ˆå·¦ï¼šä¹ æƒ¯ + å®¶äººï¼›å³ï¼šè¯»ç»ã€ä»»åŠ¡ã€ç¬”è®°ã€å®¶äººçš„å®‰æŽ’ï¼‰ */
 .tgrid{display:flex;flex-direction:column;column-count:auto}
 .tcol{display:contents}
 .tsec{order:var(--o,0);break-inside:auto;padding-top:1px;scroll-margin-top:12px}
@@ -541,7 +541,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .bk-card.off{opacity:.6}
 .bk-hint{display:block;color:var(--muted,#6b7280);font-size:12px;line-height:1.4;margin:2px 0 4px}
 
-/* 子页顶部的面包屑（像爱家小助手）：‹ 我的 / 咩咩咩。第一项带 ‹，中间项可点，最后一项加粗当标题；贴顶跟着滚 */
+/* å­é¡µé¡¶éƒ¨çš„é¢åŒ…å±‘ï¼ˆåƒçˆ±å®¶å°åŠ©æ‰‹ï¼‰ï¼šâ€¹ æˆ‘çš„ / å’©å’©å’©ã€‚ç¬¬ä¸€é¡¹å¸¦ â€¹ï¼Œä¸­é—´é¡¹å¯ç‚¹ï¼Œæœ€åŽä¸€é¡¹åŠ ç²—å½“æ ‡é¢˜ï¼›è´´é¡¶è·Ÿç€æ»š */
 .crumb{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;display:flex;align-items:center;flex-wrap:wrap;gap:2px 0;margin:0 -16px 10px;padding:8px 16px;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);font-size:14px;line-height:1.5}
 .crumb .crumb-link{background:none;border:0;font:inherit;color:var(--slate);font-weight:600;padding:4px 5px;border-radius:6px;cursor:pointer;white-space:nowrap}
 .crumb .crumb-link:hover,.crumb .crumb-link:focus-visible{background:var(--slate-soft);text-decoration:underline;text-underline-offset:3px}
@@ -550,7 +550,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .crumb b{font-weight:700;color:var(--ink);padding:4px 5px;min-width:0;overflow-wrap:anywhere}
 .crumb.mb{position:static;margin:0;padding:0;border:0;background:none;backdrop-filter:none;flex:1;min-width:0}
 @media print{.crumb{display:none}}
-/* 咩咩咩（js/ask.js） */
+/* å’©å’©å’©ï¼ˆjs/ask.jsï¼‰ */
 .ask-form textarea{width:100%;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:11px 12px;font-size:16px;line-height:1.6;min-height:84px;resize:vertical}
 .ask-ctx{display:flex;gap:8px;align-items:flex-start;margin:10px 0 0;font-size:13.5px;line-height:1.4;color:var(--muted);cursor:pointer}
 .ask-ctx input{margin-top:3px;flex:none;width:18px;height:18px;accent-color:var(--slate)}
@@ -561,10 +561,10 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .ai-ico{vertical-align:-4px;flex:none} .mrow .mi .ai-ico{vertical-align:middle}
 
 .bk-more{margin-top:6px}.bk-more>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);padding:6px 0;list-style:none}
-.bk-more>summary::before{content:"▸ ";}.bk-more[open]>summary::before{content:"▾ ";}
+.bk-more>summary::before{content:"â–¸ ";}.bk-more[open]>summary::before{content:"â–¾ ";}
 .bk-err{margin:6px 0;color:#b4506a;font-size:13px}.bk-err .btn,.bk-err .chip{margin-left:6px}
 
-/* 存储用量（js/usage.js）：手机上上下叠、电脑上数字靠右；状态靠图标 + 文字，不只靠颜色 */
+/* å­˜å‚¨ç”¨é‡ï¼ˆjs/usage.jsï¼‰ï¼šæ‰‹æœºä¸Šä¸Šä¸‹å ã€ç”µè„‘ä¸Šæ•°å­—é å³ï¼›çŠ¶æ€é å›¾æ ‡ + æ–‡å­—ï¼Œä¸åªé é¢œè‰² */
 .usage{display:grid;gap:18px}
 .usage-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 12px}
 .usage-num{font-family:var(--f-num);font-size:14px;font-variant-numeric:tabular-nums;color:var(--muted)}
@@ -576,16 +576,16 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .usage-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
 .usage .small{margin:0}
 @media (prefers-reduced-motion:reduce){.usage-bar>i{transition:none}}
-/* 深色主题下让原生日期/时间选择器的图标和弹层也用深色 */
+/* æ·±è‰²ä¸»é¢˜ä¸‹è®©åŽŸç”Ÿæ—¥æœŸ/æ—¶é—´é€‰æ‹©å™¨çš„å›¾æ ‡å’Œå¼¹å±‚ä¹Ÿç”¨æ·±è‰² */
 :root[data-theme="dark"]{color-scheme:dark}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}
-/* 面包屑最前面的「‹ 返回」：回到刚才来的那一页（没有就退一层）；后面的路径按层级跳 */
+/* é¢åŒ…å±‘æœ€å‰é¢çš„ã€Œâ€¹ è¿”å›žã€ï¼šå›žåˆ°åˆšæ‰æ¥çš„é‚£ä¸€é¡µï¼ˆæ²¡æœ‰å°±é€€ä¸€å±‚ï¼‰ï¼›åŽé¢çš„è·¯å¾„æŒ‰å±‚çº§è·³ */
 .crumb .crumb-back{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;min-height:30px;padding:2px 12px;margin:0 8px 0 -5px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--slate);font:inherit;font-size:13.5px;font-weight:700;white-space:nowrap}
 .crumb .crumb-back:hover,.crumb .crumb-back:active{background:var(--slate-soft);text-decoration:none}
 .crumb .crumb-back:focus-visible{outline:3px solid var(--slate);outline-offset:1px}
 
-/* ============ 健康页（js/health.js）============
-   宽屏两栏：左边待办和最近一次就诊，右边指标卡和走势图；手机一栏。点按区域 ≥ 44px，颜色之外都有文字标签。 */
+/* ============ å¥åº·é¡µï¼ˆjs/health.jsï¼‰============
+   å®½å±ä¸¤æ ï¼šå·¦è¾¹å¾…åŠžå’Œæœ€è¿‘ä¸€æ¬¡å°±è¯Šï¼Œå³è¾¹æŒ‡æ ‡å¡å’Œèµ°åŠ¿å›¾ï¼›æ‰‹æœºä¸€æ ã€‚ç‚¹æŒ‰åŒºåŸŸ â‰¥ 44pxï¼Œé¢œè‰²ä¹‹å¤–éƒ½æœ‰æ–‡å­—æ ‡ç­¾ã€‚ */
 .hl-add{display:flex;gap:6px;flex-wrap:wrap}
 .hl-add .chip{min-height:40px}
 .hl-people{margin:10px 0 4px}
@@ -654,7 +654,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .hl-labs-pre ul{margin:6px 0 8px;padding-left:18px}
 .hl-foot{margin-top:24px}
 
-/* ---- 健康 · 计划 / 训练 / 饮食（js/health-plan-ui.js） ---- */
+/* ---- å¥åº· Â· è®¡åˆ’ / è®­ç»ƒ / é¥®é£Ÿï¼ˆjs/health-plan-ui.jsï¼‰ ---- */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .hl-today{padding:6px 14px}
 .hl-today-row{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -706,7 +706,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .hl-g.partly{color:var(--honey)}
 .hl-g.no{color:var(--rose)}
 
-/* ---- 健康页头部：宽屏芯片，手机下拉框 + 「＋ 记一笔」小菜单（2026-11-02） ---- */
+/* ---- å¥åº·é¡µå¤´éƒ¨ï¼šå®½å±èŠ¯ç‰‡ï¼Œæ‰‹æœºä¸‹æ‹‰æ¡† + ã€Œï¼‹ è®°ä¸€ç¬”ã€å°èœå•ï¼ˆ2026-11-02ï¼‰ ---- */
 .hl-m{display:none !important}
 @media (max-width:640px){
   .hl-d{display:none !important}
@@ -723,7 +723,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .hl-addmenu-list button{all:unset;box-sizing:border-box;cursor:pointer;min-height:44px;padding:10px 12px;border-radius:var(--radius-sm);font-size:15px}
 .hl-addmenu-list button:hover,.hl-addmenu-list button:focus-visible{background:var(--bg);outline:none}
 
-/* ---- 化验结果：一行 = 名称 · 数值 · 范围条（绿段 = 参考范围，点 = 这次的值） ---- */
+/* ---- åŒ–éªŒç»“æžœï¼šä¸€è¡Œ = åç§° Â· æ•°å€¼ Â· èŒƒå›´æ¡ï¼ˆç»¿æ®µ = å‚è€ƒèŒƒå›´ï¼Œç‚¹ = è¿™æ¬¡çš„å€¼ï¼‰ ---- */
 .hl-labs-ov{padding:4px 14px}
 .hl-labs-bar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line)}
 .hl-labs-bar select{min-height:42px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--field);padding:6px 32px 6px 10px;font-size:15px;font-weight:600;max-width:100%}
@@ -747,7 +747,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .hl-lr.flag-high .hl-rbar .at,.hl-lr.flag-low .hl-rbar .at{background:var(--rose)}
 .hl-lr .hl-lab-hist{display:flex;gap:4px;flex-wrap:wrap;padding:0 2px 8px}
 
-/* ---- 录入化验的表 ---- */
+/* ---- å½•å…¥åŒ–éªŒçš„è¡¨ ---- */
 .hl-bt{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
 .hl-bt th,.hl-bt td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
 .hl-bt thead th{font-weight:500;color:var(--muted);font-size:12.5px}
@@ -764,7 +764,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .hl-paste{width:100%;min-height:140px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--field);padding:8px 10px;font-size:14px}
 .hl-ai .btn{min-height:42px}
 @media (max-width:640px){
-  /* 手机：录入表一行变一块（项目名一行，结果 / 单位 / 范围一行），不用横着滑 */
+  /* æ‰‹æœºï¼šå½•å…¥è¡¨ä¸€è¡Œå˜ä¸€å—ï¼ˆé¡¹ç›®åä¸€è¡Œï¼Œç»“æžœ / å•ä½ / èŒƒå›´ä¸€è¡Œï¼‰ï¼Œä¸ç”¨æ¨ªç€æ»‘ */
   .hl-bt{min-width:0}
   .hl-bt thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
   .hl-bt tr{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
@@ -772,7 +772,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
   .hl-bt tbody th{grid-column:1 / -1;min-width:0}
   .hl-bt-in.v{width:5.5em}.hl-bt-in.u{width:5em}.hl-bt-in.r{width:4.2em}
 }
-/* 录入表的格子宽度要盖过 .field input 的 width:100% */
+/* å½•å…¥è¡¨çš„æ ¼å­å®½åº¦è¦ç›–è¿‡ .field input çš„ width:100% */
 .field .hl-bt .hl-bt-in{width:100%;min-height:40px;padding:6px 8px}
 .field .hl-bt td{min-width:0}
 .field .hl-bt .hl-bt-rng{display:flex;align-items:center;gap:2px}
@@ -785,15 +785,15 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
   .field .hl-bt .hl-bt-in.u,.field .hl-bt .hl-bt-in.r{font-size:13px}
 }
 
-/* ---- 2026-11-03：手机头部收小一点，和全页的按钮 / 输入框一个尺寸 ---- */
+/* ---- 2026-11-03ï¼šæ‰‹æœºå¤´éƒ¨æ”¶å°ä¸€ç‚¹ï¼Œå’Œå…¨é¡µçš„æŒ‰é’® / è¾“å…¥æ¡†ä¸€ä¸ªå°ºå¯¸ ---- */
 .hl-sel{min-height:40px;padding:6px 32px 6px 10px;font-size:15px;font-weight:600;border-radius:var(--radius-sm)}
 .hl-sel-view{border-left-width:3px}
 .hl-mhead{gap:6px;margin:6px 0 12px;padding-bottom:10px}
 .hl-addmenu > summary.btn{flex:none;min-height:40px;padding:6px 14px;font-size:14.5px;font-weight:600}
-/* 表单里的下拉框（谁、类型、地点…）：和头部同一个样式 */
+/* è¡¨å•é‡Œçš„ä¸‹æ‹‰æ¡†ï¼ˆè°ã€ç±»åž‹ã€åœ°ç‚¹â€¦ï¼‰ï¼šå’Œå¤´éƒ¨åŒä¸€ä¸ªæ ·å¼ */
 .field .hl-fsel{width:100%;min-height:42px;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:6px 32px 6px 10px;font-size:15px;color:var(--ink)}
 .field > label[for^="f_"]{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
-/* 就诊列表 */
+/* å°±è¯Šåˆ—è¡¨ */
 .hl-count{margin:6px 0 8px}
 .hl-vrows .mrow .mt small + small{margin-top:1px}
 .hl-bad{color:var(--rose);font-weight:600}
@@ -809,7 +809,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .hl-tl-card:focus-visible{outline:3px solid var(--slate);outline-offset:2px}
 .hl-tl-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .hl-tl-adv{background:var(--slate-soft);border-radius:var(--radius-sm);padding:6px 8px;font-size:14px}
-/* 详情页（单次就诊 / 单个化验项目） */
+/* è¯¦æƒ…é¡µï¼ˆå•æ¬¡å°±è¯Š / å•ä¸ªåŒ–éªŒé¡¹ç›®ï¼‰ */
 .hl-detail-nav{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
 .hl-vd-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
 .hl-vd-head h2{margin:0}
@@ -829,13 +829,13 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .hl-listbar .hl-count{margin:0}
 .hl-fextra{margin-top:4px}
 .fpop-foot{flex-wrap:wrap}
-/* 走势图在整页宽的详情页里不要放得太大（字会跟着变大）：最宽 680px，居中 */
+/* èµ°åŠ¿å›¾åœ¨æ•´é¡µå®½çš„è¯¦æƒ…é¡µé‡Œä¸è¦æ”¾å¾—å¤ªå¤§ï¼ˆå­—ä¼šè·Ÿç€å˜å¤§ï¼‰ï¼šæœ€å®½ 680pxï¼Œå±…ä¸­ */
 .hl-chart svg.hl-w{max-width:680px;margin:0 auto}
-/* 手机头部：下拉框和「＋ 记一笔」同高 38px、同字号；按钮用描边样式（主色字），不再是一大块深色 */
+/* æ‰‹æœºå¤´éƒ¨ï¼šä¸‹æ‹‰æ¡†å’Œã€Œï¼‹ è®°ä¸€ç¬”ã€åŒé«˜ 38pxã€åŒå­—å·ï¼›æŒ‰é’®ç”¨æè¾¹æ ·å¼ï¼ˆä¸»è‰²å­—ï¼‰ï¼Œä¸å†æ˜¯ä¸€å¤§å—æ·±è‰² */
 .hl-sel{min-height:38px;font-size:14.5px}
 .hl-addmenu > summary.hl-addbtn{min-height:38px;padding:4px 14px;font-size:14.5px;font-weight:600;color:var(--slate);border-color:var(--slate);background:var(--surface)}
 .hl-addmenu[open] > summary.hl-addbtn{background:var(--slate-soft)}
-/* 概览 · AI 健康分析（health-review.js）：范围切换 → 一行说明 → 总结 / 做得好的 / 最值得加强的 → 就医、饮食、睡眠、运动、问医生（宽时两列） */
+/* æ¦‚è§ˆ Â· AI å¥åº·åˆ†æžï¼ˆhealth-review.jsï¼‰ï¼šèŒƒå›´åˆ‡æ¢ â†’ ä¸€è¡Œè¯´æ˜Ž â†’ æ€»ç»“ / åšå¾—å¥½çš„ / æœ€å€¼å¾—åŠ å¼ºçš„ â†’ å°±åŒ»ã€é¥®é£Ÿã€ç¡çœ ã€è¿åŠ¨ã€é—®åŒ»ç”Ÿï¼ˆå®½æ—¶ä¸¤åˆ—ï¼‰ */
 .hl-rv .hl-rv-modes{margin-bottom:6px}
 .hl-rv .hl-rv-modes button{flex:1 1 auto}
 .hl-rv-scope{margin:0 0 8px}
@@ -854,7 +854,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .hl-rv-box ul{margin:4px 0 0}
 .hl-rv-box.good{background:var(--sage-soft);margin-bottom:10px}
 .hl-rv-btns{margin-top:4px}
-/* ---- AI 附件区（js/attach.js，姊妹应用同一套）：版式照爱家小助手「录入购物」——缩略图 84px 一格，右上角 × 删；虚线格子拍照 / 选文件；文字框随内容长高 ---- */
+/* ---- AI é™„ä»¶åŒºï¼ˆjs/attach.jsï¼Œå§Šå¦¹åº”ç”¨åŒä¸€å¥—ï¼‰ï¼šç‰ˆå¼ç…§çˆ±å®¶å°åŠ©æ‰‹ã€Œå½•å…¥è´­ç‰©ã€â€”â€”ç¼©ç•¥å›¾ 84px ä¸€æ ¼ï¼Œå³ä¸Šè§’ Ã— åˆ ï¼›è™šçº¿æ ¼å­æ‹ç…§ / é€‰æ–‡ä»¶ï¼›æ–‡å­—æ¡†éšå†…å®¹é•¿é«˜ ---- */
 .att{display:flex;flex-direction:column;gap:10px;min-width:0}
 .att-thumbs{display:flex;flex-wrap:wrap;gap:8px}
 .att-thumb{position:relative;width:84px;height:84px;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface);flex:none}
@@ -874,16 +874,16 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .att-opt{border:1px dashed var(--line);border-radius:var(--radius-sm);padding:0 12px;background:transparent}
 .att-opt > summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;font-size:14.5px;color:var(--slate);font-weight:600;list-style:none}
 .att-opt > summary::-webkit-details-marker{display:none}
-.att-opt > summary::before{content:"＋";font-weight:700}
-.att-opt[open] > summary::before{content:"－"}
+.att-opt > summary::before{content:"ï¼‹";font-weight:700}
+.att-opt[open] > summary::before{content:"ï¼"}
 .att-opt[open]{padding-bottom:12px}
 .att-n{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--slate);color:var(--surface);font-size:12px}
 .att-body{display:flex;flex-direction:column;gap:10px}
 textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .hl-ai2{margin:0 0 4px}.hl-rv .att-opt{margin:0 0 8px}
-/* AI 健康分析：按钮正常大小、靠左（和家庭学堂 AI 身心灵分析一样），不再撑满一整行 */
+/* AI å¥åº·åˆ†æžï¼šæŒ‰é’®æ­£å¸¸å¤§å°ã€é å·¦ï¼ˆå’Œå®¶åº­å­¦å ‚ AI èº«å¿ƒçµåˆ†æžä¸€æ ·ï¼‰ï¼Œä¸å†æ’‘æ»¡ä¸€æ•´è¡Œ */
 .hl-rv .btns .btn,.hl-rv-btns .btn{flex:none;min-height:40px;padding:8px 22px;font-size:15px}
-/* 顶部路径（ui.routeNav）：健康 / 概览、任务 / 计划……和子页的路径同一个样子；右边可以放这一页的主按钮 */
+/* é¡¶éƒ¨è·¯å¾„ï¼ˆui.routeNavï¼‰ï¼šå¥åº· / æ¦‚è§ˆã€ä»»åŠ¡ / è®¡åˆ’â€¦â€¦å’Œå­é¡µçš„è·¯å¾„åŒä¸€ä¸ªæ ·å­ï¼›å³è¾¹å¯ä»¥æ”¾è¿™ä¸€é¡µçš„ä¸»æŒ‰é’® */
 .crumb.route{min-height:44px;font-size:15px}
 .crumb.route b{font-size:15.5px}
 .crumb.route .route-acts{margin-left:auto;display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -891,7 +891,7 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .crumb.route.mb .route-acts{display:none}
 .hl-li-group{margin:0 0 6px}
 .ask-att{margin-top:10px}
-/* 今天页顶上的滑动卡：问候卡 + 每种药一张「距上次用药」 */
+/* ä»Šå¤©é¡µé¡¶ä¸Šçš„æ»‘åŠ¨å¡ï¼šé—®å€™å¡ + æ¯ç§è¯ä¸€å¼ ã€Œè·ä¸Šæ¬¡ç”¨è¯ã€ */
 .herobox{margin-top:8px}
 .herotrack{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;border-radius:var(--radius-lg)}
 .herotrack::-webkit-scrollbar{display:none}
@@ -899,6 +899,7 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .herotrack:focus-visible{outline:3px solid var(--focus,#1D2733);outline-offset:2px}
 .medhero{background:linear-gradient(135deg,#B44B60,#8E3A4C)}
 .medhero.due{background:linear-gradient(135deg,#C8743A,#A85A28)}
+.medhero .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .medhero .big small{font-size:.5em;font-weight:500;margin:0 3px 0 1px}
 .medhero .big.num{font-variant-numeric:tabular-nums}
 .medact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;position:relative;z-index:1}
@@ -908,7 +909,7 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .herodot::after{content:"";width:18px;height:6px;border-radius:3px;background:var(--line)}
 .herodot[aria-current="true"]::after{background:var(--ink,#1D2733)}
 .herodot:focus-visible{outline:2px solid var(--focus,#1D2733);border-radius:6px}
-/* 回顾 → 记录：表格 / 时间线 */
+/* å›žé¡¾ â†’ è®°å½•ï¼šè¡¨æ ¼ / æ—¶é—´çº¿ */
 .rectable{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;font-size:15px}
 .rectable th{text-align:left;font-size:13px;font-weight:600;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line)}
 .rectable td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
@@ -940,7 +941,7 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .hc-acts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .hc-acts .chip,.hc-acts .iconbtn{min-height:44px;min-width:44px}
 @media (max-width:640px){.hcrow{flex-wrap:wrap}.hc-acts{width:100%;justify-content:flex-start;padding-left:46px}}
-/* 顶部预设卡片 */
+/* é¡¶éƒ¨é¢„è®¾å¡ç‰‡ */
 .hpcard{background:linear-gradient(135deg,#4F7A5C,#3A5E47)}
 .hpgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 0;position:relative;z-index:1}
 .hptile{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;min-height:56px;padding:6px 12px;border-radius:14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.34);color:#fff}
@@ -953,9 +954,9 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .hptile.due{background:rgba(255,245,209,.28);border-color:#FFF5D1}
 .hptile.due .hpd{font-weight:700}
 .recsw .chip{min-height:44px;padding:0 16px}
-/* 顶部卡片：内容少的卡被拉到和最高那张一样高时，内容居中，不留一大片空白 */
+/* é¡¶éƒ¨å¡ç‰‡ï¼šå†…å®¹å°‘çš„å¡è¢«æ‹‰åˆ°å’Œæœ€é«˜é‚£å¼ ä¸€æ ·é«˜æ—¶ï¼Œå†…å®¹å±…ä¸­ï¼Œä¸ç•™ä¸€å¤§ç‰‡ç©ºç™½ */
 .herotrack > .hero{display:flex;flex-direction:column;justify-content:center}
-/* 休息卡：四个小格子排一行（图标在上、名字、多久前），手机上也不换行 */
+/* ä¼‘æ¯å¡ï¼šå››ä¸ªå°æ ¼å­æŽ’ä¸€è¡Œï¼ˆå›¾æ ‡åœ¨ä¸Šã€åå­—ã€å¤šä¹…å‰ï¼‰ï¼Œæ‰‹æœºä¸Šä¹Ÿä¸æ¢è¡Œ */
 .hpgrid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
 .hpgrid.four .hptile{grid-template-columns:1fr;grid-template-rows:auto auto auto;justify-items:center;text-align:center;row-gap:1px;padding:6px 4px;min-height:68px}
 .hpgrid.four .hpi{grid-row:auto;font-size:20px}
