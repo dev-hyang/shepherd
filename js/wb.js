@@ -164,9 +164,9 @@ async function applyTemplate(){
 }
 
 /* ---- 打卡记录 ---- */
-async function addLog(kind, pid, data = {}, day = viewDay()){
+async function addLog(kind, pid, data = {}, day = viewDay(), at = null){   // at：补记时指定的几点（毫秒）；不给就是现在，补记别的天默认中午
   const p = pid ? practice(pid) : null;
-  const row = { user_id: me(), id: newId(), practice_id: p ? p.id : null, kind, day, ts: day === S.day ? Date.now() : new Date(day + "T12:00:00").getTime(), data, updated_at: nowIso(), ...(p ? stamp(p) : { family_id: null, share: "private" }) };
+  const row = { user_id: me(), id: newId(), practice_id: p ? p.id : null, kind, day, ts: at ?? (day === S.day ? Date.now() : new Date(day + "T12:00:00").getTime()), data, updated_at: nowIso(), ...(p ? stamp(p) : { family_id: null, share: "private" }) };
   const d = await run(SB.client.from("wb_logs").insert(row).select().single()); S.wb.logs.push(d); return d;
 }
 async function updateLog(id, data){
@@ -174,6 +174,14 @@ async function updateLog(id, data){
   const d = await run(SB.client.from("wb_logs").update({ data: { ...l.data, ...data }, updated_at: nowIso() }).eq("user_id", me()).eq("id", id).select().single());
   return put(S.wb.logs, d);
 }
+// 改一条记录的日期、时间和内容（只能改自己的）；用药的「服了」改成跳过 / 删掉时库存跟着回来
+async function editLog(id, { day, ts, data }){
+  const l = S.wb.logs.find(x => x.id === id); if (!l) return null;
+  const d = await run(SB.client.from("wb_logs").update({ day, ts, data, updated_at: nowIso() }).eq("user_id", me()).eq("id", id).select().single());
+  const p = l.practice_id && practice(l.practice_id); if (p) await adjustStock(p, !!(l.data && l.data.taken), !!(data && data.taken));
+  return put(S.wb.logs, d);
+}
+async function deleteLogWithStock(id){ const l = S.wb.logs.find(x => x.id === id), p = l && l.practice_id && practice(l.practice_id); await deleteLog(id); if (p) await adjustStock(p, !!(l.data && l.data.taken), false); }
 async function deleteLog(id){ await run(SB.client.from("wb_logs").delete().eq("user_id", me()).eq("id", id)); S.wb.logs = S.wb.logs.filter(x => x.id !== id); }
 // 一天一个数（屏幕、睡眠、饮食评价）：有就改，没有就加
 async function setDaily(p, data, day = viewDay()){ const l = logsFor(p.id, day)[0]; return l ? updateLog(l.id, data) : addLog(p.kind, p.id, data, day); }
@@ -181,11 +189,13 @@ async function toggleCheck(p, day = viewDay()){ const l = logsFor(p.id, day)[0];
 async function setSlot(p, slot, taken, day = viewDay()){
   const l = logsFor(p.id, day).find(x => x.data.slot === slot) || null;
   if (taken == null) { if (l) await deleteLog(l.id); } else if (l) await updateLog(l.id, { taken }); else await addLog(p.kind, p.id, { slot, taken }, day);
-  // 库存：服了减一，撤销加回；跳过不动
-  if (p.meta && p.meta.stock != null && p.meta.stock !== "") {
-    const was = l ? !!l.data.taken : false, now = !!taken, delta = (was ? 1 : 0) - (now ? 1 : 0);
-    if (delta) await upsertPractice({ ...p, meta: { ...p.meta, stock: Math.max(0, (+p.meta.stock || 0) + delta) } });
-  }
+  await adjustStock(p, l ? !!l.data.taken : false, !!taken);
+}
+// 库存：服了减一，撤销加回；跳过不动（只有用药 / 保健品填了库存才算）
+async function adjustStock(p, was, now){
+  if (!p.meta || p.meta.stock == null || p.meta.stock === "" || !["med", "supplement"].includes(p.kind)) return;
+  const delta = (was ? 1 : 0) - (now ? 1 : 0);
+  if (delta) await upsertPractice({ ...practice(p.id) || p, meta: { ...(practice(p.id) || p).meta, stock: Math.max(0, (+(practice(p.id) || p).meta.stock || 0) + delta) } });
 }
 
 /* ---- 祷告清单（永远只有自己） ---- */
@@ -265,7 +275,7 @@ function familyToday(day = today()){
 }
 
 export { HISTORY_DAYS, today, viewDay, dayAdd, weekday, weekStartOf, loadAll, attachRealtime, settings, saveSettings, resetIcsToken,
-  practice, activePractices, scheduledOn, forDay, logsFor, logsOfKind, firstOfKind, statusOf, weekOf, streak, upsertPractice, deletePractice, applyTemplate,
+  practice, activePractices, editLog, deleteLogWithStock, adjustStock, scheduledOn, forDay, logsFor, logsOfKind, firstOfKind, statusOf, weekOf, streak, upsertPractice, deletePractice, applyTemplate,
   addLog, updateLog, deleteLog, setDaily, toggleCheck, setSlot,
   prayerOf, upsertPrayer, prayed, answerPrayer, reopenPrayer, deletePrayer,
   planState, currentPlan, todayPassage, choosePlan, movePlan, setPlanIndex, importPlan, readingLog, markRead, unmarkRead, logReading, passageText, familyToday };

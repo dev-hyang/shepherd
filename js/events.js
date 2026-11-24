@@ -13,6 +13,7 @@ import { closeSheet, drawForm, getForm, head, openCalendar, openForm, openHabits
 import { backTo, render, renderBg } from "./views.js";
 import * as wb from "./wb.js";
 import { goHero } from "./med-hero.js";
+import { recAct, setQ } from "./records.js";
 import * as tkm from "./tk.js";
 import * as nts from "./notes.js";
 import * as pg from "./pager.js";
@@ -51,6 +52,7 @@ document.addEventListener("input", ev => { if (ev.target && ev.target.id === "f_
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "prayQ") { S.prayerFilter.q = ev.target.value; pg.reset("prayers"); redrawSearch("prayQ"); } });
 document.addEventListener("click", ev => { if (S.fpop && !ev.target.closest(".fbar-wrap")) closePop(); });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "habQ") { S.habitsQ = ev.target.value; openHabits(); const i = $("#habQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
+document.addEventListener("input", ev => { if (ev.target && ev.target.id === "recQ") { setQ(ev.target.value); redrawSearch("recQ"); } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "ntQ") nts.onSearch(ev.target.value); });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntMonth") nts.setFilter("month", ev.target.value); });
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "ntPhoto") { const fs = [...ev.target.files]; ev.target.value = ""; nts.onPhotos(fs); } });
@@ -92,6 +94,7 @@ document.addEventListener("click", async ev => {
   if (d.metric) { S.review.metric = d.metric; render(); return; }
 
   if (d.hl) { try { await hlAct(d.hl, btn); } catch (e) { console.error(e); } return; }   // 健康页（js/health.js）
+  if (d.act && d.act.startsWith("rec-")) { await recAct(d.act, d); return; }   // 回顾 → 记录（js/records.js）
   if (d.act && d.act.startsWith("bk-")) { await bkAct(d.act, btn); return; }   // 备份与恢复（js/backup.js）
   if (d.act && d.act.startsWith("ask-")) { await askAct(d.act, btn); return; }  // 咩咩咩（js/ask.js）
   try {

@@ -28,7 +28,7 @@ function medCard(p, now){
     <div class="lbl">${k.icon} ${t("距上次")} ${esc(p.name || t(k.label))}</div>
     <div class="big num">${last ? bigDur(now.getTime() - last.ts) : t("还没记录")}</div>
     <div class="meta">${meta}</div>
-    <div class="medact">${act}<button class="hbtn txt" data-act="med-hero-off" data-pid="${esc(p.id)}" title="${esc(t("病好了、不用再吃时点这里；在「习惯与用药」里能重新打开"))}">${t("不再显示")}</button></div></section>`;
+    <div class="medact">${act}<button class="hbtn txt" data-act="rec-open" data-pid="${esc(p.id)}">${t("历史记录")}</button><button class="hbtn txt" data-act="med-hero-off" data-pid="${esc(p.id)}" title="${esc(t("病好了、不用再吃时点这里；在「习惯与用药」里能重新打开"))}">${t("不再显示")}</button></div></section>`;
 }
 
 /** 问候卡 +（今天有药时）药卡，包成可滑动的一排；没有药卡就原样返回问候卡 */

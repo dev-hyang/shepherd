@@ -48,7 +48,7 @@ function viewReview(){
     const faith = ["scripture", "prayer"].includes(p.kind);
     return `<button class="stat tile ${sel.id === p.id ? "sel" : ""}" data-metric="${esc(p.id)}"><div class="k">${k.icon} ${esc(p.name || t(k.label))}</div><div class="v">${a.main == null ? "–" : a.main}<small>${t(a.unit || "")}</small></div><div class="small muted">${a.sub}${faith ? "" : ""}</div>${delta}</button>`; };
   return `${routeNav([{ label: t("回顾"), attrs: 'data-tab="review"' }, { label: t(R.label || "近 4 周") }])}
-  <div class="chips" role="group" aria-label="${t("时间范围")}" style="margin-top:12px">${Object.entries(RANGES).map(([k, v]) => `<button class="chip" data-range="${k}" aria-pressed="${r.range === k}">${t(v.label)}</button>`).join("")}</div>
+  <div class="chips" role="group" aria-label="${t("时间范围")}" style="margin-top:12px">${Object.entries(RANGES).map(([k, v]) => `<button class="chip" data-range="${k}" aria-pressed="${r.range === k}">${t(v.label)}</button>`).join("")}<button class="chip" data-act="rec-open" style="margin-left:auto">📋 ${t("记录")}</button></div>
   <div class="stats tiles">${practices.map(tile).join("")}</div>
   <h2>${esc(sel.name || t(kindOf(sel).label))}</h2>
   <div class="panel">${chartHTML(sel, R)}</div>

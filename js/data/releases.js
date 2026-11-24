@@ -3,6 +3,12 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.3", title: { zh: "回顾 → 记录：每条打卡都能查、改、删、补记", en: "Review → Records: view, edit, delete and back-fill every check-in" }, items: [
+    { k: "new", zh: "回顾页多了「记录」：读经、祷告、锻炼、用药等所有打卡一条一行，有表格和时间线两种看法，能按习惯、时间范围筛选和搜索", en: "Review has a new Records page: every check-in on its own line, as a table or a timeline, filterable by habit and range, and searchable" },
+    { k: "new", zh: "每条记录能改日期、时间和内容，也能删除；用药的「服了」改掉或删掉时，库存会跟着回来", en: "Each record's date, time and details can be edited, or deleted; medicine stock follows when a Taken is changed or removed" },
+    { k: "new", zh: "「补记」可以选哪一项、哪一天、几点，之后「距上次」的计时也会算对", en: "Back-fill lets you pick the habit, day and time, so Since-last timers stay accurate" },
+    { k: "better", zh: "顶部药卡上多了「历史记录」，直接看这个药的全部打卡", en: "Medicine cards have a History button that opens that medicine's check-ins" },
+  ] },
   { v: "2026-11-24.2", title: { zh: "用药：记服药时机和医嘱", en: "Meds: how-to-take notes and doctor's note" }, items: [
     { k: "new", zh: "用药和保健品可以填服药时机（空腹 / 饭前 / 饭后 / 随餐 / 睡前，饭前饭后可填分钟）和医嘱备注", en: "Medicines and supplements can note when to take them (empty stomach / before / after meals / with meals / bedtime, with minutes) and a doctor's note" },
     { k: "better", zh: "今天页的用药行和顶部药卡都会显示服药时机和医嘱", en: "The Today medicine rows and the top medicine cards show them too" },
