@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.10", title: { zh: "共用样式表多了箭头、行、选项和数字框样式", en: "Shared stylesheet gains arrow, row, option and number-field styles" }, items: [
+    { k: "better", zh: "和爱家小助手同步共用样式：箭头、记录行、可选项、弹窗变量、数字框（本站暂未使用，界面不变）。", en: "Synced shared styles from Home Pantry: arrow, row, option, sheet variables, number field (not used here yet; nothing changes on screen)." },
+  ] },
   { v: "2026-11-24.9", title: { zh: "用药设置改成和小月亮一样：只填最短间隔", en: "Medicine settings now match Baby Log: just a minimum gap" }, items: [
     { k: "better", zh: "用药 / 保健品不再填时间点和日历提醒，改成填「最短间隔（小时）」「服药时机」「医嘱备注」；药卡上显示距上次、几点后可再服，点「服了」就记一次，一天可以好几次", en: "Medicines and supplements no longer ask for times or calendar reminders; set a minimum gap (hours), when to take it and the doctor's note. The card shows time since the last dose and when the next is OK, and Taken logs a dose any time" },
     { k: "better", zh: "以前设了时间点的药照常按时间点显示，打开编辑保存一次就换成新写法", en: "Medicines that already have times keep working; open and save one to switch to the new style" },
