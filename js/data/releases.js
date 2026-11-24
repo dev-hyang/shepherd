@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.4", title: { zh: "今天页顶部卡片可以管理了", en: "Manage the top cards on Today" }, items: [
+    { k: "new", zh: "新增「今天 → 顶部卡片」页（今天页卡片下方的「⚙ 管理卡片」，或「我的」里）：每种药的卡片可以显示 / 隐藏、上下调顺序", en: "A new Today → Top cards page (the Manage cards button under the cards, or in Me): show / hide each medicine card and move it up or down" },
+    { k: "better", zh: "病好了把药卡隐藏就不再出现，需要时随时再打开", en: "Hide a medicine card once you're better; turn it back on any time" },
+  ] },
   { v: "2026-11-24.3", title: { zh: "回顾 → 记录：每条打卡都能查、改、删、补记", en: "Review → Records: view, edit, delete and back-fill every check-in" }, items: [
     { k: "new", zh: "回顾页多了「记录」：读经、祷告、锻炼、用药等所有打卡一条一行，有表格和时间线两种看法，能按习惯、时间范围筛选和搜索", en: "Review has a new Records page: every check-in on its own line, as a table or a timeline, filterable by habit and range, and searchable" },
     { k: "new", zh: "每条记录能改日期、时间和内容，也能删除；用药的「服了」改掉或删掉时，库存会跟着回来", en: "Each record's date, time and details can be edited, or deleted; medicine stock follows when a Taken is changed or removed" },

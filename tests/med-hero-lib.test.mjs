@@ -1,7 +1,7 @@
 // node --test tests/med-hero-lib.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { howText, heroOn, heroMeds, lastTaken, nextDose } from "../js/med-hero-lib.js";
+import { moveId, orderBy, medCandidates, howText, heroOn, heroMeds, lastTaken, nextDose } from "../js/med-hero-lib.js";
 
 const med = (o = {}) => ({ id: "m1", kind: "med", active: true, schedule: { days: [0, 1, 2, 3, 4, 5, 6], times: ["08:00", "20:00"] }, meta: {}, ...o });
 const NOW = new Date(2026, 10, 24, 12, 0);   // 周二 12:00
@@ -51,6 +51,17 @@ test("howText joins timing and note; minutes only for before / after meals", () 
   assert.equal(howText({ note: "吃完这盒" }, t), "吃完这盒");
   assert.equal(howText({}, t), "");
   assert.equal(howText(null, t), "");
+});
+
+test("orderBy / moveId arrange the cards", () => {
+  const a = med({ id: "a" }), b = med({ id: "b" }), c = med({ id: "c" });
+  assert.deepEqual(orderBy([a, b, c], ["c", "a"]).map(p => p.id), ["c", "a", "b"]);
+  assert.deepEqual(orderBy([a, b, c], undefined).map(p => p.id), ["a", "b", "c"]);
+  assert.deepEqual(moveId(["a", "b", "c"], "b", -1), ["b", "a", "c"]);
+  assert.deepEqual(moveId(["a", "b", "c"], "a", -1), ["a", "b", "c"]);
+  assert.deepEqual(moveId(["a", "b", "c"], "c", 1), ["a", "b", "c"]);
+  assert.deepEqual(heroMeds([a, c], ["c"]).map(p => p.id), ["c", "a"]);
+  assert.equal(medCandidates([med({ id: "x", meta: { hero: false } }), { id: "y", kind: "prayer" }]).length, 1);
 });
 
 test("nextDose respects the weekdays", () => {

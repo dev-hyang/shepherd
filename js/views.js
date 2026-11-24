@@ -16,6 +16,7 @@ import { openSettings } from "./sheet.js";
 import { viewToday } from "./today.js";
 import { restoreHero } from "./med-hero.js";
 import { viewRecords } from "./records.js";
+import { viewHeroCfg } from "./herocfg.js";
 import { viewHealth, openPendingNew } from "./health.js";
 import { viewTasks } from "./tasks.js";
 import { pendingCount } from "./tk.js";
@@ -25,7 +26,7 @@ import { routeNav } from "./ui.js";
 const TAB_LABELS = { today: "今天", tasks: "任务", health: "健康", prayer: "祷告", review: "回顾", me: "我的" };
 const VIEWS = { today: viewToday, tasks: viewTasks, health: viewHealth, prayer: viewPrayer, review: viewReview, me: viewMe };
 /* 子页：挂在某个底部页签下面，顶部显示完整路径（像爱家小助手）：‹ 我的 / 咩咩咩。parent 也可以是另一个子页，路径一路显示到底部页签 */
-const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk }, releases: { parent: "me", label: "发布日志", view: releasesView }, records: { parent: "review", label: "记录", view: viewRecords } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
+const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk }, releases: { parent: "me", label: "发布日志", view: releasesView }, records: { parent: "review", label: "记录", view: viewRecords }, herocfg: { parent: "today", label: "顶部卡片", view: viewHeroCfg } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
 function crumbParts(tab){
   const parts = [{ label: SUB[tab].label }]; let p = SUB[tab].parent;
   while (p) { parts.unshift({ tab: p, label: SUB[p] ? SUB[p].label : TAB_LABELS[p] }); p = SUB[p] ? SUB[p].parent : null; }

@@ -32,12 +32,14 @@ function medCard(p, now){
 }
 
 /** 问候卡 +（今天有药时）药卡，包成可滑动的一排；没有药卡就原样返回问候卡 */
+const cfgBar = `<div class="herocfgbar"><button class="chip" data-tab="herocfg">⚙ ${t("管理卡片")}</button></div>`;
 function heroTrackHTML(greetHero, past){
-  const meds = past ? [] : heroMeds(S.wb.practices);
-  if (!meds.length) return greetHero;
+  const meds = past ? [] : heroMeds(S.wb.practices, ((S.wb.profile || {}).settings || {}).heroOrder);
+  if (past) return greetHero;
+  if (!meds.length) return greetHero + cfgBar;
   const now = new Date(), slides = [greetHero, ...meds.map(p => medCard(p, now))], cur = Math.min(S.heroIdx || 0, slides.length - 1);
   return `<div class="herobox"><div class="herotrack" id="heroTrack" tabindex="0" role="region" aria-roledescription="carousel" aria-label="${esc(t("今天：问候与用药"))}">${slides.join("")}</div>
-    <div class="herodots" role="group" aria-label="${esc(t("切换卡片"))}">${slides.map((_, i) => `<button class="herodot" data-act="hero-go" data-i="${i}" aria-label="${i + 1}/${slides.length}" aria-current="${i === cur}"></button>`).join("")}</div></div>`;
+    <div class="herodots" role="group" aria-label="${esc(t("切换卡片"))}">${slides.map((_, i) => `<button class="herodot" data-act="hero-go" data-i="${i}" aria-label="${i + 1}/${slides.length}" aria-current="${i === cur}"></button>`).join("")}</div>${cfgBar}</div>`;
 }
 
 const track = () => document.getElementById("heroTrack");

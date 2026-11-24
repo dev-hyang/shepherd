@@ -929,3 +929,14 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
   .rt-when{grid-column:1;grid-row:1}.rt-who{grid-column:1;grid-row:2;font-weight:600}.rt-line{grid-column:1;grid-row:3;color:var(--muted);font-size:14px}.rt-act{grid-column:2;grid-row:1 / span 3;align-self:center}
   .recline{margin-left:60px}
 }
+.herocfgbar{display:flex;justify-content:flex-end;margin-top:2px}
+.herocfgbar .chip{min-height:44px}
+.hcrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.hcrow:last-child{border-bottom:0}
+.hcrow.off .hc-main{opacity:.55}
+.hcrow .hi{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none;font-size:18px}
+.hc-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.hc-main small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hc-acts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.hc-acts .chip,.hc-acts .iconbtn{min-height:44px;min-width:44px}
+@media (max-width:640px){.hcrow{flex-wrap:wrap}.hc-acts{width:100%;justify-content:flex-start;padding-left:46px}}

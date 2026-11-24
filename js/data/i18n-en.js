@@ -1257,6 +1257,21 @@ const EN = {
   "做到了": "Done",
   "补记：": "Back-fill: ",
   "编辑：": "Edit: ",
+  "管理卡片": "Manage cards",
+  "今天页顶部卡片": "Top cards on Today",
+  "每种药一张「距上次」卡片：显示 / 隐藏、调顺序": "A Since-last card per medicine: show / hide, reorder",
+  "顶部卡片": "Top cards",
+  "问候卡": "Greeting card",
+  "固定": "Fixed",
+  "显示中": "Shown",
+  "已隐藏": "Hidden",
+  "已显示": "Shown",
+  "上移": "Move up",
+  "下移": "Move down",
+  "添加用药": "Add medicine",
+  "添加保健品": "Add supplement",
+  "日期、问候，补记前几天也在这里切换": "Date and greeting; switch to back-fill earlier days here",
+  "今天页顶上可以左右滑的卡片。第一张是问候卡，固定在最前；下面这些卡片可以隐藏（比如病好了不用再吃药）、调整先后。": "The swipeable cards on top of Today. The greeting card always comes first; the cards below can be hidden (e.g. once you're better) or reordered.",
 };
 export { EN };
 

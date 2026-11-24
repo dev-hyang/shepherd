@@ -10,8 +10,17 @@ const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
 /** 这项习惯的大卡片开着吗（没设过：用药开、保健品关） */
 const heroOn = p => !!p && ["med", "supplement"].includes(p.kind) && !!((p.meta || {}).hero ?? p.kind === "med");
 
-/** 要出大卡片的药：进行中、没归档、开关开着，按名字排 */
-const heroMeds = practices => (practices || []).filter(p => p && p.active !== false && !p.archived && heroOn(p));
+/** 能出大卡片的药（不管开关）：进行中、没归档的用药 / 保健品 */
+const medCandidates = practices => (practices || []).filter(p => p && p.active !== false && !p.archived && ["med", "supplement"].includes(p.kind));
+/** 按用户排的顺序（id 列表）排；没排过的接在后面，保持原来的先后 */
+const orderBy = (list, order) => { const at = id => { const i = (order || []).indexOf(id); return i < 0 ? 1e9 : i; }; return list.map((p, i) => [p, i]).sort((a, b) => at(a[0].id) - at(b[0].id) || a[1] - b[1]).map(x => x[0]); };
+/** 把 id 往前（-1）/ 往后（+1）挪一格，返回新的 id 列表；挪不动原样返回 */
+function moveId(ids, id, delta){
+  const i = ids.indexOf(id), j = i + delta; if (i < 0 || j < 0 || j >= ids.length) return ids.slice();
+  const out = ids.slice(); [out[i], out[j]] = [out[j], out[i]]; return out;
+}
+/** 要出大卡片的药：进行中、没归档、开关开着，按用户排的顺序 */
+const heroMeds = (practices, order) => orderBy(medCandidates(practices).filter(heroOn), order);
 
 /** 上一次「服了」：{ ts, slot, day }，从没服过返回 null（跳过不算） */
 function lastTaken(logs, pid){
@@ -46,4 +55,4 @@ function howText(meta, t){
   return [when, m.note || ""].filter(Boolean).join(" · ");
 }
 
-export { howText, heroOn, heroMeds, lastTaken, nextDose, dayStr };
+export { howText, heroOn, medCandidates, orderBy, moveId, heroMeds, lastTaken, nextDose, dayStr };
