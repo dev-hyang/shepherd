@@ -51,7 +51,7 @@ function openRec(log, pid){
   const p = log ? pOf(log) : wb.practice(pid), mode = log ? modeFor(log, p) : modeFor({ kind: p.kind }, p);
   const isNew = !log, base = log ? logToDraft(log) : { ...logToDraft({ day: S.day, ts: Date.now(), data: { taken: true } }) };
   const title = `${isNew ? "补记" : "编辑"}：${nameFor(log || { kind: p.kind }, p, t)}`;
-  openForm(title, recFields(mode), base, async f => {
+  openForm(title, recFields(mode, { rest: !!(p && p.meta && p.meta.preset === "rest") }), base, async f => {
     const bad = recProblem(f, mode); if (bad) { toast(t(bad)); return; }
     const out = draftToLog(f, mode, log ? log.data : {});
     if (isNew) { const d = await wb.addLog(p.kind, p.id, out.data, out.day, out.ts); if (d && mode === "slots") await wb.adjustStock(p, false, !!out.data.taken); toast(t("已补记")); }
@@ -76,6 +76,7 @@ function pickPractice(pid){
 async function recAct(act, d){
   switch (act) {
     case "rec-f": { const u = ui(), v = d.k === "days" ? +d.v : d.v; u[d.k] = v; pg.reset("rec"); render(); break; }
+    case "rec-new": pickPractice(d.pid); break;
     case "rec-add": pickPractice(ui().pid !== "all" ? ui().pid : ""); break;
     case "rec-open": { ui().pid = d.pid || "all"; S.tab = "records"; S.fpop = null; pg.reset("rec"); render(); window.scrollTo(0, 0); break; }
     case "rec-edit": { const l = S.wb.logs.find(x => x.id === d.id); if (l) openRec(l); break; }

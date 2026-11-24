@@ -59,3 +59,14 @@ test("recProblem asks for what the mode needs", () => {
   assert.equal(recProblem({ day: "" }, "check"), "请选日期");
   assert.equal(recProblem({ day: "d", rating: "" }, "rating"), "请选一个评价");
 });
+
+test("count mode (companion / rest presets): what, minutes, fallback", () => {
+  const p = { id: "r", kind: "custom", meta: { preset: "rest" } };
+  assert.equal(logLine(L({ practice_id: "r", kind: "custom", data: { what: "water" } }), p, t), "喝水");
+  assert.equal(logLine(L({ practice_id: "r", kind: "custom", data: { minutes: 20 } }), { id: "k", kind: "custom", meta: { preset: "kid" } }, t), "20 分钟");
+  assert.equal(logLine(L({ practice_id: "r", kind: "custom", data: {} }), p, t), "做到了");
+  assert.equal(recFields("count", { rest: true }).some(f => f.k === "what"), true);
+  assert.equal(recFields("count").some(f => f.k === "what"), false);
+  const out = draftToLog({ day: "2026-11-24", time: "09:00", what: "eyes", minutes: null, note: "" }, "count", {});
+  assert.equal(out.data.what, "eyes");
+});

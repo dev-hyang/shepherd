@@ -21,7 +21,7 @@ const KINDS = {
 };
 const kindOf = p => KINDS[p && p.kind] || KINDS.custom;
 // 自定义习惯填了分钟目标就按分钟记
-const modeOf = p => (p.kind === "custom" && p.target && p.target.minutes) ? "minutes" : kindOf(p).mode;
+const modeOf = p => (p.meta && p.meta.preset) ? "count" : (p.kind === "custom" && p.target && p.target.minutes) ? "minutes" : kindOf(p).mode;   // 陪伴 / 休息这类预设卡片：一天可以记好几次
 const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
 const WEEKDAY = ["日", "一", "二", "三", "四", "五", "六"];
 const EXERCISE_TYPES = ["走路", "跑步", "力量", "骑车", "游泳", "拉伸", "球类", "其他"];

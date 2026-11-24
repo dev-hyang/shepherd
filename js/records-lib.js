@@ -2,6 +2,9 @@
    每条打卡（wb_logs）一行：显示什么、怎么筛、怎么按天分组、编辑表单有哪些字段、表单怎么变回记录。
    不碰页面和数据库（测试见 tests/records-lib.test.mjs）。mode 见 data/kinds.js：check / count / minutes / rating / value / slots。 */
 import { RATINGS, kindOf, modeOf } from "./data/kinds.js";
+import { PRESETS, whatLabel } from "./hero-presets-lib.js";
+
+const PRESET_REST = PRESETS.rest.items;
 
 const pad = n => String(n).padStart(2, "0");
 const dayOfTs = ts => { const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
@@ -24,6 +27,7 @@ function logLine(log, p, t){
     case "minutes": main = [t("{m} 分钟", { m: d.minutes || 0 }), d.type ? t(d.type) : ""].filter(Boolean).join(" · "); break;
     case "rating": main = t(RATINGS[d.rating] || ""); break;
     case "value": main = d.value != null ? `${d.value} ${t(k.unit || "")}`.trim() : ""; break;
+    case "count": main = [d.what ? t(whatLabel(d.what)) : "", d.minutes ? t("{m} 分钟", { m: d.minutes }) : ""].filter(Boolean).join(" · ") || t("做到了"); break;
     case "slots": main = d.taken ? t("服了") : t("跳过"); if (d.slot) main += ` ${d.slot}`; break;
     default: main = d.ref ? `${t("读经")} ${d.ref}` : t("做到了");
   }
@@ -45,9 +49,10 @@ function groupByDay(list){
 }
 
 /** 编辑 / 补记表单的字段（模式不同字段不同；日期和时间永远有） */
-function recFields(mode){
+function recFields(mode, opts = {}){
   const f = [{ k: "day", label: "日期", type: "date", past: true }, { k: "time", label: "时间", type: "time" }];
   if (mode === "minutes") f.push({ k: "minutes", label: "分钟", type: "num" }, { k: "type", label: "类型（可空）", type: "text", ph: "走路、跑步、力量…" });
+  if (mode === "count") { if (opts.rest) f.push({ k: "what", label: "哪一项", type: "seg", opts: PRESET_REST.map(i => [i.k, i.label]) }); f.push({ k: "minutes", label: "分钟（可空）", type: "num" }); }
   if (mode === "rating") f.push({ k: "rating", label: "评价", type: "seg", opts: Object.entries(RATINGS).sort((a, b) => b[0] - a[0]) });
   if (mode === "value") f.push({ k: "value", label: "数值", type: "num", step: 0.5 });
   if (mode === "slots") f.push({ k: "taken", label: "结果", type: "seg", opts: [["1", "服了"], ["0", "跳过"]] }, { k: "slot", label: "对应的时间点（可空）", type: "text", ph: "08:00" });
@@ -58,13 +63,14 @@ function recFields(mode){
 function logToDraft(log){
   const d = log.data || {};
   return { day: log.day, time: timeOfTs(log.ts), minutes: d.minutes ?? null, type: d.type || "", rating: d.rating != null ? String(d.rating) : "", value: d.value ?? null,
-    taken: d.taken ? "1" : "0", slot: d.slot || "", note: d.note || "" };
+    taken: d.taken ? "1" : "0", slot: d.slot || "", note: d.note || "", what: d.what || "" };
 }
 /** 表单 → { day, ts, data }：只改这一种模式用到的字段，其余（如读经的 ref）原样保留 */
 function draftToLog(draft, mode, oldData = {}){
   const data = { ...oldData };
   const put = (k, v) => { if (v == null || v === "") delete data[k]; else data[k] = v; };
   if (mode === "minutes") { put("minutes", draft.minutes); put("type", draft.type); }
+  if (mode === "count") { put("minutes", draft.minutes); put("what", draft.what); }
   if (mode === "rating") put("rating", draft.rating === "" ? null : +draft.rating);
   if (mode === "value") put("value", draft.value);
   if (mode === "slots") { data.taken = draft.taken === "1"; put("slot", draft.slot); }

@@ -15,6 +15,7 @@ import * as wb from "./wb.js";
 import { goHero } from "./med-hero.js";
 import { recAct, setQ } from "./records.js";
 import { heroCfgAct } from "./herocfg.js";
+import { hpAct } from "./hero-presets.js";
 import * as tkm from "./tk.js";
 import * as nts from "./notes.js";
 import * as pg from "./pager.js";
@@ -95,6 +96,7 @@ document.addEventListener("click", async ev => {
   if (d.metric) { S.review.metric = d.metric; render(); return; }
 
   if (d.hl) { try { await hlAct(d.hl, btn); } catch (e) { console.error(e); } return; }   // 健康页（js/health.js）
+  if (d.act && d.act.startsWith("hp-")) { await hpAct(d.act, d); render(); return; }   // 顶部预设卡片（js/hero-presets.js）
   if (d.act && d.act.startsWith("hc-")) { await heroCfgAct(d.act, d); render(); return; }   // 今天 → 顶部卡片（js/herocfg.js）
   if (d.act && d.act.startsWith("rec-")) { await recAct(d.act, d); return; }   // 回顾 → 记录（js/records.js）
   if (d.act && d.act.startsWith("bk-")) { await bkAct(d.act, btn); return; }   // 备份与恢复（js/backup.js）

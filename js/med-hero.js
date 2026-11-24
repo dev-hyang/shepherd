@@ -2,7 +2,10 @@ import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc, hm } from "./core/util.js";
 import { kindOf } from "./data/kinds.js";
-import { heroMeds, howText, lastTaken, nextDose } from "./med-hero-lib.js";
+import { bigDur } from "./hero-dur.js";
+import { presetCard } from "./hero-presets.js";
+import { shownCards } from "./hero-presets-lib.js";
+import { howText, lastTaken, nextDose } from "./med-hero-lib.js";
 
 /* ============ 今天页顶上的滑动卡：问候卡 + 每种药一张「距上次用药」 ============
    左右滑（或点下面的小圆点）切换。每种药的卡片显示：多久没服、上次几点、下一个时间点（过了就变暖色）、剂量和库存，
@@ -10,10 +13,6 @@ import { heroMeds, howText, lastTaken, nextDose } from "./med-hero-lib.js";
    只在看今天时出现；补记前几天时只剩问候卡。 */
 const GAP = 10;   // 和 app.css 里 .herotrack 的 gap 一致
 
-function bigDur(ms){
-  const m = Math.max(0, Math.floor(ms / 60000)), h = Math.floor(m / 60), d = Math.floor(h / 24);
-  return d ? `${d}<small>${t("天")}</small>${h % 24}<small>${t("小时")}</small>` : h ? `${h}<small>${t("小时")}</small>${m % 60}<small>${t("分")}</small>` : `${m}<small>${t("分钟")}</small>`;
-}
 function nextText(n){
   if (!n) return t("没有设时间点");
   if (n.overdue) return `<b>${t("该服了 {time}", { time: n.time })}</b>`;
@@ -34,11 +33,11 @@ function medCard(p, now){
 /** 问候卡 +（今天有药时）药卡，包成可滑动的一排；没有药卡就原样返回问候卡 */
 const cfgBar = `<div class="herocfgbar"><button class="chip" data-tab="herocfg">⚙ ${t("管理卡片")}</button></div>`;
 function heroTrackHTML(greetHero, past){
-  const meds = past ? [] : heroMeds(S.wb.practices, ((S.wb.profile || {}).settings || {}).heroOrder);
   if (past) return greetHero;
-  if (!meds.length) return greetHero + cfgBar;
-  const now = new Date(), slides = [greetHero, ...meds.map(p => medCard(p, now))], cur = Math.min(S.heroIdx || 0, slides.length - 1);
-  return `<div class="herobox"><div class="herotrack" id="heroTrack" tabindex="0" role="region" aria-roledescription="carousel" aria-label="${esc(t("今天：问候与用药"))}">${slides.join("")}</div>
+  const cards = shownCards(S.wb.practices, (S.wb.profile || {}).settings);
+  if (!cards.length) return greetHero + cfgBar;
+  const now = new Date(), slides = [greetHero, ...cards.map(c => (c.type === "med" ? medCard(c.p, now) : presetCard(c.key, now)))], cur = Math.min(S.heroIdx || 0, slides.length - 1);
+  return `<div class="herobox"><div class="herotrack" id="heroTrack" tabindex="0" role="region" aria-roledescription="carousel" aria-label="${esc(t("今天：问候与卡片"))}">${slides.join("")}</div>
     <div class="herodots" role="group" aria-label="${esc(t("切换卡片"))}">${slides.map((_, i) => `<button class="herodot" data-act="hero-go" data-i="${i}" aria-label="${i + 1}/${slides.length}" aria-current="${i === cur}"></button>`).join("")}</div>${cfgBar}</div>`;
 }
 

@@ -940,3 +940,12 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .hc-acts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .hc-acts .chip,.hc-acts .iconbtn{min-height:44px;min-width:44px}
 @media (max-width:640px){.hcrow{flex-wrap:wrap}.hc-acts{width:100%;justify-content:flex-start;padding-left:46px}}
+/* 顶部预设卡片 */
+.hpcard{background:linear-gradient(135deg,#4F7A5C,#3A5E47)}
+.hpgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 0;position:relative;z-index:1}
+.hptile{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;min-height:56px;padding:6px 12px;border-radius:14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.34);color:#fff}
+.hptile:active{background:rgba(255,255,255,.28)}
+.hptile:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.hpi{grid-row:1 / span 2;font-size:22px}
+.hpn{font-size:15px;font-weight:600}
+.hpd{font-size:12.5px;opacity:.9}
