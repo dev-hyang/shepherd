@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.12", title: { zh: "共用样式表多了按钮和按钮条", en: "Shared stylesheet gains button and button-row styles" }, items: [
+    { k: "better", zh: "和爱家小助手同步共用样式：标准按钮高度（40 / 34px）和按钮条排法（本站暂未使用，界面不变）。", en: "Synced shared styles from Home Pantry: standard button heights (40 / 34 px) and the button-row layout (not used here yet; nothing changes on screen)." },
+  ] },
   { v: "2026-11-24.11", title: { zh: "药卡标题太长时不再撑高卡片", en: "Long medicine names no longer stretch the card" }, items: [
     { k: "fix", zh: "药名很长时，药卡标题一行显示、放不下用省略号，卡片高度和别的卡一样", en: "A long medicine name now stays on one line with an ellipsis, so the card keeps the same height as the others" },
   ] },
