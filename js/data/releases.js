@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.13", title: { zh: "共用样式表的按钮点按区域", en: "Shared stylesheet: button tap area" }, items: [
+    { k: "better", zh: "和爱家小助手同步共用样式：默认号按钮在手机上的点按区域也不小于 44px（本站暂未使用，界面不变）。", en: "Synced shared styles from Home Pantry: default-size buttons also keep a 44 px tap area on phones (not used here yet; nothing changes on screen)." },
+  ] },
   { v: "2026-11-24.12", title: { zh: "共用样式表多了按钮和按钮条", en: "Shared stylesheet gains button and button-row styles" }, items: [
     { k: "better", zh: "和爱家小助手同步共用样式：标准按钮高度（40 / 34px）和按钮条排法（本站暂未使用，界面不变）。", en: "Synced shared styles from Home Pantry: standard button heights (40 / 34 px) and the button-row layout (not used here yet; nothing changes on screen)." },
   ] },
