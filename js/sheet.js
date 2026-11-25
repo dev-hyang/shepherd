@@ -65,7 +65,7 @@ function drawForm(){
     return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="text" data-f="${f.k}" value="${esc(v || "")}" placeholder="${ph}" ${f.list ? `list="${id}_list"` : ""}>${list}${hint}</div>`;
   }).join("");
   $("#sheetIn").innerHTML = `${head(esc(t(title)))}${html}
-    <div class="btns"><button class="ui-btn" data-tone="primary" data-act="form-save">${t("保存")}</button>${onDelete ? `<button class="ui-btn" data-tone="danger" data-act="form-delete">${t("删除")}</button>` : ""}</div>`;
+    <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="form-save">${t("保存")}</button>${onDelete ? `<button class="ui-btn" data-tone="danger" data-act="form-delete">${t("删除")}</button>` : ""}</div>`;
 }
 function readForm(){
   $("#sheetIn").querySelectorAll("[data-f]").forEach(el => {
@@ -182,9 +182,9 @@ function openPlan(){
   $("#sheetIn").innerHTML = `${head(t("读经计划"))}
   ${opts.map(([id, name, desc, n]) => `<div class="panel" style="margin-top:10px"><div class="row"><div class="v"><b>${esc(name)}</b><div class="small muted">${esc(desc)} ${t("共 {n} 段", { n })}${st.progress[id] ? ` · ${t("已读到第 {i} 段", { i: (st.progress[id] % n) + 1 })}` : ""}</div></div><button class="ui-btn" data-tone="${st.id === id ? "ghost" : "primary"}" data-plan="${esc(id)}" ${st.id === id ? "disabled" : ""}>${st.id === id ? t("当前") : t("选用")}</button></div></div>`).join("")}
   ${cur ? `<h2>${t("进度")}</h2><div class="panel"><p>${t("「{name}」第 {i} / {n} 段：{label}", { name: esc(cur.name), i: prog + 1, n: cur.items.length, label: esc(cur.items[prog].label) })}</p>
-    <div class="btns" style="margin-top:0"><button class="ui-btn" data-tone="ghost" data-act="plan-back">${t("退一段")}</button><button class="ui-btn" data-tone="ghost" data-act="plan-skip">${t("跳过这段")}</button><button class="ui-btn" data-tone="ghost" data-act="plan-jump">${t("跳到…")}</button><button class="ui-btn" data-tone="ghost" data-act="plan-restart">${t("从头开始")}</button></div>
+    <div class="ui-acts btns" style="margin-top:0"><button class="ui-btn" data-tone="ghost" data-act="plan-back">${t("退一段")}</button><button class="ui-btn" data-tone="ghost" data-act="plan-skip">${t("跳过这段")}</button><button class="ui-btn" data-tone="ghost" data-act="plan-jump">${t("跳到…")}</button><button class="ui-btn" data-tone="ghost" data-act="plan-restart">${t("从头开始")}</button></div>
     <p class="small muted" style="margin-top:8px">${t("按进度走，不按日期：漏了几天不会堆积，接着读就好。")}</p></div>` : ""}
-  <h2>${t("自己的计划")}</h2><div class="panel"><p class="small">${t("教会的年度读经表、自己排的顺序都可以导入：每行一段，如“创世记 1-3，神创造天地”。")}</p><div class="btns" style="margin-top:0"><button class="ui-btn" data-tone="ghost" data-act="plan-import">${t("导入")}</button></div></div>
+  <h2>${t("自己的计划")}</h2><div class="panel"><p class="small">${t("教会的年度读经表、自己排的顺序都可以导入：每行一段，如“创世记 1-3，神创造天地”。")}</p><div class="ui-acts btns" style="margin-top:0"><button class="ui-btn" data-tone="ghost" data-act="plan-import">${t("导入")}</button></div></div>
   <h2>${t("译本")}</h2><div class="panel">${versionHTML()}</div>`;
   showSheet();
 }
@@ -206,7 +206,7 @@ function openCalendar(){
   <p>${t("有日期的任务和事件也会进来（带提醒；重复的按重复规则，完成后自动从日历里消失，最多晚几小时）。")}</p>
   <div class="panel"><p class="small muted" style="margin:0 0 6px">${t("你的订阅链接（相当于钥匙，别转发）")}</p>
     <p class="num" style="word-break:break-all;font-size:13px">${esc(url || t("登录后生成"))}</p>
-    <div class="btns" style="margin-top:0">${url ? `<a class="ui-btn" data-tone="primary" href="${esc(webcal)}" style="text-decoration:none;text-align:center">${t("在手机上订阅")}</a><button class="ui-btn" data-tone="ghost" data-copy="${esc(url)}">${t("复制链接")}</button><button class="ui-btn" data-tone="ghost" data-act="ics-reset">${t("换一把钥匙")}</button>` : ""}</div>
+    <div class="ui-acts btns" style="margin-top:0">${url ? `<a class="ui-btn" data-tone="primary" href="${esc(webcal)}" style="text-decoration:none;text-align:center">${t("在手机上订阅")}</a><button class="ui-btn" data-tone="ghost" data-copy="${esc(url)}">${t("复制链接")}</button><button class="ui-btn" data-tone="ghost" data-act="ics-reset">${t("换一把钥匙")}</button>` : ""}</div>
     <p class="small muted" style="margin-top:8px">${t("现在有 {n} 项开了提醒。", { n })}</p></div>
   <h2>${t("怎么订阅")}</h2>
   <div class="panel"><ul class="plain small" style="margin:0">
@@ -243,7 +243,7 @@ function openSettings(){
 
   <h2>${t("AI 助手")}</h2>
   <div class="panel"><p class="small" style="margin-top:0">${t("拍照识字、把笔记整理成请教清单 / 书信 / 讲解，需要你自己的 AI key（只存在这台设备的浏览器里）。")} ${aiReady() ? `<b>${t("已设置：")}${esc(t(providerOf(aiSettings().provider).name))}</b>` : t("还没设置。")}</p>
-    <div class="btns" style="margin-top:0"><button class="ui-btn" data-tone="ghost" data-act="ai-settings">${t("设置 AI")}</button></div></div>
+    <div class="ui-acts btns" style="margin-top:0"><button class="ui-btn" data-tone="ghost" data-act="ai-settings">${t("设置 AI")}</button></div></div>
 
   <h2>${t("界面语言")}</h2>
   <div class="seg" role="group" aria-label="${t("界面语言")}">${LOCALES.map(([v, l]) => `<button data-locale-set="${v}" aria-pressed="${locale() === v}" lang="${v}">${l}</button>`).join("")}</div>
@@ -270,6 +270,6 @@ function nudgeSettingsHTML(){
     <div class="field"><div class="lab">${t("收尾提醒时间")}</div><div class="seg">${["20:00", "21:00", "22:00"].map(v => b("eveningAt", v, v, n.eveningAt === v)).join("")}</div></div>
     <div class="field"><div class="lab">${t("今天的容量（小时）")}</div><div class="seg">${[4, 6, 8, 10].map(v => b("capacityH", String(v), String(v), n.capacityH === v)).join("")}</div><div class="small muted" style="margin-top:4px">${t("今天任务的预估时间加起来超过它，会提示排太满了。")}</div></div>
     <div class="field"><div class="lab">${t("一句话添加带时间的任务，默认提醒")}</div><div class="seg">${[[[0], "准时"], [[10], "提前 10 分钟"], [[30], "提前 30 分钟"], [[], "不提醒"]].map(([v, l]) => b("remind", JSON.stringify(v), t(l), JSON.stringify(n.remind) === JSON.stringify(v))).join("")}</div></div>
-    <div class="btns" style="margin-top:0"><button class="ui-btn" data-tone="ghost" data-act="tk-cats">${t("管理任务分类")}</button></div>
+    <div class="ui-acts btns" style="margin-top:0"><button class="ui-btn" data-tone="ghost" data-act="tk-cats">${t("管理任务分类")}</button></div>
     <p class="small muted" style="margin-top:8px">${t("提醒靠手机日历响铃（订阅链接在“我的 → 日历订阅”）。读经、祷告这类灵修习惯不催。")}</p>`;
 }

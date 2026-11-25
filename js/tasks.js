@@ -86,7 +86,7 @@ function evening(left){
   const n = tk.nudge(); if (!n.evening || S.pick || !left.length) return "";
   const now = new Date(), [h, m] = n.eveningAt.split(":").map(Number);
   if (now.getHours() * 60 + now.getMinutes() < h * 60 + m) return "";
-  return `<div class="nudge evening"><b>${t("收尾：今天还剩 {n} 件", { n: left.length })}</b><div class="btns" style="margin-top:6px"><button class="chip" data-act="tk-evening" data-to="tomorrow">${t("都放到明天")}</button><button class="chip" data-act="tk-evening" data-to="drop">${t("剩下的放弃")}</button></div></div>`;
+  return `<div class="nudge evening"><b>${t("收尾：今天还剩 {n} 件", { n: left.length })}</b><div class="ui-acts btns" style="margin-top:6px"><button class="chip" data-act="tk-evening" data-to="tomorrow">${t("都放到明天")}</button><button class="chip" data-act="tk-evening" data-to="drop">${t("剩下的放弃")}</button></div></div>`;
 }
 function doneToday(day){
   const logs = tk.doneLogs().filter(l => l.day === day);
@@ -151,7 +151,7 @@ function monthPlan(day){
   const pt = tk.periodTasks("month", day), list = tk.onDay(day);
   return `${dayNav(t("{y} 年 {m} 月", { y, m }), "tk-prev", "tk-next")}
   <div class="panel" style="padding:10px"><div class="month">${["一", "二", "三", "四", "五", "六", "日"].map(w => `<span class="wd">${t("周" + w).replace(/^周/, "")}</span>`).join("")}${cells.join("")}</div></div>
-  <div class="panel" style="padding:4px 10px"><h3 class="tk-h">${day}　${wdLabel(day)}</h3>${list.length ? rows(list) : `<p class="muted small" style="margin:6px 2px">${t("这天没有任务。")}</p>`}<div class="btns" style="margin:6px 0"><button class="chip" data-act="tk-new" data-day="${day}">＋ ${t("加一件")}</button></div></div>
+  <div class="panel" style="padding:4px 10px"><h3 class="tk-h">${day}　${wdLabel(day)}</h3>${list.length ? rows(list) : `<p class="muted small" style="margin:6px 2px">${t("这天没有任务。")}</p>`}<div class="ui-acts btns" style="margin:6px 0"><button class="chip" data-act="tk-new" data-day="${day}">＋ ${t("加一件")}</button></div></div>
   ${pt.length ? `<div class="panel" style="padding:4px 10px"><h3 class="tk-h">${t("本月要做（不指定哪天）")}</h3>${rows(pt)}</div>` : ""}`;
 }
 function planView(){
@@ -290,7 +290,7 @@ function openCats(){
   const cats = tk.cats().filter(c => c.id !== "inbox");
   openInfo("任务分类", `<p class="small muted">${t("大类 → 小类两层。改名、换图标颜色、增删小类都在“改”里；收件箱是固定的。")}</p>
   ${cats.map(c => `<div class="panel" style="margin-top:10px"><div class="row"><span style="color:${c.color};font-size:22px">${c.icon}</span><div class="v"><b>${esc(tk.catName(c))}</b><div class="small muted">${(c.subs || []).map(s => esc(tk.subName(c, s))).join(" · ") || t("没有小类")}</div></div><button class="chip" data-act="cat-edit" data-cid="${esc(c.id)}">${t("改")}</button></div></div>`).join("")}
-  <div class="btns"><button class="ui-btn" data-tone="primary" data-act="cat-add">＋ ${t("大类")}</button><button class="ui-btn" data-tone="ghost" data-act="cat-reset">${t("恢复默认")}</button></div>`);
+  <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="cat-add">＋ ${t("大类")}</button><button class="ui-btn" data-tone="ghost" data-act="cat-reset">${t("恢复默认")}</button></div>`);
 }
 function editCat(id){
   const all = tk.cats(), cur = all.find(c => c.id === id), blank = { id: "c" + newId().slice(-6), name: "", icon: "📌", color: CAT_COLORS[0], subs: [] }, c = cur || blank;

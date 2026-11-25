@@ -187,7 +187,7 @@ function inviteLine(owner){
   if (exp === undefined) return "";
   const ms = exp ? new Date(exp).getTime() - Date.now() : 0;
   const text = ms > 0 ? t("邀请码有效至 {d}", { d: new Date(exp).toLocaleDateString() }) : t("邀请已关闭 / 已过期");
-  return `<p class="small muted" style="margin:0 0 6px">${text}</p>` + (owner ? `<div class="btns"><button class="ui-btn" data-tone="ghost" data-act="sb-reset-invite">${t("重新生成（7 天）")}</button>${ms > 0 ? `<button class="ui-btn" data-tone="ghost" data-act="sb-close-invite">${t("关闭邀请")}</button>` : ""}</div>` : "");
+  return `<p class="small muted" style="margin:0 0 6px">${text}</p>` + (owner ? `<div class="ui-acts btns"><button class="ui-btn" data-tone="ghost" data-act="sb-reset-invite">${t("重新生成（7 天）")}</button>${ms > 0 ? `<button class="ui-btn" data-tone="ghost" data-act="sb-close-invite">${t("关闭邀请")}</button>` : ""}</div>` : "");
 }
 
 function familyHTML(){
@@ -197,30 +197,30 @@ function familyHTML(){
     <p class="small muted">${t("和小月亮、家庭学堂是同一个账号。在同一台设备上登录过的话，刷新一下通常就已经登录了。")}</p>
     <div class="field"><label for="sb_email">${t("邮箱")}</label><input id="sb_email" type="text" inputmode="email" autocomplete="email"></div>
     <div class="field"><label for="sb_pw">${t("密码（至少 6 位）")}</label><input id="sb_pw" type="password" autocomplete="current-password"></div>
-    <div class="btns"><button class="ui-btn" data-tone="primary" data-act="sb-login">${t("登录")}</button><button class="ui-btn" data-tone="ghost" data-act="sb-signup">${t("注册新账号")}</button></div>`;
+    <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="sb-login">${t("登录")}</button><button class="ui-btn" data-tone="ghost" data-act="sb-signup">${t("注册新账号")}</button></div>`;
   if (S.user.is_anonymous) return `
     <p>${t("你现在是用邀请码进来的匿名身份。牧羊人记的是你自己的事，换了设备或清了浏览器就找不回来，所以先给这个账号绑定一个邮箱。绑定后家庭身份和小月亮里的记录都不变。")}</p>
     <div class="field"><label for="sb_email">${t("邮箱")}</label><input id="sb_email" type="text" inputmode="email" autocomplete="email"></div>
     <div class="field"><label for="sb_pw">${t("设一个密码（至少 6 位）")}</label><input id="sb_pw" type="password" autocomplete="new-password"></div>
-    <div class="btns"><button class="ui-btn" data-tone="primary" data-act="sb-link">${t("绑定邮箱")}</button><button class="ui-btn" data-tone="ghost" data-act="sb-logout">${t("退出，用别的账号登录")}</button></div>`;
+    <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="sb-link">${t("绑定邮箱")}</button><button class="ui-btn" data-tone="ghost" data-act="sb-logout">${t("退出，用别的账号登录")}</button></div>`;
   if (S.waiting) return `
     <div class="panel" role="status"><b>${t("等家主批准")}</b>
       <p class="small muted" style="margin:6px 0 0">${t("你已用邀请码申请加入，家主批准后就能看到家人共享的内容。这期间个人记录照常可用，这里每 20 秒自动检查一次。")}</p>
       <p class="small muted" style="margin:6px 0 0">${t("想取消申请？请联系家主拒绝，或稍后再试。")}</p></div>
-    <div class="btns"><button class="ui-btn" data-tone="ghost" data-act="sb-recheck">${t("现在检查")}</button><button class="ui-btn" data-tone="ghost" data-act="sb-logout">${t("退出登录")}</button></div>`;
+    <div class="ui-acts btns"><button class="ui-btn" data-tone="ghost" data-act="sb-recheck">${t("现在检查")}</button><button class="ui-btn" data-tone="ghost" data-act="sb-logout">${t("退出登录")}</button></div>`;
   if (!S.family) return `
     <p class="small muted">${t("已登录 {email}。还没加入家庭：个人记录照常可用；想让配偶看到你的完成情况，先在", { email: esc(S.user.email) })}<a href="${BABY_LOG_URL}" target="_blank" rel="noopener">${t("小月亮")}</a>${t("里创建家庭，或者在这里创建 / 用邀请码加入。")}</p>
     <div class="field"><label for="sb_display">${t("你在家里的称呼")}</label><input id="sb_display" type="text" placeholder="${t("妈妈 / 爸爸")}"></div>
-    <div class="btns"><button class="ui-btn" data-tone="primary" data-act="sb-create">${t("创建家庭")}</button></div>
+    <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="sb-create">${t("创建家庭")}</button></div>
     <div class="field"><label for="sb_code">${t("或者输入邀请码")}</label><input id="sb_code" type="text" autocapitalize="characters" autocomplete="off"></div>
-    <div class="btns"><button class="ui-btn" data-tone="ghost" data-act="sb-join">${t("加入家庭")}</button><button class="ui-btn" data-tone="ghost" data-act="sb-logout">${t("退出登录")}</button></div>`;
+    <div class="ui-acts btns"><button class="ui-btn" data-tone="ghost" data-act="sb-join">${t("加入家庭")}</button><button class="ui-btn" data-tone="ghost" data-act="sb-logout">${t("退出登录")}</button></div>`;
   const me = S.user.id;
   const rows = Object.entries(S.members).map(([uid, m]) => `<div class="medrow"><div><b>${esc(m.name)}</b>${uid === me ? ` <span class="small muted">${t("（你）")}</span>` : ""}${m.role === "owner" ? ` <span class="ui-badge" data-tone="ok">${t("家主")}</span>` : ""}</div></div>`).join("");
   const owner = isOwner();
   const pend = owner && S.pending.length ? `
     <div class="panel" style="margin-top:12px;border-color:var(--rose)"><b>${t("等你批准（{n}）", { n: S.pending.length })}</b>
       <p class="small muted" style="margin:4px 0 0">${t("认识这个人再批准：批准后对方能看到你开给家人看的内容。不认识就拒绝。")}</p>
-      ${S.pending.map(m => `<div class="medrow"><div><b>${esc(m.name)}</b></div><div class="btns"><button class="ui-btn" data-tone="primary" data-act="sb-approve" data-uid="${esc(m.uid)}">${t("批准")}</button><button class="ui-btn" data-tone="danger" data-act="sb-reject" data-uid="${esc(m.uid)}">${t("拒绝")}</button></div></div>`).join("")}</div>` : "";
+      ${S.pending.map(m => `<div class="medrow"><div><b>${esc(m.name)}</b></div><div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="sb-approve" data-uid="${esc(m.uid)}">${t("批准")}</button><button class="ui-btn" data-tone="danger" data-act="sb-reject" data-uid="${esc(m.uid)}">${t("拒绝")}</button></div></div>`).join("")}</div>` : "";
   return `
     <p class="small muted" style="margin-bottom:0">${t("家庭成员")}</p>
     <div class="panel" style="padding:0 14px">${rows || `<div class="medrow"><span class="muted">${t("只有你")}</span></div>`}</div>
@@ -228,7 +228,7 @@ function familyHTML(){
     <p style="margin-top:12px">${t("邀请码")} <b class="num" style="font-size:20px;letter-spacing:.12em">${esc(S.family.invite_code)}</b> <button class="chip" data-copy="${esc(S.family.invite_code)}">${t("复制")}</button></p>
     ${inviteLine(owner)}
     <p class="small muted">${t("已登录 {email}。成员管理（改称呼、设家主、移除）在小月亮的设置里。", { email: esc(S.user.email) })}</p>
-    <div class="btns"><button class="ui-btn" data-tone="ghost" data-act="sb-logout">${t("退出登录")}</button></div>`;
+    <div class="ui-acts btns"><button class="ui-btn" data-tone="ghost" data-act="sb-logout">${t("退出登录")}</button></div>`;
 }
 
 export { SB, memberName, myName, isOwner, initSupabase, afterAuth, loadData, recheckWaiting, sbAuth, sbLink, sbFamily, sbLogout, sbApprove, sbReject, sbResetInvite, sbCloseInvite, familyHTML };

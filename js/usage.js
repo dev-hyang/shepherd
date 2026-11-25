@@ -67,7 +67,7 @@ function body() {
   if (!SB.client || S.cloud !== "ready") return `<p class="small muted">${t("登录并进入家庭后，这里会显示用量。")}</p>`;
   if (failure && !last) {
     const msg = isMissing(failure) ? t("还没执行迁移 {n}（用量查询），先在 Supabase 里执行 supabase/migrations/{n}", { n: MIGRATION }) : t("查询失败：{msg}", { msg: failure.message || "error" });
-    return `<p class="small">${esc(msg)}</p><div class="btns" style="margin-top:8px"><button class="ui-btn" data-size="sm" data-tone="ghost" data-usage-refresh>${t("重试")}</button></div>`;
+    return `<p class="small">${esc(msg)}</p><div class="ui-acts btns" style="margin-top:8px"><button class="ui-btn" data-size="sm" data-tone="ghost" data-usage-refresh>${t("重试")}</button></div>`;
   }
   if (!last) return `<p class="small muted" aria-live="polite">${t("正在查看用量…")}</p>`;
   const files = Array.isArray(last.buckets) ? last.buckets : [];

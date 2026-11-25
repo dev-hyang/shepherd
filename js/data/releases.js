@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.16", title: { zh: "表单和对话框底部的按钮：取消靠左、保存靠右", en: "Form and dialog buttons: Cancel on the left, Save on the right" }, items: [
+    { k: "better", zh: "按钮条换成和爱家小助手同一个按钮条控件：一个按钮靠右（手机上占满一行）；两个按钮取消靠左、主按钮靠右，以前主按钮在前。", en: "Button rows now use the same control as Home Pantry: one button on the right (full width on phones); with two, Cancel is on the left and the main action on the right (the main action used to come first)." },
+  ] },
   { v: "2026-11-24.15", title: { zh: "所有按钮换成统一的按钮控件", en: "All buttons now use the shared button control" }, items: [
     { k: "better", zh: "全站按钮换成和爱家小助手同一个按钮控件：默认 40px、小号 34px，手机上点按区域仍不小于 44px（以前 36 到 46px 不等）。", en: "Every button now uses the same control as Home Pantry: 40 px default, 34 px small, with a tap area still at least 44 px on phones (it used to range from 36 to 46 px)." },
     { k: "fix", zh: "如果哪个页面的按钮看起来不对（颜色、大小、位置），请告诉我，这次是整体替换。", en: "If a button looks wrong on any page (colour, size, position), please tell me; this was a wholesale replacement." },

@@ -1,6 +1,7 @@
 import { updateMiniBar } from "./minibar.js";
 import * as appSwitcherMod from "./shared/app-switcher.js";
 import * as langSwitcherMod from "./shared/lang-switcher.js";
+import { watchActs } from "./shared/ui-acts.js"; watchActs();   // 按钮条：取消靠前、主按钮靠后（shared/ui.css 的 ui-acts）
 import { myName } from "./core/auth.js";
 import { APP_VERSION, SISTER_APPS, THIS_APP } from "./core/config.js";
 import { LOCALES, locale, t } from "./core/i18n.js";

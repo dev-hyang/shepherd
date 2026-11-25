@@ -39,7 +39,7 @@ function viewPray(){
     <div class="stat"><div class="v">${todayLogs.length}<small>${t("次")}</small></div><div class="k">${t("今天祷告")}</div></div>
     <div class="stat"><div class="v">${days7}<small>/7</small></div><div class="k">${t("近 7 天祷告的天数")}</div></div>
   </div>
-  <div class="btns" style="margin-top:12px">${todayLogs.length ? `<button class="ui-btn" data-tone="ghost" data-act="pray-today-undo">${t("今天祷告了 ✓ · 撤销一次")}</button><button class="ui-btn" data-tone="primary" data-act="pray-today">${t("再记一次")}</button>` : `<button class="ui-btn" data-tone="primary" data-act="pray-today">${t("今天祷告了")}</button>`}</div>
+  <div class="ui-acts btns" style="margin-top:12px">${todayLogs.length ? `<button class="ui-btn" data-tone="ghost" data-act="pray-today-undo">${t("今天祷告了 ✓ · 撤销一次")}</button><button class="ui-btn" data-tone="primary" data-act="pray-today">${t("再记一次")}</button>` : `<button class="ui-btn" data-tone="primary" data-act="pray-today">${t("今天祷告了")}</button>`}</div>
   ${bar}
   <div class="panel" style="padding:4px 10px">${list.length ? pg.page("prayers", list).map(row).join("") : `<div class="empty">${all.length ? t("这个筛选下没有事项。") : t("写下为谁、为什么祷告。应允了就记下来，成为日后的见证。")}</div>`}</div>
   ${pg.moreBtn("prayers", list.length)}

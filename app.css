@@ -129,7 +129,7 @@ body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#131921}}
 .seg.mini{gap:4px}
 .seg.mini button{padding:5px 10px;min-height:34px;font-size:13px;border-radius:999px}
-.btns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.btns{margin-top:16px}
 /* ä¹ æƒ¯ä¸Žç”¨è¯ï¼šç­›é€‰å’Œâ€œæ–°å¢žâ€åŒä¸€è¡Œï¼›ç­›é€‰å¯æ¢è¡Œï¼Œæ–°å¢žå§‹ç»ˆè´´å³ */
 .toolbar{display:flex;gap:8px;align-items:flex-start;margin:10px 0}
 .toolbar .chips{flex:1;min-width:0;margin:0}

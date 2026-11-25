@@ -51,7 +51,7 @@ function reviewHTML(who){
     <p class="small muted hl-rv-scope">${esc(scopeText(m, who))}</p>
     ${attachHTML("sh-review", { t, esc, collapsible: true, summary: t("补充信息（可选）：自己写几句、拍照或上传文件"), textLabel: t("补充说明"), ph: t("例：最近总是睡不好、膝盖疼；医生口头说要复查甲状腺；体检报告 PDF…"), hint: t("会和记录一起发给 AI 参考，比如体检报告、医生的单子、你自己的感受。照片不保存。") })}
     ${a ? meta + resultHTML(a) : ""}
-    <div class="btns hl-rv-btns">${btn}</div>
+    <div class="ui-acts btns hl-rv-btns">${btn}</div>
     <p class="small muted" style="margin:6px 0 0">${aiReady() ? t("发给你自己设置的 AI：年龄、性别、档案里的病史 / 用药 / 目标，以及上面说的记录；不发姓名。只是建议，不是诊断；以医生意见为准。") : t("先在 我的 → 咩咩咩 → AI 设置 里填一个 API key")}</p></div>`;
 }
 const ul = (title, arr, cls = "") => (arr && arr.length ? `<div class="hl-rv-box ${cls}"><b>${title}</b><ul>${arr.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "");

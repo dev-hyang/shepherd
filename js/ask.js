@@ -135,10 +135,10 @@ function viewAsk(){
     <div class="ask-att">${attachHTML(ATT_ASK, { t, esc, noText: true, hint: t("可以拍几张照片或选文件一起问（笔记、讲章、体检单、冰箱里的菜…），也能选 PDF。照片不保存。") })}</div>
     <label class="ask-ctx"><input type="checkbox" name="ctx" ${a.withCtx ? "checked" : ""}><span>${t("附带我最近 7 天的记录摘要（只有统计数字和计划进度；不含祷告内容、笔记正文、任务标题和家人姓名）")}</span></label>
     ${a.withCtx ? `<details class="ask-ctxv"><summary class="small muted">${ctx ? t("看看会发出去什么") : t("摘要为空（登录并记几天后才有）")}</summary>${ctx ? `<pre>${esc(ctx)}</pre>` : ""}</details>` : ""}
-    <div class="btns">${ready ? `<button type="submit" class="ui-btn" data-tone="primary" ${a.busy ? "disabled" : ""}>${a.busy ? t("思考中…") : t("发送")}</button>` : ""}<button type="button" class="ui-btn" data-tone="${ready ? "ghost" : "primary"}" data-act="ask-copy">${t("复制提示词")}</button></div>
+    <div class="ui-acts btns">${ready ? `<button type="submit" class="ui-btn" data-tone="primary" ${a.busy ? "disabled" : ""}>${a.busy ? t("思考中…") : t("发送")}</button>` : ""}<button type="button" class="ui-btn" data-tone="${ready ? "ghost" : "primary"}" data-act="ask-copy">${t("复制提示词")}</button></div>
     ${a.error ? `<p class="small" style="color:var(--rose);margin:8px 0 0" role="alert">${esc(a.error)}</p>` : ""}
   </form>
-  ${!ready ? `<div class="panel" style="margin-top:10px"><p class="small muted" style="margin:0 0 8px">${t("复制后打开任一 AI 粘贴（手机上会直接打开已安装的 App）：")}</p><div class="btns" style="margin-top:0">${sites}</div></div>` : ""}
+  ${!ready ? `<div class="panel" style="margin-top:10px"><p class="small muted" style="margin:0 0 8px">${t("复制后打开任一 AI 粘贴（手机上会直接打开已安装的 App）：")}</p><div class="ui-acts btns" style="margin-top:0">${sites}</div></div>` : ""}
   ${a.answer ? `<div class="panel ask-answer" style="margin-top:10px"><div class="sec-head" style="margin:0 0 6px"><h2 style="margin:0">${t("咩咩的回答")}</h2><span class="sec-acts">${chipBtn(t("复制"), 'data-act="ask-copy-answer"')}</span></div>
     <div class="md">${mdToHtml(a.answer)}</div>
     <p class="small muted" style="margin:10px 0 0">${t("AI 回答仅供参考；身体不适请就医，属灵问题多与牧者和家人交通。")}</p></div>` : ""}`;

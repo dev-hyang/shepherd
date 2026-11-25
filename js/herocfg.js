@@ -34,7 +34,7 @@ function viewHeroCfg(){
   return `<p class="small muted">${t("今天页顶上可以左右滑的卡片。第一张是问候卡，固定在最前；下面这些卡片可以隐藏（比如病好了不用再吃药）、调整先后。")}</p>
   <div class="panel hclist"><div class="hcrow fixed"><span class="hi" aria-hidden="true">☀</span><div class="hc-main"><b>${t("问候卡")}</b><small class="muted">${t("日期、问候，补记前几天也在这里切换")}</small></div><span class="hc-acts"><span class="ui-badge">${t("固定")}</span></span></div>
     ${list.map((c, i) => (c.type === "med" ? medRow : presetRow)(c, i, list.length)).join("")}</div>
-  <div class="btns"><button class="ui-btn" data-tone="primary" data-act="habit-add-kind" data-kind="med">＋ ${t("添加用药")}</button><button class="ui-btn" data-tone="ghost" data-act="habit-add-kind" data-kind="supplement">＋ ${t("添加保健品")}</button></div>
+  <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="habit-add-kind" data-kind="med">＋ ${t("添加用药")}</button><button class="ui-btn" data-tone="ghost" data-act="habit-add-kind" data-kind="supplement">＋ ${t("添加保健品")}</button></div>
   <p class="small muted" style="margin-top:10px">${t("陪伴、休息和读经祷告、锻炼的记录都在「回顾 → 记录」里查、改、删、补记。")}</p>`;
 }
 async function heroCfgAct(act, d){

@@ -59,7 +59,7 @@ function otdHTML(max = 3){
   return `<div class="panel otd" style="padding:4px 10px;margin-bottom:10px"><div class="glabel">🗓 ${t("历史上的今天")}</div>${list.slice(0, max).map(rowHTML).join("")}${total > max ? `<div class="small muted" style="padding:4px 6px">${t("还有 {n} 条", { n: total - max })}</div>` : ""}</div>`;
 }
 /** 还有下一页就给“继续加载”（按钮样式和 pager.js 一样；events.js 按 data-pager-more="notes" 交给 moreNotes） */
-const moreBtn = () => (S.nt.hasNext ? `<div class="btns" style="margin-top:8px"><button class="ui-btn" data-tone="ghost" data-pager-more="notes" ${S.nt.busy ? "disabled" : ""}>${S.nt.busy ? t("正在读取…") : t("继续加载")}</button></div>` : "");
+const moreBtn = () => (S.nt.hasNext ? `<div class="ui-acts btns" style="margin-top:8px"><button class="ui-btn" data-tone="ghost" data-pager-more="notes" ${S.nt.busy ? "disabled" : ""}>${S.nt.busy ? t("正在读取…") : t("继续加载")}</button></div>` : "");
 function bodyHTML(){
   return `${otdHTML()}${navHTML()}<div class="panel" id="ntList" style="padding:4px 10px">${listHTML()}</div>${moreBtn()}`;
 }
@@ -263,10 +263,10 @@ async function openExport(fresh = false){
   ${monthMode() ? `<div class="field"><button class="chip" data-act="nt-exmonth" aria-pressed="${ui.exMonth}">${t("只导出 {m}", { m: monthLabel(curMonth()) })}</button></div>` : ""}
   <div class="field"><div class="lab">${t("整理方式")}</div><div class="seg" role="group" aria-label="${t("整理方式")}">${groups.map(([k, l]) => `<button data-ntf="group" data-v="${k}" data-export="1" aria-pressed="${ui.group === k}">${t(l)}</button>`).join("")}</div></div>
   <div class="panel" style="padding:4px 10px;max-height:46vh;overflow:auto">${list.length ? list.map(n => `<button class="nrow xrow" data-act="nt-x" data-id="${esc(n.id)}" aria-pressed="${!ui.off.has(n.id)}"><span class="ni" aria-hidden="true">${ui.off.has(n.id) ? "☐" : "☑"}</span><span class="nt"><b>${esc(noteHeading(n, kindLabel))}</b><small>${esc(n.day)} · ${esc(kindLabel(n.kind))}</small></span></button>`).join("") : `<div class="empty">${t("没有可导出的笔记。")}</div>`}</div>
-  <div class="btns"><button class="ui-btn" data-tone="primary" data-act="nt-preview" ${sel.length ? "" : "disabled"}>${t("预览 / 打印")}</button><button class="ui-btn" data-tone="ghost" data-act="nt-md" ${sel.length ? "" : "disabled"}>${t("下载 Markdown")}</button><button class="ui-btn" data-tone="ghost" data-act="nt-json" ${sel.length ? "" : "disabled"}>${t("下载 JSON（备份）")}</button><button class="ui-btn" data-tone="ghost" data-act="nt-copy" ${sel.length ? "" : "disabled"}>${t("复制文字")}</button></div>
+  <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="nt-preview" ${sel.length ? "" : "disabled"}>${t("预览 / 打印")}</button><button class="ui-btn" data-tone="ghost" data-act="nt-md" ${sel.length ? "" : "disabled"}>${t("下载 Markdown")}</button><button class="ui-btn" data-tone="ghost" data-act="nt-json" ${sel.length ? "" : "disabled"}>${t("下载 JSON（备份）")}</button><button class="ui-btn" data-tone="ghost" data-act="nt-copy" ${sel.length ? "" : "disabled"}>${t("复制文字")}</button></div>
   <h2>${t("让 AI 帮忙整理")}</h2>
   <div class="panel"><p class="small" style="margin-top:0">${t("把选中的笔记整理成一份草稿：请教牧师 / 长者的清单、写给家人朋友的书信，或给孩子讲解的材料。会把选中笔记的文字发给你设置的 AI 服务商；只用笔记里已有的内容。")}</p>
-    <div class="btns" style="margin-top:0">${Object.entries(PURPOSES).map(([k, v]) => `<button class="ui-btn" data-tone="ghost" data-act="nt-ai" data-p="${k}" ${sel.length ? "" : "disabled"}>${t(v.label)}</button>`).join("")}</div>
+    <div class="ui-acts btns" style="margin-top:0">${Object.entries(PURPOSES).map(([k, v]) => `<button class="ui-btn" data-tone="ghost" data-act="nt-ai" data-p="${k}" ${sel.length ? "" : "disabled"}>${t(v.label)}</button>`).join("")}</div>
     ${aiReady() ? "" : `<p class="small muted" style="margin-bottom:0">${t("还没填 AI key：点上面的按钮会复制一段提示词，你可以粘贴到任何 AI 网页里。")}</p>`}</div>
   <p class="small muted">${t("只导出你自己的笔记；家人分享给你的不在其中。")}</p>`;
   showSheet();
@@ -294,7 +294,7 @@ function openPreview(){
   const sel = picked();
   $("#sheetIn").innerHTML = `${head(t("预览"), `<button class="iconbtn" data-act="nt-print">${esc(t("打印 / 存成 PDF"))}</button>`)}
   <div class="notedoc"><h1>${esc(t("灵修笔记"))}</h1><div class="pm">${esc(t("共 {n} 条", { n: sel.length }))} · ${fileStamp()}</div>${docHTML(sel)}</div>
-  <div class="btns noprint"><button class="ui-btn" data-tone="primary" data-act="nt-print">${t("打印 / 存成 PDF")}</button><button class="ui-btn" data-tone="ghost" data-act="note-export">${t("返回")}</button></div>`;
+  <div class="ui-acts btns noprint"><button class="ui-btn" data-tone="primary" data-act="nt-print">${t("打印 / 存成 PDF")}</button><button class="ui-btn" data-tone="ghost" data-act="note-export">${t("返回")}</button></div>`;
   showSheet();
 }
 /** AI 整理：有 key 就直接生成草稿；没有就复制提示词 */
@@ -314,7 +314,7 @@ function openResult(title, text){
   $("#sheetIn").innerHTML = `${head(esc(title))}
   <p class="small muted noprint">${t("AI 写的草稿，请逐句核对后再用；笔记原文没有的内容不要照搬。")}</p>
   <div class="notedoc"><h1>${esc(title)}</h1><div class="pm">${fileStamp()}</div><div class="md" id="ntResult">${mdToHtml(text)}</div></div>
-  <div class="btns noprint"><button class="ui-btn" data-tone="primary" data-act="nt-print">${t("打印 / 存成 PDF")}</button><button class="ui-btn" data-tone="ghost" data-act="nt-copy-result">${t("复制")}</button><button class="ui-btn" data-tone="ghost" data-act="nt-dl-result" data-title="${esc(title)}">${t("下载文本")}</button><button class="ui-btn" data-tone="ghost" data-act="note-export">${t("返回")}</button></div>`;
+  <div class="ui-acts btns noprint"><button class="ui-btn" data-tone="primary" data-act="nt-print">${t("打印 / 存成 PDF")}</button><button class="ui-btn" data-tone="ghost" data-act="nt-copy-result">${t("复制")}</button><button class="ui-btn" data-tone="ghost" data-act="nt-dl-result" data-title="${esc(title)}">${t("下载文本")}</button><button class="ui-btn" data-tone="ghost" data-act="note-export">${t("返回")}</button></div>`;
   showSheet();
 }
 const resultText = () => lastResult;
@@ -327,7 +327,7 @@ function openAiSettings(after){
     { k: "key", label: "API key", type: "password", ph: "粘贴你自己的 key", hint: "只存在这台设备的浏览器里，不上传、不同步给家人。" },
     { k: "model", label: "模型（可空，用默认）", type: "text", ph: p.model },
     { k: "base", label: "接口地址（只有“自定义”要填）", type: "text", ph: "https://…/v1", when: d => d.provider === "custom" },
-    { k: "help", type: "html", html: d => { const q = providerOf(d.provider); return `<div class="small muted">${t(q.hint)}${q.signup ? ` <a href="${esc(q.signup)}" target="_blank" rel="noopener">${t("申请 key")}</a>` : ""}</div>${s.borrowed && d.key === s.key ? `<div class="small" style="margin-top:6px">${t("这里用的是你在爱家小助手里填的 key。")}</div>` : ""}<div class="btns" style="margin-top:8px"><button type="button" class="ui-btn" data-tone="ghost" data-act="ai-test">${t("测试连接")}</button></div>` } }
+    { k: "help", type: "html", html: d => { const q = providerOf(d.provider); return `<div class="small muted">${t(q.hint)}${q.signup ? ` <a href="${esc(q.signup)}" target="_blank" rel="noopener">${t("申请 key")}</a>` : ""}</div>${s.borrowed && d.key === s.key ? `<div class="small" style="margin-top:6px">${t("这里用的是你在爱家小助手里填的 key。")}</div>` : ""}<div class="ui-acts btns" style="margin-top:8px"><button type="button" class="ui-btn" data-tone="ghost" data-act="ai-test">${t("测试连接")}</button></div>` } }
   ], { provider: s.provider, key: s.key, model: s.model, base: s.base },
   async f => { saveAiSettings({ provider: f.provider, key: f.key, model: f.model, base: f.base }); toast(t("已保存")); closeSheet(); if (after) after(); });
 }

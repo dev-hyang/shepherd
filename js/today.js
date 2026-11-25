@@ -78,7 +78,7 @@ function notesHTML(){
   const st = S.nt && S.nt.loaded ? S.nt.stats : null, loaded = !!st, n = loaded ? st.mine : 0, last = loaded ? st.latest : null;   // 条数、最近一条来自统计 RPC（nt.js），不读全部笔记
   const sum = last ? `${t("最近：{h}", { h: esc(noteHeading(last, kindLabel)) })} · ${esc(last.day)}` : t("读书、读经、祷告时的心得、疑问或感动，随手记在这里。");
   return `${secHead(t("灵修笔记"), chipBtn(t("全部") + (n ? ` ${n}` : ""), 'data-act="notes"'))}<div class="panel"><div class="small muted">${sum}</div>
-    <div class="btns"><button class="ui-btn" data-tone="primary" data-act="note-add" data-kind="reading" data-photo="1">📷 ${t("拍照摘录")}</button><button class="ui-btn" data-tone="ghost" data-act="note-add" data-kind="scripture" data-ref="${esc(ref)}">✎ ${t("记心得")}</button></div></div>${loaded ? otdHTML(2) : ""}`;
+    <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="note-add" data-kind="reading" data-photo="1">📷 ${t("拍照摘录")}</button><button class="ui-btn" data-tone="ghost" data-act="note-add" data-kind="scripture" data-ref="${esc(ref)}">✎ ${t("记心得")}</button></div></div>${loaded ? otdHTML(2) : ""}`;
 }
 
 /* 读经：计划里今天这一段。读完打勾进一格；也可以记一段计划外的 */
@@ -86,15 +86,15 @@ function readingHTML(){
   const tp = wb.todayPassage(), rl = wb.readingLog(), extra = wb.logsOfKind("scripture", wb.viewDay()).filter(l => l !== rl);
   const s = wb.settings(), zh = s.versionZh || "和合本", en = s.versionEn == null ? "BSB" : s.versionEn;
   let body;
-  if (!tp) body = `<p class="muted">${t("还没选读经计划。选一个，每天这里就会列出当天的段落。")}</p><div class="btns" style="margin-top:0"><button class="ui-btn" data-tone="primary" data-act="plan">${t("选读经计划")}</button><button class="ui-btn" data-tone="ghost" data-act="read-other">${t("记一段读过的")}</button></div>`;
+  if (!tp) body = `<p class="muted">${t("还没选读经计划。选一个，每天这里就会列出当天的段落。")}</p><div class="ui-acts btns" style="margin-top:0"><button class="ui-btn" data-tone="primary" data-act="plan">${t("选读经计划")}</button><button class="ui-btn" data-tone="ghost" data-act="read-other">${t("记一段读过的")}</button></div>`;
   else {
     const it = tp.item;
     // 读完后：大字显示今天读了哪段，小字预告明天；没读完：大字是今天这段
     const headline = rl ? `<b style="font-size:18px">${esc(rl.data.ref || it.label)} ✓</b><div class="small muted">${t("明天：{label}", { label: esc(it.label) })}</div>` : `<b style="font-size:18px">${esc(it.label)}</b>${it.note ? `<div class="small">${esc(it.note)}</div>` : ""}`;
     body = `<div class="row"><div class="v">${headline}<div class="small muted">${tc(esc(tp.plan.name))} · ${t("第 {i} / {n} 段", { i: tp.index + 1, n: tp.total })}${tp.round ? ` · ${t("第 {r} 轮", { r: tp.round + 1 })}` : ""}</div></div></div>
-    ${!rl && it.parts && it.parts.length ? `<div class="btns" style="margin-top:10px"><button class="chip" data-act="read-text" aria-pressed="${S.showText}">${S.showText ? t("收起经文") : t("显示经文")}</button>${S.showText ? `<span class="small muted" style="align-self:center">${esc(zh)}${en ? " · " + esc(en) : ""} <button class="chip" data-act="plan">${t("换译本")}</button></span>` : ""}</div>
+    ${!rl && it.parts && it.parts.length ? `<div class="ui-acts btns" style="margin-top:10px"><button class="chip" data-act="read-text" aria-pressed="${S.showText}">${S.showText ? t("收起经文") : t("显示经文")}</button>${S.showText ? `<span class="small muted" style="align-self:center">${esc(zh)}${en ? " · " + esc(en) : ""} <button class="chip" data-act="plan">${t("换译本")}</button></span>` : ""}</div>
     ${S.showText ? `<div id="passage" class="passage"><p class="muted small">${t("正在抓取经文…")}</p></div>` : ""}` : ""}
-    <div class="btns">${rl ? `<button class="ui-btn" data-tone="ghost" data-act="read-undo">${t("今天读完了 ✓ · 点击撤销")}</button>` : `<button class="ui-btn" data-tone="primary" data-act="read-done">${t("读完了")}</button>`}<button class="ui-btn" data-tone="ghost" data-act="read-other">${t("另记一段")}</button></div>`;
+    <div class="ui-acts btns">${rl ? `<button class="ui-btn" data-tone="ghost" data-act="read-undo">${t("今天读完了 ✓ · 点击撤销")}</button>` : `<button class="ui-btn" data-tone="primary" data-act="read-done">${t("读完了")}</button>`}<button class="ui-btn" data-tone="ghost" data-act="read-other">${t("另记一段")}</button></div>`;
   }
   const extraRows = extra.map(l => `<div class="small muted" style="margin-top:6px" data-swipe-del="extra-read">${t("另读了")} <b>${esc(l.data.ref || "")}</b>${l.data.note ? ` · ${esc(l.data.note)}` : ""} <button class="chip swipe-src" data-act="log-del" data-lid="${esc(l.id)}">${t("删")}</button></div>`).join("");
   if (S.showText && tp && tp.item.parts && tp.item.parts.length) loadPassage(tp.item, zh, en);

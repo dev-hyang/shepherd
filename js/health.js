@@ -231,7 +231,7 @@ function visitsHTML(who){
 function labsHTML(who){
   const data = hl.dataOf(who.key), rows = latestLabs(data);
   if (!rows.length) return `<div class="panel empty">${t("还没有化验记录。")}<br><button class="ui-btn" data-tone="primary" data-hl="new-lab">${t("录入化验")}</button></div>`;
-  return `<div class="btns" style="margin-top:0"><button class="ui-btn" data-tone="primary" data-hl="new-lab">＋ ${t("录入化验")}</button></div>` + Object.keys(LAB_GROUPS).filter(g => rows.some(r => r.group === g)).map(g => {
+  return `<div class="ui-acts btns" style="margin-top:0"><button class="ui-btn" data-tone="primary" data-hl="new-lab">＋ ${t("录入化验")}</button></div>` + Object.keys(LAB_GROUPS).filter(g => rows.some(r => r.group === g)).map(g => {
     const list = rows.filter(r => r.group === g).sort(byOrder), n = list.filter(r => r.flag).length;
     return `${secHead(t(LAB_GROUPS[g]), `<button class="chip" data-hl="ai-panel" data-v="${g}" ${S.hlAiBusy === "panel:" + g ? "disabled" : ""}>✦ ${S.hlAiBusy === "panel:" + g ? t("分析中…") : t("AI 解读这一套")}</button>`, n ? t("{n} 项超出范围", { n }) : t("都在范围内"))}
       ${panelAiHTML(who, g)}<div class="panel hl-labs-ov">${list.map(r => labLine(r, { hist: true })).join("")}</div>`;
@@ -257,7 +257,7 @@ function profileHTML(who){
     ${row("性别", sex ? t(sex) : "")}
     ${!who.kid ? row("身高", p.height_cm ? `${toShow("length", p.height_cm, s)} ${unitOf("length", s)}` : "") : ""}
     ${row("过敏", p.allergies)}${row("既往病史", p.conditions)}${row("长期用药", p.meds)}${row("目标", p.goals)}${row("备注", p.notes)}
-    <div class="btns"><button class="ui-btn" data-tone="primary" data-hl="edit-profile">${t("编辑档案")}</button></div></div>
+    <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-hl="edit-profile">${t("编辑档案")}</button></div></div>
     ${who.kid ? `<p class="small muted">${t("孩子的出生日期、身高体重在小月亮里改。")}</p>` : ""}
     ${secHead(t("单位"))}<div class="seg" role="group" aria-label="${esc(t("单位"))}"><button data-hl="units" data-v="metric" aria-pressed="${s === "metric"}">${t("公制（kg / cm / °C / mmol/L）")}</button><button data-hl="units" data-v="us" aria-pressed="${s === "us"}">${t("美制（lb / in / °F / mg/dL）")}</button></div>
     <p class="small muted" style="margin-top:6px">${t("只影响这台设备上的显示；数据库统一按公制存。")}</p>`;
@@ -276,7 +276,7 @@ const AI_SUM = { visit: "用 AI 读取：拍就诊小结、截图或粘贴文字
 const AI_PH = { visit: "把就诊小结（After Visit Summary）的文字粘贴在这里", lab: "把化验结果的文字粘贴在这里", labs: "把化验结果页的文字粘贴在这里（MyChart 等门户可以整页复制）" };
 const aiBlock = (mode, d) => `<div class="hl-ai2">${attachHTML(ATT(mode), { t, esc, collapsible: true, forceOpen: !!(d && d._aiBusy), summary: t(AI_SUM[mode]), textLabel: t("或者粘贴文字"), ph: t(AI_PH[mode]),
   hint: d && d.ai_used ? t("已经用 AI 读过，保存前请核对。") : mode === "labs" ? t("门户每个套餐截一张图也行；AI 会把每一项填进下面的表，范围按单子上的。照片不保存。") : t("AI 读出来预填下面的表，你核对后再保存；照片不保存。"),
-  after: `<div class="btns" style="margin-top:0"><button type="button" class="ui-btn" data-size="sm" data-tone="primary" data-hl="ai-go" data-v="${mode}" ${d && d._aiBusy ? "disabled" : ""}>${d && d._aiBusy ? t("正在读取…") : `✦ ${t("让 AI 读出来")}`}</button></div>` })}</div>`;
+  after: `<div class="ui-acts btns" style="margin-top:0"><button type="button" class="ui-btn" data-size="sm" data-tone="primary" data-hl="ai-go" data-v="${mode}" ${d && d._aiBusy ? "disabled" : ""}>${d && d._aiBusy ? t("正在读取…") : `✦ ${t("让 AI 读出来")}`}</button></div>` })}</div>`;
 const labsPreview = d => (d._labs && d._labs.length ? `<div class="panel hl-labs-pre"><b>${t("一起保存 {n} 项化验", { n: d._labs.length })}</b><ul>${d._labs.map(x => `<li>${esc(labName(x, lang()))}：<b class="num">${esc(x.value)}</b> ${esc(x.unit || "")}${labFlag(x) ? ` <span class="ui-badge" data-tone="${labFlag(x) === "high" ? "danger" : "caution"}">${t(labFlag(x) === "high" ? "偏高" : "偏低")}</span>` : ""}</li>`).join("")}</ul>
   <button type="button" class="chip" data-hl="ai-labs-clear">${t("不要这些化验")}</button></div>` : "");
 

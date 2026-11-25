@@ -170,7 +170,7 @@ function paint(){
   keepForms(box, () => { box.innerHTML = `<div class="fz-phase" id="fz-phase">${esc(phaseLabel())}${T.phase !== "idle" ? ` · ${t("第 {n} 段", { n: (T.n || 0) + (T.phase === "work" || T.phase === "eye" ? 1 : 0) })}` : ""}${T.pausedLeft != null ? ` · ${t("已暂停")}` : ""}</div>
     <div class="fz-ring"><svg viewBox="0 0 120 120" width="100%" height="100%" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--line)" stroke-width="6"/><circle id="fz-arc" cx="60" cy="60" r="${R}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - frac)).toFixed(1)}" transform="rotate(-90 60 60)"/></svg><div class="fz-time num" id="fz-time">${T.phase === "idle" ? mmss(cfg().work * 60e3) : T.phase === "ready" ? mmss(cfg().work * 60e3) : mmss(left)}</div></div>
     <div class="field" style="margin:8px 0 0"><input id="fz-task" type="text" placeholder="${t("在做什么（可空）")}" value="${esc(T.task || "")}" autocomplete="off"></div>
-    <div class="btns" style="justify-content:center">${btns}</div>
+    <div class="ui-acts btns" style="justify-content:center">${btns}</div>
     <p class="small muted" style="text-align:center;margin-top:6px">${T.n ? t("今天这轮已完成 {n} 段", { n: T.n }) : ""}${T.eyes ? ` · ${t("护眼 {n} 次", { n: T.eyes })}` : ""}</p>`; });   // 计时到点换阶段也会重画：“在做什么”输入框的焦点和光标保住
 }
 function paintTime(){
