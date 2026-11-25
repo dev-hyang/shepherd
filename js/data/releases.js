@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-25.2", title: { zh: "可输入的下拉框和爱家小助手统一", en: "Type-in dropdowns now match Pantry" }, items: [
+    { k: "better", zh: "疫苗名称、自填项这类「可以输入、也有以前的选择可点」的框，电脑上点进去就列出可选项，打字筛选，点一项填进去并收起；也可以填列表里没有的。手机上继续用手机自带的建议条。", en: "On laptop, type-in fields with suggestions list the options when you click in, filter as you type and close after you pick one; you can still type something new. Phones keep their built-in suggestions." },
+  ] },
   { v: "2026-11-25.1", title: { zh: "表单：取消 / 保存固定在底部，删除收进右上角 ⋯", en: "Forms: Cancel / Save pinned at the bottom, Delete in the ⋯ menu" }, items: [
     { k: "better", zh: "各个表单和弹出的页面：顶部不再有「关闭」；表单底部固定显示「取消」「保存」，其他页面底部是「关闭」，往下滚动也一直在。", en: "Forms and pop-up pages no longer have a Close button at the top; forms keep Cancel and Save pinned at the bottom, other pages keep a Close button there." },
     { k: "better", zh: "「删除」不常用，改放在表单右上角的 ⋯ 菜单里，不会再误点。", en: "Delete is rarely used, so it now lives in the ⋯ menu at the top right to avoid accidental taps." },

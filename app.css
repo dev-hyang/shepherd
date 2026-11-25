@@ -15,7 +15,7 @@
   --low:color-mix(in srgb,var(--honey) 40%,var(--ink)); --low-bg:var(--honey-soft);
   --soon:var(--low); --soon-bg:var(--honey-soft);
   --exp:color-mix(in srgb,var(--slate) 75%,var(--ink)); --exp-bg:var(--slate-soft);
-  --surface-2:var(--field); --focus:var(--slate); --font:var(--f-body);
+  --surface-2:var(--field); --focus:var(--slate); --sel-accent:var(--slate); --font:var(--f-body);
   --btn-primary-bg:var(--ink); --btn-primary-ink:var(--surface);   /* 主按钮：墨色底（深色模式跟着 --ink / --surface 翻转） */
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
