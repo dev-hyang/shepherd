@@ -8,6 +8,7 @@ import { ALL_DAYS, KINDS, WEEKDAY, kindOf, modeOf } from "./data/kinds.js";
 import { PLANS } from "./data/plans.js";
 import { SIZES as PAGE_SIZES, pageSize } from "./pager.js";
 import { fbar } from "./ui.js";
+import { formBar, formMenu } from "./shared/ui-form.js";
 import { render } from "./views.js";
 import { usageHTML } from "./usage.js";
 import * as wb from "./wb.js";
@@ -38,7 +39,15 @@ function closeSheet(){
 }
 $("#sheet").addEventListener("close", () => { if (document.body.classList.contains("sheet-open")) { document.body.classList.remove("sheet-open"); render(); restoreScroll(); } });
 window.addEventListener("popstate", () => closeSheet());
-const head = (title, extra = "") => `<div class="sheet-head"><h3 id="sheetTitle">${title}</h3><span>${extra}<button class="iconbtn" data-act="close" aria-label="${esc(t("关闭"))}">${esc(t("关闭"))}</button></span></div>`;
+// 页头只有标题、额外按钮（extra）和可选的右上角 ⋯ 菜单（menu）；没有顶部关闭按钮：表单底部有「取消」，其他面板底部由 ensureCloseBar 补一个「关闭」
+const head = (title, extra = "", menu = "") => `<div class="sheet-head"><h3 id="sheetTitle">${title}</h3><span>${extra}${menu}</span></div>`;
+const closeBarHtml = () => formBar("edit", [{ role: "cancel", label: t("关闭"), attrs: 'data-act="close"' }]);
+/** 面板内容一换，如果底部没有操作条（表单自带取消 / 保存；预览、结果页有自己的「返回」按钮条，带 noprint），就补一条「关闭」 */
+const sheetIn = $("#sheetIn");
+new MutationObserver(() => {
+  if (!sheetIn.children.length || sheetIn.querySelector(".ui-formbar") || sheetIn.querySelector(":scope > .noprint")) return;
+  sheetIn.insertAdjacentHTML("beforeend", closeBarHtml());
+}).observe(sheetIn, { childList: true });
 
 /* ---- 通用小表单：spec 描述字段，保存时把 draft 交给 onSave ---- */
 let form = null;
@@ -64,8 +73,9 @@ function drawForm(){
     const list = f.list ? `<datalist id="${id}_list">${f.list.map(o => `<option value="${esc(o)}">`).join("")}</datalist>` : "";
     return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="text" data-f="${f.k}" value="${esc(v || "")}" placeholder="${ph}" ${f.list ? `list="${id}_list"` : ""}>${list}${hint}</div>`;
   }).join("");
-  $("#sheetIn").innerHTML = `${head(esc(t(title)))}${html}
-    <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="form-save">${t("保存")}</button>${onDelete ? `<button class="ui-btn" data-tone="danger" data-act="form-delete">${t("删除")}</button>` : ""}</div>`;
+  const menu = onDelete ? formMenu([{ label: t("删除"), attrs: 'data-act="form-delete"', tone: "danger" }], { label: t("更多操作") }) : "";   // 删除不常用：放页头右上角 ⋯
+  $("#sheetIn").innerHTML = `${head(esc(t(title)), "", menu)}${html}
+    ${formBar("edit", [{ role: "cancel", label: t("取消"), attrs: 'data-act="close"' }, { role: "save", label: t("保存"), attrs: 'data-act="form-save"' }])}`;
 }
 function readForm(){
   $("#sheetIn").querySelectorAll("[data-f]").forEach(el => {

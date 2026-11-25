@@ -113,7 +113,8 @@ nav.tabs button[aria-current="page"] i{transform:translateY(-1px)}
 dialog.sheet{position:static;display:none;inset:auto;transform:none;margin:0 auto;width:100%;max-width:720px;max-height:none;overflow:visible;border:0;padding:0;background:var(--bg);color:var(--ink)}
 dialog.sheet[open]{display:block}
 body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
-.sheet-in{padding:0 16px calc(140px + env(safe-area-inset-bottom,0px));overflow:visible}
+.sheet-in{padding:0 16px 0;overflow:visible;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}   /* 底部留白交给贴底的 ui-formbar；内容短时操作条也沉到屏幕底部 */
+.sheet-in > .ui-formbar{margin-top:auto;flex:none}
 .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 -16px 8px;padding:12px 16px 10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:3;background:var(--bg);border-bottom:1px solid var(--line)}
 .sheet-head h3{font-size:19px;margin:0}
 .field{margin:12px 0}
@@ -363,7 +364,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 @media print{
   :root{--bg:#fff;--surface:#fff;--ink:#000;--muted:#444;--line:#bbb;--honey-soft:#f3f3f3}
   body{background:#fff}
-  .sheet-head,.noprint,nav.tabs,.toast{display:none !important}
+  .sheet-head,.noprint,nav.tabs,.toast,.ui-formbar{display:none !important}
   .sheet-in{padding:0}
   .notedoc h1{margin-top:0}
 }

@@ -37,7 +37,8 @@ const EN = {
   "姊妹应用": "Sister apps", "姊妹应用：": "Sister apps: ", "（当前）": "(this one)", "打开": "Open", "同一个账号、同一个家庭，四个站点互通。": "One account, one family, four sites.",
   "同一个账号、同一个家庭，四个站点互通；标题旁的左右箭头也能切换。": "One account, one family, four sites; the arrows beside the title switch between them.",
   "界面语言": "Language", "切换整个界面的文字。你自己录入的内容（习惯名、祷告事项、备注……）保持输入时的样子。": "Switches the interface text. What you typed yourself (habit names, prayer items, notes…) stays as entered.",
-  "显示": "Appearance", "外观": "Appearance", "跟随系统": "System", "浅色": "Light", "深色": "Dark", "版本": "Version", "关闭": "Close", "保存": "Save", "删除": "Delete", "删": "Delete", "改": "Edit", "填": "Fill", "撤销": "Undo", "完成": "Done", "全部": "All", "筛选": "Filter", "状态": "Status", "分类": "Category", "类型": "Type", "名称": "Name", "种类": "Kind",
+  "显示": "Appearance", "外观": "Appearance", "跟随系统": "System", "浅色": "Light", "深色": "Dark", "版本": "Version", "关闭": "Close",
+"更多操作": "More actions", "保存": "Save", "删除": "Delete", "删": "Delete", "改": "Edit", "填": "Fill", "撤销": "Undo", "完成": "Done", "全部": "All", "筛选": "Filter", "状态": "Status", "分类": "Category", "类型": "Type", "名称": "Name", "种类": "Kind",
   "已复制": "Copied", "请手动复制：": "Copy by hand: ",
   // ---- 今天 ----
   "早安": "Good morning", "午安": "Good afternoon", "下午好": "Good afternoon", "晚上好": "Good evening", "夜深了": "It's late",

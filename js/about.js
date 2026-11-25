@@ -7,7 +7,7 @@ import { showSheet } from "./sheet.js";
 /* ============ 介绍页 ============ */
 function openAbout(){
   const A = ABOUT, c = s => tc(esc(s));
-  $("#sheetIn").innerHTML = `<div class="sheet-head"><h3 id="sheetTitle">${esc(t("关于牧羊人"))}</h3><span><button class="iconbtn" data-act="close" aria-label="${esc(t("关闭"))}">${esc(t("关闭"))}</button></span></div>
+  $("#sheetIn").innerHTML = `<div class="sheet-head"><h3 id="sheetTitle">${esc(t("关于牧羊人"))}</h3></div>
   <p>${c(A.intro)}</p>
   <h2>${t("设计原则")}</h2>
   <div class="panel"><ol class="plain" style="padding-left:20px">${A.principles.map(([k, d]) => `<li style="margin:6px 0"><b>${c(k)}。</b>${c(d)}</li>`).join("")}</ol></div>
