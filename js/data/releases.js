@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.14", title: { zh: "共用样式表多了按钮变量", en: "Shared stylesheet gains button variables" }, items: [
+    { k: "better", zh: "同步共用按钮样式，并设置本站主按钮用墨色底（界面不变，下一版起按钮换成共用控件）。", en: "Synced the shared button style and set this app's primary button to the ink colour (no visible change; buttons move to the shared control next)." },
+  ] },
   { v: "2026-11-24.13", title: { zh: "共用样式表的按钮点按区域", en: "Shared stylesheet: button tap area" }, items: [
     { k: "better", zh: "和爱家小助手同步共用样式：默认号按钮在手机上的点按区域也不小于 44px（本站暂未使用，界面不变）。", en: "Synced shared styles from Home Pantry: default-size buttons also keep a 44 px tap area on phones (not used here yet; nothing changes on screen)." },
   ] },
