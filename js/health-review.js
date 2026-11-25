@@ -46,7 +46,7 @@ function reviewHTML(who){
   const seg = `<div class="seg mini hl-rv-modes" role="group" aria-label="${esc(t("分析范围"))}">${MODES.map(([k, l, ic]) => `<button data-hl="rv-mode" data-v="${k}" aria-pressed="${m === k}"><span aria-hidden="true">${ic}</span> ${t(l)}</button>`).join("")}</div>`;
   const stale = a && ((m === "recent" && a.ref && a.ref !== recentEvent(data).day) || (a.n != null && now > a.n));
   const meta = a ? `<p class="small muted hl-rv-meta">${t("{d} 分析", { d: fmtDay(String(a.at).slice(0, 10)) })}${stale ? ` · <span class="hl-rv-stale">${m === "recent" && a.ref !== recentEvent(data).day ? t("之后有了新的就诊或化验，可以重新分析") : t("之后又记了 {n} 条，可以重新分析", { n: now - a.n })}</span>` : ""}</p>` : "";
-  const btn = `<button class="btn ${a && !stale ? "" : "primary"}" data-hl="rv-run" ${busy || !aiReady() ? "disabled" : ""}>${busy ? t("分析中…") : a ? t("重新分析") : t("开始分析")}</button>`;
+  const btn = `<button class="ui-btn" data-tone="${a && !stale ? "ghost" : "primary"}" data-hl="rv-run" ${busy || !aiReady() ? "disabled" : ""}>${busy ? t("分析中…") : a ? t("重新分析") : t("开始分析")}</button>`;
   return `${secHead(t("AI 健康分析"), "", t("给出就医、饮食、睡眠、运动的建议"))}<div class="panel hl-ai-res hl-rv">${seg}
     <p class="small muted hl-rv-scope">${esc(scopeText(m, who))}</p>
     ${attachHTML("sh-review", { t, esc, collapsible: true, summary: t("补充信息（可选）：自己写几句、拍照或上传文件"), textLabel: t("补充说明"), ph: t("例：最近总是睡不好、膝盖疼；医生口头说要复查甲状腺；体检报告 PDF…"), hint: t("会和记录一起发给 AI 参考，比如体检报告、医生的单子、你自己的感受。照片不保存。") })}

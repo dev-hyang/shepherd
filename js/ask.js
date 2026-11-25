@@ -124,7 +124,7 @@ const promptText = a => `${systemPrompt()}\n\n${userPrompt(a)}`;
 function viewAsk(){
   const a = st(), ready = aiReady(), p = providerOf(aiSettings().provider), ctx = a.withCtx ? contextText(a.topic) : "";
   const topics = TOPICS.map(x => `<button type="button" class="chip" data-act="ask-topic" data-topic="${x.id}" aria-pressed="${a.topic === x.id}">${x.icon} ${t(x.name)}</button>`).join("");
-  const sites = AI_SITES.map(([n, u]) => `<a class="btn sm" href="${u}" target="_blank" rel="noopener noreferrer">${t(n)}</a>`).join("");
+  const sites = AI_SITES.map(([n, u]) => `<a class="ui-btn" data-size="sm" data-tone="ghost" href="${u}" target="_blank" rel="noopener noreferrer">${t(n)}</a>`).join("");
   return `${pageHead(`${aiIcon(26)} ${t("咩咩咩")}`, chipBtn(ready ? t("换模型") : t("填 API key"), 'data-act="ask-settings"'))}
   <p class="small muted" style="margin:0 0 4px">${ready
     ? t("直接问，回答来自你自己填的 {p}。可以附带最近 7 天的记录摘要（只有数字和进度）。", { p: t(p.name) })
@@ -135,7 +135,7 @@ function viewAsk(){
     <div class="ask-att">${attachHTML(ATT_ASK, { t, esc, noText: true, hint: t("可以拍几张照片或选文件一起问（笔记、讲章、体检单、冰箱里的菜…），也能选 PDF。照片不保存。") })}</div>
     <label class="ask-ctx"><input type="checkbox" name="ctx" ${a.withCtx ? "checked" : ""}><span>${t("附带我最近 7 天的记录摘要（只有统计数字和计划进度；不含祷告内容、笔记正文、任务标题和家人姓名）")}</span></label>
     ${a.withCtx ? `<details class="ask-ctxv"><summary class="small muted">${ctx ? t("看看会发出去什么") : t("摘要为空（登录并记几天后才有）")}</summary>${ctx ? `<pre>${esc(ctx)}</pre>` : ""}</details>` : ""}
-    <div class="btns">${ready ? `<button type="submit" class="btn primary" ${a.busy ? "disabled" : ""}>${a.busy ? t("思考中…") : t("发送")}</button>` : ""}<button type="button" class="btn ${ready ? "" : "primary"}" data-act="ask-copy">${t("复制提示词")}</button></div>
+    <div class="btns">${ready ? `<button type="submit" class="ui-btn" data-tone="primary" ${a.busy ? "disabled" : ""}>${a.busy ? t("思考中…") : t("发送")}</button>` : ""}<button type="button" class="ui-btn" data-tone="${ready ? "ghost" : "primary"}" data-act="ask-copy">${t("复制提示词")}</button></div>
     ${a.error ? `<p class="small" style="color:var(--rose);margin:8px 0 0" role="alert">${esc(a.error)}</p>` : ""}
   </form>
   ${!ready ? `<div class="panel" style="margin-top:10px"><p class="small muted" style="margin:0 0 8px">${t("复制后打开任一 AI 粘贴（手机上会直接打开已安装的 App）：")}</p><div class="btns" style="margin-top:0">${sites}</div></div>` : ""}

@@ -38,7 +38,7 @@ const placeText = v => [v.place && PLACES[v.place] ? `${PLACES[v.place].icon} ${
 /* ---- 列表 ---- */
 function visitsListHTML(who){
   const f = VF(), all = S.hl.visits.filter(v => v.subject === who.key), list = filtered(who.key);
-  if (!all.length) return `<div class="panel empty">${t("还没有就诊记录。")}<br><button class="btn primary" data-hl="new-visit">${t("记一次就诊")}</button></div>`;
+  if (!all.length) return `<div class="panel empty">${t("还没有就诊记录。")}<br><button class="ui-btn" data-tone="primary" data-hl="new-visit">${t("记一次就诊")}</button></div>`;
   const opt = (k, v, label, count) => ({ label: esc(label), attrs: `data-hl="vf" data-k="${k}" data-v="${esc(v)}"`, on: String(f[k]) === String(v), count });
   const kinds = [...new Set(all.map(v => v.kind))], places = [...new Set(all.map(v => v.place || "").filter(Boolean))], years = [...new Set(all.map(v => v.day.slice(0, 4)))].sort().reverse();
   // 筛选面板里只放真正的筛选（类型 / 地点 / 年份 / 复诊：选了以后在下面显示成可点掉的小标签）；排序、每页条数放在面板底部；行 / 时间线放在外面，一眼能切
@@ -87,8 +87,8 @@ function visitDetailHTML(who){
       ${row("地点", esc(placeText(v)))}${row("医生 / 科室", esc(v.provider))}${row("就诊原因", esc(v.reason))}${row("体征", esc(vitalsText(v.vitals || {})))}
       ${row("诊断", esc(v.diagnosis))}${v.advice ? `<div class="hl-advice" style="margin-top:8px"><span class="muted">${t("医生建议")}：</span>${esc(v.advice)}</div>` : ""}
       ${row("复诊", v.follow_up ? esc(fmtDay(v.follow_up)) : "")}${row("备注", esc(v.notes))}
-      <div class="btns"><button class="btn" data-hl="edit-visit" data-id="${esc(v.id)}">${t("编辑")}</button>
-        <a class="btn" href="${esc(PANTRY + "#/bills/onetime?" + bill.toString())}" target="_blank" rel="noopener">🧾 ${t("去爱家记医疗账单")} ↗</a></div>
+      <div class="btns"><button class="ui-btn" data-tone="ghost" data-hl="edit-visit" data-id="${esc(v.id)}">${t("编辑")}</button>
+        <a class="ui-btn" data-tone="ghost" href="${esc(PANTRY + "#/bills/onetime?" + bill.toString())}" target="_blank" rel="noopener">🧾 ${t("去爱家记医疗账单")} ↗</a></div>
       <p class="small muted" style="margin:6px 0 0">${t("爱家小助手是另一个数据库：这里只是打开爱家的一次性账单表单，把地点、日期、就诊人带过去预填，两边不互相关联。")}</p></div>
     ${labs.length ? `${secHead(t("这次的化验"), "", t("{n} 项", { n: labs.length }))}<div class="panel hl-labs-ov">${labs.map(x => { const f = labFlag(x); return `<button class="hl-vd-lab ${f ? "flag-" + f : ""}" data-hl="lab-open" data-v="${esc(x.code || x.name)}"><span>${esc(labName(x, lang()))}</span><b class="num">${esc(+(+x.value).toFixed(2))}</b><small class="muted">${esc(x.unit || "")} · ${t("参考 {r}", { r: rangeText(x) || "—" })}</small>${f ? `<span class="ui-badge" data-tone="${f === "high" ? "danger" : "caution"}">${t(f === "high" ? "偏高" : "偏低")}</span>` : ""}</button>`; }).join("")}</div>` : ""}
     ${aiVisitHTML(v)}`;
@@ -98,7 +98,7 @@ function aiVisitHTML(v){
   const list = (title, arr) => (arr && arr.length ? `<b>${t(title)}</b><ul>${arr.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "");
   return `${secHead(t("AI 解读"), "", t("和医生的意见对照"))}<div class="panel hl-ai-res">
     ${a ? `<p class="small muted">${t("{d} 分析", { d: fmtDay(String(a.at).slice(0, 10)) })}</p>${a.plain ? `<p>${esc(a.plain)}</p>` : ""}${list("和医生意见一致的", a.agree)}${list("AI 的补充或不同看法（复诊时可以问医生）", a.differ)}${list("可以问医生的问题", a.questions)}` : ""}
-    <div class="btns" style="margin-top:${a ? 6 : 0}px"><button class="btn ${a ? "" : "primary"}" data-hl="ai-visit" data-id="${esc(v.id)}" ${busy ? "disabled" : ""}>${busy ? t("分析中…") : a ? t("重新分析") : t("让 AI 解读这次就诊")}</button></div>
+    <div class="btns" style="margin-top:${a ? 6 : 0}px"><button class="ui-btn" data-tone="${a ? "ghost" : "primary"}" data-hl="ai-visit" data-id="${esc(v.id)}" ${busy ? "disabled" : ""}>${busy ? t("分析中…") : a ? t("重新分析") : t("让 AI 解读这次就诊")}</button></div>
     <p class="small muted" style="margin:6px 0 0">${aiReady() ? t("发给你自己设置的 AI：年龄、性别、这次的体征、诊断、医生建议、化验和档案里的病史 / 用药；不发姓名。AI 不是医生：意见不同时以医生为准，把它当成复诊时要问的问题。") : t("先在 我的 → 咩咩咩 → AI 设置 里填一个 API key")}</p></div>`;
 }
 

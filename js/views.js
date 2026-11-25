@@ -143,8 +143,8 @@ function refreshSettingsIfOpen(){ if ($("#sheet").open && $("#sheetTitle") && $(
 function gateHTML(){
   if (S.cloud === "loading") return `<div class="empty">${t("正在连接云端…")}</div>`;
   if (S.cloud === "offline") return `<div class="empty">${t("云端暂时不可用。")}<br>${t("请检查网络后刷新页面。")}</div>`;
-  if (S.cloud === "signedout") return `<div class="empty">${t("用和小月亮一样的账号登录。这里记的是你自己的读经、祷告和身体，默认只有你自己看得到。")}<br><button class="btn primary" data-act="settings">${t("去登录")}</button> <button class="btn" data-act="about">${t("了解牧羊人")}</button></div>`;
-  if (S.cloud === "anon") return `<div class="empty">${t("你是用邀请码进来的匿名身份。个人记录需要一个正式账号，先绑定邮箱。")}<br><button class="btn primary" data-act="settings">${t("绑定邮箱")}</button></div>`;
+  if (S.cloud === "signedout") return `<div class="empty">${t("用和小月亮一样的账号登录。这里记的是你自己的读经、祷告和身体，默认只有你自己看得到。")}<br><button class="ui-btn" data-tone="primary" data-act="settings">${t("去登录")}</button> <button class="ui-btn" data-tone="ghost" data-act="about">${t("了解牧羊人")}</button></div>`;
+  if (S.cloud === "anon") return `<div class="empty">${t("你是用邀请码进来的匿名身份。个人记录需要一个正式账号，先绑定邮箱。")}<br><button class="ui-btn" data-tone="primary" data-act="settings">${t("绑定邮箱")}</button></div>`;
   if (S.wb.error === "missing") return `<div class="empty">${t("数据库还没有牧羊人的表。")}<br>${t("请在 Supabase 执行本地")} <code>supabase/migrations/013_shepherd.sql</code>${t("，然后刷新。")}</div>`;
   if (S.wb.error) return `<div class="empty">${t("读取数据失败。")}<br>${t("请刷新重试。")}</div>`;
   if (!S.wb.loaded) return `<div class="empty">${t("正在读取…")}</div>`;

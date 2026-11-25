@@ -22,6 +22,6 @@ function more(key){ shown[key] = limit(key) + pageSize(); }
 function reset(...keys){ keys.forEach(k => delete shown[k]); }
 function resetAll(){ Object.keys(shown).forEach(k => delete shown[k]); }
 /** 还有没画的就给一个“继续加载”按钮（events.js 按 data-pager-more 处理） */
-const moreBtn = (key, total) => (total > limit(key) ? `<div class="btns" style="margin-top:8px"><button class="btn" data-pager-more="${key}">${t("继续加载")}</button></div>` : "");
+const moreBtn = (key, total) => (total > limit(key) ? `<div class="btns" style="margin-top:8px"><button class="ui-btn" data-tone="ghost" data-pager-more="${key}">${t("继续加载")}</button></div>` : "");
 
 export { SIZES, pageSize, setPageSize, limit, page, more, reset, resetAll, moreBtn };

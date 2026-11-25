@@ -111,7 +111,7 @@ function tasksBlock({ full = false } = {}){
   ${capacityLine(left)}${evening(left)}${doneToday(day)}`;
 }
 function quickForm(){
-  return `<form id="tkQuickForm" class="quickadd" autocomplete="off"><input id="tkQuick" type="text" enterkeyhint="done" placeholder="${esc(t("快速添加：明天 9 点 给妈妈打电话 #家庭 !高"))}" aria-label="${t("快速添加任务")}"><button class="btn primary" type="submit">${t("添加")}</button></form>
+  return `<form id="tkQuickForm" class="quickadd" autocomplete="off"><input id="tkQuick" type="text" enterkeyhint="done" placeholder="${esc(t("快速添加：明天 9 点 给妈妈打电话 #家庭 !高"))}" aria-label="${t("快速添加任务")}"><button class="ui-btn" data-tone="primary" type="submit">${t("添加")}</button></form>
   <p class="small muted" style="margin:4px 2px 8px">${t("日期、时间、#分类、!优先级、30分钟 都能写在一句话里；认不出日期的先进收件箱。")}</p>`;
 }
 
@@ -204,7 +204,7 @@ function viewTasks(){
   const g = gate(); if (g) return `${pageHead(t("任务"))}${g}`;
   const seg = ui().seg;
   const segs = [["today", "今天"], ["plan", "计划"], ["list", "清单"], ["done", "已完成"]];
-  return `${routeNav([{ label: t("任务"), attrs: 'data-tks="today"' }, { label: t((segs.find(x => x[0] === seg) || segs[0])[1]) }], { actions: seg === "list" ? "" : `<button class="btn primary sm" data-act="tk-new">＋ ${t("新任务")}</button>` })}
+  return `${routeNav([{ label: t("任务"), attrs: 'data-tks="today"' }, { label: t((segs.find(x => x[0] === seg) || segs[0])[1]) }], { actions: seg === "list" ? "" : `<button class="ui-btn" data-size="sm" data-tone="primary" data-act="tk-new">＋ ${t("新任务")}</button>` })}
   <div class="seg eq" role="group" aria-label="${t("任务视图")}">${[["today", "今天"], ["plan", "计划"], ["list", "清单"], ["done", "已完成"]].map(([k, l]) => `<button data-tks="${k}" aria-pressed="${seg === k}">${t(l)}</button>`).join("")}</div>
   ${seg === "today" ? `${nudgeBar()}${mitBlock()}${tasksBlock({ full: true })}` : seg === "plan" ? planView() : seg === "list" ? listView() : doneView()}`;
 }
@@ -290,7 +290,7 @@ function openCats(){
   const cats = tk.cats().filter(c => c.id !== "inbox");
   openInfo("任务分类", `<p class="small muted">${t("大类 → 小类两层。改名、换图标颜色、增删小类都在“改”里；收件箱是固定的。")}</p>
   ${cats.map(c => `<div class="panel" style="margin-top:10px"><div class="row"><span style="color:${c.color};font-size:22px">${c.icon}</span><div class="v"><b>${esc(tk.catName(c))}</b><div class="small muted">${(c.subs || []).map(s => esc(tk.subName(c, s))).join(" · ") || t("没有小类")}</div></div><button class="chip" data-act="cat-edit" data-cid="${esc(c.id)}">${t("改")}</button></div></div>`).join("")}
-  <div class="btns"><button class="btn primary" data-act="cat-add">＋ ${t("大类")}</button><button class="btn" data-act="cat-reset">${t("恢复默认")}</button></div>`);
+  <div class="btns"><button class="ui-btn" data-tone="primary" data-act="cat-add">＋ ${t("大类")}</button><button class="ui-btn" data-tone="ghost" data-act="cat-reset">${t("恢复默认")}</button></div>`);
 }
 function editCat(id){
   const all = tk.cats(), cur = all.find(c => c.id === id), blank = { id: "c" + newId().slice(-6), name: "", icon: "📌", color: CAT_COLORS[0], subs: [] }, c = cur || blank;

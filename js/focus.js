@@ -125,7 +125,7 @@ async function askNotify(){
 function showEye(){
   let el = $("#eye");
   if (!el) { el = document.createElement("div"); el.id = "eye"; el.className = "eye"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", t("护眼")); document.body.appendChild(el); }
-  el.innerHTML = `<div class="eye-in"><div class="eye-icon" aria-hidden="true">👀</div><div class="eye-title">${t("看远处")}</div><div class="eye-sub">${t("眨眨眼，看 6 米以外的东西，让眼睛松一松")}</div><div class="eye-time num" id="eye-time">${Math.ceil(leftMs() / 1000)}</div><button class="btn" data-act="fz-skip">${t("好了，继续")}</button></div>`;
+  el.innerHTML = `<div class="eye-in"><div class="eye-icon" aria-hidden="true">👀</div><div class="eye-title">${t("看远处")}</div><div class="eye-sub">${t("眨眨眼，看 6 米以外的东西，让眼睛松一松")}</div><div class="eye-time num" id="eye-time">${Math.ceil(leftMs() / 1000)}</div><button class="ui-btn" data-tone="ghost" data-act="fz-skip">${t("好了，继续")}</button></div>`;
 }
 function hideEye(){ const el = $("#eye"); if (el) el.remove(); }
 
@@ -165,8 +165,8 @@ function paint(){
   const R = 54, C = 2 * Math.PI * R;
   const color = T.phase === "eye" ? "var(--sage)" : T.phase === "break" ? "var(--sky)" : "var(--rose)";
   const btns = T.phase === "idle" || T.phase === "ready"
-    ? `<button class="btn primary" data-act="fz-start">${T.phase === "ready" ? t("开始下一段") : t("开始专注")}</button>${T.n ? `<button class="btn" data-act="fz-reset">${t("清零")}</button>` : ""}`
-    : `${T.pausedLeft != null ? `<button class="btn primary" data-act="fz-resume">${t("继续")}</button>` : `<button class="btn" data-act="fz-pause">${t("暂停")}</button>`}${T.phase === "break" ? `<button class="btn" data-act="fz-skip">${t("跳过休息")}</button>` : T.phase === "eye" ? `<button class="btn" data-act="fz-skip">${t("好了，继续")}</button>` : ""}<button class="btn danger" data-act="fz-stop">${t("结束")}</button>`;
+    ? `<button class="ui-btn" data-tone="primary" data-act="fz-start">${T.phase === "ready" ? t("开始下一段") : t("开始专注")}</button>${T.n ? `<button class="ui-btn" data-tone="ghost" data-act="fz-reset">${t("清零")}</button>` : ""}`
+    : `${T.pausedLeft != null ? `<button class="ui-btn" data-tone="primary" data-act="fz-resume">${t("继续")}</button>` : `<button class="ui-btn" data-tone="ghost" data-act="fz-pause">${t("暂停")}</button>`}${T.phase === "break" ? `<button class="ui-btn" data-tone="ghost" data-act="fz-skip">${t("跳过休息")}</button>` : T.phase === "eye" ? `<button class="ui-btn" data-tone="ghost" data-act="fz-skip">${t("好了，继续")}</button>` : ""}<button class="ui-btn" data-tone="danger" data-act="fz-stop">${t("结束")}</button>`;
   keepForms(box, () => { box.innerHTML = `<div class="fz-phase" id="fz-phase">${esc(phaseLabel())}${T.phase !== "idle" ? ` · ${t("第 {n} 段", { n: (T.n || 0) + (T.phase === "work" || T.phase === "eye" ? 1 : 0) })}` : ""}${T.pausedLeft != null ? ` · ${t("已暂停")}` : ""}</div>
     <div class="fz-ring"><svg viewBox="0 0 120 120" width="100%" height="100%" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--line)" stroke-width="6"/><circle id="fz-arc" cx="60" cy="60" r="${R}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - frac)).toFixed(1)}" transform="rotate(-90 60 60)"/></svg><div class="fz-time num" id="fz-time">${T.phase === "idle" ? mmss(cfg().work * 60e3) : T.phase === "ready" ? mmss(cfg().work * 60e3) : mmss(left)}</div></div>
     <div class="field" style="margin:8px 0 0"><input id="fz-task" type="text" placeholder="${t("在做什么（可空）")}" value="${esc(T.task || "")}" autocomplete="off"></div>

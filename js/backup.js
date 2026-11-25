@@ -233,7 +233,7 @@ function bkBody(cloudOn, syncLine) {
   const provSel = `<select name="provider" aria-label="${esc(t("云盘"))}">${PROVIDERS.map((p) => `<option value="${p.id}" ${p.id === prov.id ? "selected" : ""}>${esc(t(p.name))}</option>`).join("")}</select>`;
   const folderBody = !folder.supported ? `<em class="bk-warn">${t("这个浏览器不能直接写文件夹（手机、iPad 和 Safari 都不行）。手机上用「下载到设备」，再在系统的分享 / 文件里存到 iCloud Drive 或 Google Drive。")}</em>`
     : `<span class="bk-row">${provSel}${folder.name ? `<span class="bk-pill ok">📁 ${esc(folder.name)}${folder.perm !== "granted" ? ` · ${t("待授权")}` : ""}</span>` : ""}</span>
-       <span class="bk-row">${folder.name ? `${folder.perm !== "granted" ? `<button class="btn" data-act="bk-grant">${t("授权这台电脑写入")}</button>` : ""}<button class="chip" data-act="bk-pick">${t("换文件夹")}</button><button class="chip" data-act="bk-forget">${t("不再用")}</button>` : `<button class="btn" data-act="bk-pick">${t("选同步文件夹")}</button>`}</span>
+       <span class="bk-row">${folder.name ? `${folder.perm !== "granted" ? `<button class="ui-btn" data-tone="ghost" data-act="bk-grant">${t("授权这台电脑写入")}</button>` : ""}<button class="chip" data-act="bk-pick">${t("换文件夹")}</button><button class="chip" data-act="bk-forget">${t("不再用")}</button>` : `<button class="ui-btn" data-tone="ghost" data-act="bk-pick">${t("选同步文件夹")}</button>`}</span>
        <em>${esc(t(prov.hint))}</em>`;
   const sqlBody = `<span class="bk-row">${sql.name ? `<span class="bk-pill ok">📁 ${esc(sql.name)}</span><button class="chip" data-act="bk-forget-sql">${t("不再用")}</button>` : folder.supported ? `<button class="chip" data-act="bk-pick-sql">${t("选 supabase 文件夹")}</button>` : ""}</span>`;
   const status = s.last ? t("上次备份 {d}", { d: when(s.last) }) : t("还没备份过");
@@ -247,18 +247,18 @@ function bkBody(cloudOn, syncLine) {
   }
   const notCfg = t("需要先在 js/core/config.js 里填好（见 README「云盘备份」）");
   const driveCard = (k, icon, label, cfgd, tk, pathName, pathLabel, pathVal, ph, pathText) => card(k, has(k), icon, label, cfgd ? t("放在你 {d} 里指定的文件夹，手机电脑都能用；只留 {n} 天", { d: label, n: KEEP_DAYS }) : notCfg,
-    !cfgd ? "" : (k === "gdrive" && s.gdId ? `<span class="bk-row"><span class="bk-pill ok">📁 ${esc(s.gdName || t("已选的文件夹"))}</span><button class="chip" data-act="bk-gd-clear">${t("改用路径")}</button></span>` : `<span class="bk-row bk-path"><label class="small muted">${pathLabel}</label><input name="${pathName}" value="${esc(pathVal || "")}" placeholder="${esc(ph)}" maxlength="120" autocomplete="off"></span>${k === "gdrive" ? `<small class="bk-hint">${t("只能用应用自己建的文件夹；想用你在 Drive 里已有的文件夹，请点下面的「或在 Drive 里选一个文件夹…」。")}</small>` : ""}${k === "gdrive" && tk && DR.gdPickerAvailable() ? `<span class="bk-row"><button class="chip" data-act="bk-gd-pick">${t("或在 Drive 里选一个文件夹…")}</button></span>` : ""}`) + `<span class="bk-row">${tk ? `<span class="bk-pill ok">${t("已连接")}${tk.email ? ` ${esc(tk.email)}` : ""}${pathText ? ` · ${esc(pathText)}` : ""}</span><button class="chip" data-act="bk-${k === "gdrive" ? "gd" : "dbx"}-off">${t("断开")}</button>` : `<button class="btn" data-act="bk-${k === "gdrive" ? "gd" : "dbx"}-on">${t("连接 {d}", { d: label })}</button>`}</span>`, !cfgd || !tk);
+    !cfgd ? "" : (k === "gdrive" && s.gdId ? `<span class="bk-row"><span class="bk-pill ok">📁 ${esc(s.gdName || t("已选的文件夹"))}</span><button class="chip" data-act="bk-gd-clear">${t("改用路径")}</button></span>` : `<span class="bk-row bk-path"><label class="small muted">${pathLabel}</label><input name="${pathName}" value="${esc(pathVal || "")}" placeholder="${esc(ph)}" maxlength="120" autocomplete="off"></span>${k === "gdrive" ? `<small class="bk-hint">${t("只能用应用自己建的文件夹；想用你在 Drive 里已有的文件夹，请点下面的「或在 Drive 里选一个文件夹…」。")}</small>` : ""}${k === "gdrive" && tk && DR.gdPickerAvailable() ? `<span class="bk-row"><button class="chip" data-act="bk-gd-pick">${t("或在 Drive 里选一个文件夹…")}</button></span>` : ""}`) + `<span class="bk-row">${tk ? `<span class="bk-pill ok">${t("已连接")}${tk.email ? ` ${esc(tk.email)}` : ""}${pathText ? ` · ${esc(pathText)}` : ""}</span><button class="chip" data-act="bk-${k === "gdrive" ? "gd" : "dbx"}-off">${t("断开")}</button>` : `<button class="ui-btn" data-tone="ghost" data-act="bk-${k === "gdrive" ? "gd" : "dbx"}-on">${t("连接 {d}", { d: label })}</button>`}</span>`, !cfgd || !tk);
   const pv = UI.preview;
   const preview = !pv ? "" : pv.ok ? `<div class="bk-notice"><b>${t("备份来自 {h}，{d}，共 {n} 行", { h: esc(pv.scope || t("未知")), d: when(pv.exported_at), n: pv.rows })}</b><p class="small muted">${Object.entries(pv.counts).map(([k, v]) => `${esc(k)} ${v}`).join(" · ")}</p>
       ${pv.same ? "" : `<p class="small muted">${t("这是另一个账号的备份（换了项目或重新注册时正常）：会导进现在登录的账号。")}</p>`}
       <p class="small">${t("恢复 = 把文件里的数据导回我的账号：只补缺的：已有同主键的行不动，文件里没有的行也不删。")}</p>
-      <div class="bk-row" style="margin-top:8px"><button class="btn primary" data-act="bk-restore">${t("恢复到我的账号")}</button><button class="btn" data-act="bk-cancel">${t("取消")}</button></div></div>`
+      <div class="bk-row" style="margin-top:8px"><button class="ui-btn" data-tone="primary" data-act="bk-restore">${t("恢复到我的账号")}</button><button class="ui-btn" data-tone="ghost" data-act="bk-cancel">${t("取消")}</button></div></div>`
     : `<div class="bk-notice bad"><b>${t("不能恢复：{why}", { why: esc(pv.why) })}</b> <button class="chip" data-act="bk-cancel">${t("关闭")}</button></div>`;
   return `<div class="bk-sync">${syncLine}</div>
-    ${S.backupPending ? `<div class="bk-notice"><b>${t("定时备份在等你点一下")}</b> ${t("写入这台电脑的文件夹需要你授权一次。")} <button class="btn" data-act="bk-now">${t("继续备份")}</button></div>` : ""}
+    ${S.backupPending ? `<div class="bk-notice"><b>${t("定时备份在等你点一下")}</b> ${t("写入这台电脑的文件夹需要你授权一次。")} <button class="ui-btn" data-tone="ghost" data-act="bk-now">${t("继续备份")}</button></div>` : ""}
     ${UI.result ? `<div class="bk-notice ${UI.result.ok === false ? "bad" : ""}"><b>${esc(UI.result.title)}</b>${UI.result.detail ? `<p class="small muted">${esc(UI.result.detail)}</p>` : ""}</div>` : ""}
     <div class="panel bk-panel bk-status"><div><b>${esc(status)}</b><small>${s.lastInfo ? `${esc(s.lastInfo)} · ` : ""}${esc(nextTxt)}</small></div>
-      <div class="bk-row"><button class="btn primary" data-act="bk-now">${t("现在备份")}</button><button class="btn" data-act="bk-download">${t("下载一份")}</button></div></div>
+      <div class="bk-row"><button class="ui-btn" data-tone="primary" data-act="bk-now">${t("现在备份")}</button><button class="ui-btn" data-tone="ghost" data-act="bk-download">${t("下载一份")}</button></div></div>
     <form id="backupForm" class="panel bk-panel" onsubmit="return false">
       <div class="bk-notice"><b>${t("定时备份由小月亮统一做")}</b> ${t("小月亮的「同步、备份与恢复」会连同家庭学堂、牧羊人一起定时备份（家主备份全家，含每位家人的数据）；这里只用来手动备份 / 恢复本应用。云盘连接与小月亮共用，在任一应用连接一次即可。")}</div>
       <div class="lab">${t("备份到哪")} <span class="small muted">${t("可多选")}</span></div>
@@ -273,7 +273,7 @@ function bkBody(cloudOn, syncLine) {
     </form>
     ${cloudList}
     <div class="panel bk-panel"><div class="lab">${t("从备份恢复")}</div><p class="small muted">${t("换了手机、数据库被删、或换了 Supabase 项目：先登录（新项目要先在 SQL Editor 执行 baby-log 仓库的 supabase/schema.sql，再注册），再在这里选备份文件导回来；家庭可见的项会挂到现在的家庭。")}</p>
-      <div class="bk-row"><label class="btn">${t("选备份文件")}<input id="backupFile" type="file" accept="application/json,.json" hidden></label></div>${preview}</div>`;
+      <div class="bk-row"><label class="ui-btn" data-tone="ghost">${t("选备份文件")}<input id="backupFile" type="file" accept="application/json,.json" hidden></label></div>${preview}</div>`;
 }
 function openBackup() {
   if (!CFG.ready()) { toast(t("先登录")); return; }

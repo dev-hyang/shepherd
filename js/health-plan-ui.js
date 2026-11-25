@@ -43,7 +43,7 @@ function todayPlanHTML(who){
   const acts = hl.dataOf(who.key).activity, today = S.day;
   const doneW = acts.filter(a => a.kind === "workout" && a.day === today);
   const wRow = w ? `<div class="hl-today-row"><span class="mi" aria-hidden="true">🏃</span><div class="mt"><b>${esc(L(w.x))}</b><small>${t("约 {n} 分钟", { n: w.x.minutes || 30 })} · ${workoutOn(plan, today) ? t("今天要练") : t("今天休息（想练也可以）")}</small></div>
-      ${doneW.length ? `<span class="ui-badge" data-tone="ok">✓ ${t("{n} 分钟", { n: doneW.reduce((s, a) => s + (+a.minutes || 0), 0) })}</span>` : S.hl.plansOk ? `<button class="btn primary hl-did" data-hl="wk-quick" data-ref="${esc(plan.workout.tpl)}">${t("今天照做了")}</button>` : ""}</div>` : "";
+      ${doneW.length ? `<span class="ui-badge" data-tone="ok">✓ ${t("{n} 分钟", { n: doneW.reduce((s, a) => s + (+a.minutes || 0), 0) })}</span>` : S.hl.plansOk ? `<button class="ui-btn hl-did" data-tone="primary" data-hl="wk-quick" data-ref="${esc(plan.workout.tpl)}">${t("今天照做了")}</button>` : ""}</div>` : "";
   const dRow = d ? `<div class="hl-today-row hl-meals"><span class="mi" aria-hidden="true">🥗</span><div class="mt"><b>${esc(L(d.x))}</b>${S.hl.plansOk ? mealButtons(who.key, today) : ""}</div></div>` : "";
   return `${secHead(t("今日计划"), `<button class="chip" data-hl="view" data-v="plan">${t("计划")} ›</button>`)}<div class="panel hl-today">${wRow}${dRow}</div>`;
 }
@@ -69,12 +69,12 @@ function planHTML(who){
   const cur = `${secHead(t("当前计划"))}<div class="hl-plan-cards">
     <div class="panel hl-plan-card"><div class="hl-pc-head"><span aria-hidden="true">🏃</span> <b>${w ? esc(L(w.x)) : t("还没选训练")}</b></div>
       ${w ? `<p class="small muted">${t("约 {n} 分钟", { n: w.x.minutes || 30 })} · ${days.map(x => t("周{d}", { d: t(WEEKDAY[x]) })).join(" ") || "—"}${plan.workout.remind !== false && plan.workout.time ? ` · ⏰ ${esc(plan.workout.time)}` : ""}</p>
-      <div class="btns"><button class="btn" data-hl="tpl" data-kind="workout" data-ref="${esc(plan.workout.tpl)}">${t("看动作")}</button><button class="btn" data-hl="plan-sched">${t("日子和提醒")}</button><button class="btn" data-hl="view" data-v="workout">${t("换一个")}</button></div>`
-        : `<div class="btns"><button class="btn" data-hl="view" data-v="workout">${t("去选")}</button></div>`}</div>
+      <div class="btns"><button class="ui-btn" data-tone="ghost" data-hl="tpl" data-kind="workout" data-ref="${esc(plan.workout.tpl)}">${t("看动作")}</button><button class="ui-btn" data-tone="ghost" data-hl="plan-sched">${t("日子和提醒")}</button><button class="ui-btn" data-tone="ghost" data-hl="view" data-v="workout">${t("换一个")}</button></div>`
+        : `<div class="btns"><button class="ui-btn" data-tone="ghost" data-hl="view" data-v="workout">${t("去选")}</button></div>`}</div>
     <div class="panel hl-plan-card"><div class="hl-pc-head"><span aria-hidden="true">🥗</span> <b>${d ? esc(L(d.x)) : t("还没选饮食")}</b></div>
       ${d ? `<p class="small muted">${esc(L(d.x.summary) || d.x.summary || "")}</p>
-      <div class="btns"><button class="btn" data-hl="tpl" data-kind="diet" data-ref="${esc(plan.diet.tpl)}">${t("看怎么吃")}</button>${(d.x.shop || []).length ? `<a class="btn" href="${esc(pantryLink((d.x.shop || []).map(L), L(d.x)))}" target="_blank" rel="noopener">🛒 ${t("加进爱家采购清单")} ↗</a>` : ""}<button class="btn" data-hl="view" data-v="diet">${t("换一个")}</button></div>`
-        : `<div class="btns"><button class="btn" data-hl="view" data-v="diet">${t("去选")}</button></div>`}</div></div>`;
+      <div class="btns"><button class="ui-btn" data-tone="ghost" data-hl="tpl" data-kind="diet" data-ref="${esc(plan.diet.tpl)}">${t("看怎么吃")}</button>${(d.x.shop || []).length ? `<a class="ui-btn" data-tone="ghost" href="${esc(pantryLink((d.x.shop || []).map(L), L(d.x)))}" target="_blank" rel="noopener">🛒 ${t("加进爱家采购清单")} ↗</a>` : ""}<button class="ui-btn" data-tone="ghost" data-hl="view" data-v="diet">${t("换一个")}</button></div>`
+        : `<div class="btns"><button class="ui-btn" data-tone="ghost" data-hl="view" data-v="diet">${t("去选")}</button></div>`}</div></div>`;
   return `${week}${cur}${recHTML(who, data, prof)}${aiHTML(who, prof)}`;
 }
 function recHTML(who, data, prof){
@@ -97,7 +97,7 @@ function aiHTML(who, prof){
     ${a.cautions && a.cautions.length ? `<b>${t("复诊时可以问医生")}</b><ul>${a.cautions.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
     <div class="btns">${a.diet && DIETS[a.diet] ? `<button class="chip" data-hl="plan-set" data-kind="diet" data-ref="b:${esc(a.diet)}">🥗 ${t("用 {n}", { n: L(DIETS[a.diet]) })}</button>` : ""}${a.workout && WORKOUTS[a.workout] ? `<button class="chip" data-hl="plan-set" data-kind="workout" data-ref="b:${esc(a.workout)}">🏃 ${t("用 {n}", { n: L(WORKOUTS[a.workout]) })}</button>` : ""}</div></div>` : "";
   return `${secHead(t("让咩咩咩分析"), "", "AI")}<div class="panel">${res}
-    <div class="btns" style="margin-top:${a ? 8 : 0}px"><button class="btn ${a ? "" : "primary"}" data-hl="ai-plan" ${S.hlAiBusy ? "disabled" : ""}>${S.hlAiBusy ? t("分析中…") : a ? t("重新分析") : t("分析并推荐")}</button></div>
+    <div class="btns" style="margin-top:${a ? 8 : 0}px"><button class="ui-btn" data-tone="${a ? "ghost" : "primary"}" data-hl="ai-plan" ${S.hlAiBusy ? "disabled" : ""}>${S.hlAiBusy ? t("分析中…") : a ? t("重新分析") : t("分析并推荐")}</button></div>
     <p class="small muted" style="margin:6px 0 0">${aiReady() ? t("发给你自己设置的 AI：年龄、性别、最近的体征、化验、病史、目标和医生建议原文；不发姓名。结果只是建议，采纳以后才变成计划。") : t("先在 我的 → 咩咩咩 → AI 设置 里填一个 API key")}</p></div>`;
 }
 
@@ -137,10 +137,10 @@ function dietHTML(who){
 function openTpl(kind, ref){
   const tp = tpl(ref, kind); if (!tp) return;
   const x = tp.x, key = UI().who, on = (planOf(key)[kind] || {}).tpl === ref;
-  const acts = `<div class="btns">${on ? `<span class="ui-badge" data-tone="ok">✓ ${t("当前计划")}</span>` : `<button class="btn primary" data-hl="plan-set" data-kind="${kind}" data-ref="${esc(ref)}">${t("设为计划")}</button>`}
-    ${kind === "workout" && S.hl.plansOk ? `<button class="btn" data-hl="wk-quick" data-ref="${esc(ref)}">${t("今天照做了")}</button>` : ""}
-    ${kind === "diet" && (x.shop || []).length ? `<a class="btn" href="${esc(pantryLink(x.shop.map(L), L(x)))}" target="_blank" rel="noopener">🛒 ${t("加进爱家采购清单")} ↗</a>` : ""}
-    ${S.hl.plansOk ? `<button class="btn" data-hl="tpl-copy" data-kind="${kind}" data-ref="${esc(ref)}">${tp.src === "c" ? t("编辑") : t("复制后改成自己的")}</button>` : ""}</div>`;
+  const acts = `<div class="btns">${on ? `<span class="ui-badge" data-tone="ok">✓ ${t("当前计划")}</span>` : `<button class="ui-btn" data-tone="primary" data-hl="plan-set" data-kind="${kind}" data-ref="${esc(ref)}">${t("设为计划")}</button>`}
+    ${kind === "workout" && S.hl.plansOk ? `<button class="ui-btn" data-tone="ghost" data-hl="wk-quick" data-ref="${esc(ref)}">${t("今天照做了")}</button>` : ""}
+    ${kind === "diet" && (x.shop || []).length ? `<a class="ui-btn" data-tone="ghost" href="${esc(pantryLink(x.shop.map(L), L(x)))}" target="_blank" rel="noopener">🛒 ${t("加进爱家采购清单")} ↗</a>` : ""}
+    ${S.hl.plansOk ? `<button class="ui-btn" data-tone="ghost" data-hl="tpl-copy" data-kind="${kind}" data-ref="${esc(ref)}">${tp.src === "c" ? t("编辑") : t("复制后改成自己的")}</button>` : ""}</div>`;
   const li = arr => `<ul>${(arr || []).map(v => `<li>${esc(L(v) || v)}</li>`).join("")}</ul>`;
   const body = kind === "workout"
     ? `<p class="muted">${t("约 {n} 分钟", { n: x.minutes || 30 })} · ${levelDots(x.level || 1)}</p>${x.note ? `<p class="notice-soft">${esc(L(x.note))}</p>` : ""}<ol class="hl-steps">${(x.items || []).map(it => `<li>${esc(itemText(it))}</li>`).join("")}</ol>`

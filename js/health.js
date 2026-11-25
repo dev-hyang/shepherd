@@ -60,7 +60,7 @@ function viewHealth(){
   const NEW = [["visit", "就诊", "🩺"], ["lab", "化验", "🧪"], ["measure", "测量", "⚖"], ...(S.hl.plansOk ? [["workout", "训练", "🏃"]] : [])];
   const newAct = k => (k === "workout" ? "wk-new" : "new-" + k);
   const add = `<span class="hl-add hl-d">${NEW.map(([k, l]) => `<button class="chip" data-hl="${newAct(k)}">＋ ${t(l)}</button>`).join("")}</span>`;
-  const addMenu = `<details class="hl-addmenu"><summary class="btn hl-addbtn">＋ ${t("记一笔")}</summary><div class="hl-addmenu-list" role="menu">${NEW.map(([k, l, ic]) => `<button role="menuitem" data-hl="${newAct(k)}"><span aria-hidden="true">${ic}</span> ${t(l)}</button>`).join("")}</div></details>`;
+  const addMenu = `<details class="hl-addmenu"><summary class="ui-btn hl-addbtn" data-tone="ghost">＋ ${t("记一笔")}</summary><div class="hl-addmenu-list" role="menu">${NEW.map(([k, l, ic]) => `<button role="menuitem" data-hl="${newAct(k)}"><span aria-hidden="true">${ic}</span> ${t(l)}</button>`).join("")}</div></details>`;
   const chips = `<div class="chips hl-people hl-d" role="group" aria-label="${esc(t("看谁的"))}">${ppl.map(p => `<button class="chip" data-hl="who" data-key="${esc(p.key)}" aria-pressed="${p.key === ui.who}">${p.kid ? "🧒 " : ""}${esc(p.name)}${p.me ? ` <span class="cnt">${t("我")}</span>` : ""}</button>`).join("")}</div>`;
   const tabs = `<div class="chips hl-views hl-d" role="group" aria-label="${esc(t("健康内容"))}">${VIEWS.map(([k, l]) => `<button class="chip" data-hl="view" data-v="${k}" aria-pressed="${parentView(ui.view) === k}">${t(l)}</button>`).join("")}</div>`;
   const mobile = `<div class="hl-mhead hl-m"><div class="hl-mrow"><label class="sr-only" for="hlWho">${t("看谁的")}</label><select id="hlWho" class="hl-sel">${ppl.map(p => `<option value="${esc(p.key)}" ${p.key === ui.who ? "selected" : ""}>${p.kid ? "🧒 " : "👤 "}${esc(p.name)}${p.me ? ` (${t("我")})` : ""}</option>`).join("")}</select>${addMenu}</div>
@@ -91,7 +91,7 @@ function overviewHTML(who){
   const due = dueItems({ data, today: S.day, kid });
   const left = `${todayPlanHTML(who)}${secHead(t("待办"))}${dueHTML(due, kid)}${reviewHTML(who)}${lastVisitHTML(data)}${kid ? `<p class="small muted" style="margin-top:10px">${t("孩子的身高体重和体检日程以小月亮为准，这里只读。")} <a href="https://dev-hyang.github.io/baby-log/" target="_blank" rel="noopener">${t("去小月亮")} ↗</a></p>` : ""}`;
   if (!metrics.length) return `<div class="hl-grid"><div class="hl-col">${left}</div><div class="hl-col">${secHead(t("关键指标"))}<div class="panel empty">${t("还没有数字。记一次就诊（带体征）、一份化验或一次在家测量，这里就会出现走势。")}<br>
-    <button class="btn primary" data-hl="new-visit">${t("记一次就诊")}</button> <button class="btn" data-hl="new-measure">${t("记一次测量")}</button></div></div></div>`;
+    <button class="ui-btn" data-tone="primary" data-hl="new-visit">${t("记一次就诊")}</button> <button class="ui-btn" data-tone="ghost" data-hl="new-measure">${t("记一次测量")}</button></div></div></div>`;
   const vitals = vitalMetricsOf(data, { kid, heightCm });
   const cards = vitals.map(m => {
     const meta = metricMeta(m, data), s = series(m, data, { heightCm }), l = latest(s), f = metricFlag(m, l, data, { kid });
@@ -224,14 +224,14 @@ function labOverviewHTML(data){
 /* 就诊：时间倒序，分页 */
 function visitsHTML(who){
   const data = hl.dataOf(who.key), list = [...data.visits].sort((a, b) => b.day.localeCompare(a.day));
-  if (!list.length) return `<div class="panel empty">${t("还没有就诊记录。")}<br><button class="btn primary" data-hl="new-visit">${t("记一次就诊")}</button></div>`;
+  if (!list.length) return `<div class="panel empty">${t("还没有就诊记录。")}<br><button class="ui-btn" data-tone="primary" data-hl="new-visit">${t("记一次就诊")}</button></div>`;
   return `<div class="hl-list">${pg.page("hlVisits", list).map(v => visitCard(v, data)).join("")}</div>${pg.moreBtn("hlVisits", list.length)}`;
 }
 /* 化验：按套餐分组（血脂 / 代谢综合 / 血常规…），每项最新值 + 范围条 + 最近 4 次（点一次改那一条） */
 function labsHTML(who){
   const data = hl.dataOf(who.key), rows = latestLabs(data);
-  if (!rows.length) return `<div class="panel empty">${t("还没有化验记录。")}<br><button class="btn primary" data-hl="new-lab">${t("录入化验")}</button></div>`;
-  return `<div class="btns" style="margin-top:0"><button class="btn primary" data-hl="new-lab">＋ ${t("录入化验")}</button></div>` + Object.keys(LAB_GROUPS).filter(g => rows.some(r => r.group === g)).map(g => {
+  if (!rows.length) return `<div class="panel empty">${t("还没有化验记录。")}<br><button class="ui-btn" data-tone="primary" data-hl="new-lab">${t("录入化验")}</button></div>`;
+  return `<div class="btns" style="margin-top:0"><button class="ui-btn" data-tone="primary" data-hl="new-lab">＋ ${t("录入化验")}</button></div>` + Object.keys(LAB_GROUPS).filter(g => rows.some(r => r.group === g)).map(g => {
     const list = rows.filter(r => r.group === g).sort(byOrder), n = list.filter(r => r.flag).length;
     return `${secHead(t(LAB_GROUPS[g]), `<button class="chip" data-hl="ai-panel" data-v="${g}" ${S.hlAiBusy === "panel:" + g ? "disabled" : ""}>✦ ${S.hlAiBusy === "panel:" + g ? t("分析中…") : t("AI 解读这一套")}</button>`, n ? t("{n} 项超出范围", { n }) : t("都在范围内"))}
       ${panelAiHTML(who, g)}<div class="panel hl-labs-ov">${list.map(r => labLine(r, { hist: true })).join("")}</div>`;
@@ -240,7 +240,7 @@ function labsHTML(who){
 /* 测量：时间倒序 */
 function measuresHTML(who){
   const data = hl.dataOf(who.key), list = [...data.measures].sort((a, b) => b.day.localeCompare(a.day) || String(b.created_at).localeCompare(String(a.created_at)));
-  if (!list.length) return `<div class="panel empty">${t("还没有在家测量的记录。")}<br><button class="btn primary" data-hl="new-measure">${t("记一次测量")}</button></div>`;
+  if (!list.length) return `<div class="panel empty">${t("还没有在家测量的记录。")}<br><button class="ui-btn" data-tone="primary" data-hl="new-measure">${t("记一次测量")}</button></div>`;
   const s = sys();
   const val = m => { const k = MEASURE_KINDS[m.kind]; return m.kind === "bp" ? `${m.value}/${m.value2 ?? "–"} mmHg` : `${toShow(k.dim, m.value, s)} ${unitOf(k.dim, s)}`; };
   return `<div class="panel mlist">${pg.page("hlMeasures", list).map(m => `<button class="mrow" data-hl="edit-measure" data-id="${esc(m.id)}"><span class="mi" aria-hidden="true">${MEASURE_KINDS[m.kind].icon}</span>
@@ -257,7 +257,7 @@ function profileHTML(who){
     ${row("性别", sex ? t(sex) : "")}
     ${!who.kid ? row("身高", p.height_cm ? `${toShow("length", p.height_cm, s)} ${unitOf("length", s)}` : "") : ""}
     ${row("过敏", p.allergies)}${row("既往病史", p.conditions)}${row("长期用药", p.meds)}${row("目标", p.goals)}${row("备注", p.notes)}
-    <div class="btns"><button class="btn primary" data-hl="edit-profile">${t("编辑档案")}</button></div></div>
+    <div class="btns"><button class="ui-btn" data-tone="primary" data-hl="edit-profile">${t("编辑档案")}</button></div></div>
     ${who.kid ? `<p class="small muted">${t("孩子的出生日期、身高体重在小月亮里改。")}</p>` : ""}
     ${secHead(t("单位"))}<div class="seg" role="group" aria-label="${esc(t("单位"))}"><button data-hl="units" data-v="metric" aria-pressed="${s === "metric"}">${t("公制（kg / cm / °C / mmol/L）")}</button><button data-hl="units" data-v="us" aria-pressed="${s === "us"}">${t("美制（lb / in / °F / mg/dL）")}</button></div>
     <p class="small muted" style="margin-top:6px">${t("只影响这台设备上的显示；数据库统一按公制存。")}</p>`;
@@ -276,7 +276,7 @@ const AI_SUM = { visit: "用 AI 读取：拍就诊小结、截图或粘贴文字
 const AI_PH = { visit: "把就诊小结（After Visit Summary）的文字粘贴在这里", lab: "把化验结果的文字粘贴在这里", labs: "把化验结果页的文字粘贴在这里（MyChart 等门户可以整页复制）" };
 const aiBlock = (mode, d) => `<div class="hl-ai2">${attachHTML(ATT(mode), { t, esc, collapsible: true, forceOpen: !!(d && d._aiBusy), summary: t(AI_SUM[mode]), textLabel: t("或者粘贴文字"), ph: t(AI_PH[mode]),
   hint: d && d.ai_used ? t("已经用 AI 读过，保存前请核对。") : mode === "labs" ? t("门户每个套餐截一张图也行；AI 会把每一项填进下面的表，范围按单子上的。照片不保存。") : t("AI 读出来预填下面的表，你核对后再保存；照片不保存。"),
-  after: `<div class="btns" style="margin-top:0"><button type="button" class="btn primary sm" data-hl="ai-go" data-v="${mode}" ${d && d._aiBusy ? "disabled" : ""}>${d && d._aiBusy ? t("正在读取…") : `✦ ${t("让 AI 读出来")}`}</button></div>` })}</div>`;
+  after: `<div class="btns" style="margin-top:0"><button type="button" class="ui-btn" data-size="sm" data-tone="primary" data-hl="ai-go" data-v="${mode}" ${d && d._aiBusy ? "disabled" : ""}>${d && d._aiBusy ? t("正在读取…") : `✦ ${t("让 AI 读出来")}`}</button></div>` })}</div>`;
 const labsPreview = d => (d._labs && d._labs.length ? `<div class="panel hl-labs-pre"><b>${t("一起保存 {n} 项化验", { n: d._labs.length })}</b><ul>${d._labs.map(x => `<li>${esc(labName(x, lang()))}：<b class="num">${esc(x.value)}</b> ${esc(x.unit || "")}${labFlag(x) ? ` <span class="ui-badge" data-tone="${labFlag(x) === "high" ? "danger" : "caution"}">${t(labFlag(x) === "high" ? "偏高" : "偏低")}</span>` : ""}</li>`).join("")}</ul>
   <button type="button" class="chip" data-hl="ai-labs-clear">${t("不要这些化验")}</button></div>` : "");
 

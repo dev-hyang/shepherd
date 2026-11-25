@@ -89,7 +89,7 @@ function aiItemHTML(who, k){
   return `${secHead(t("AI 解读这一项"), "", t("数值的意思和走势"))}<div class="panel hl-ai-res">
     ${a ? `<p class="small muted">${t("{d} 分析", { d: fmtDay(String(a.at).slice(0, 10)) })}${a.n && a.n !== n ? ` · ${t("之后又记了 {n} 次，可以重新分析", { n: n - a.n })}` : ""}</p>${a.meaning ? `<p>${esc(a.meaning)}</p>` : ""}
       ${a.trend_text ? `<p><b>${esc(t(TREND[a.trend] || a.trend || ""))}</b> ${esc(a.trend_text)}</p>` : ""}${list("日常可以做的", a.tips)}${list("可以问医生的问题", a.ask)}` : ""}
-    <div class="btns" style="margin-top:${a ? 6 : 0}px"><button class="btn ${a ? "" : "primary"}" data-hl="ai-item" ${busy ? "disabled" : ""}>${busy ? t("分析中…") : a ? t("重新分析") : t("让 AI 解读")}</button></div>
+    <div class="btns" style="margin-top:${a ? 6 : 0}px"><button class="ui-btn" data-tone="${a ? "ghost" : "primary"}" data-hl="ai-item" ${busy ? "disabled" : ""}>${busy ? t("分析中…") : a ? t("重新分析") : t("让 AI 解读")}</button></div>
     <p class="small muted" style="margin:6px 0 0">${t("只是帮你读懂数字，不是诊断；以医生意见为准。")}</p></div>`;
 }
 /** 化验页每个套餐下面：已有的 AI 解读（折叠） */

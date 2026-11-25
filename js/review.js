@@ -37,7 +37,7 @@ function summarize(p, days){
 }
 function viewReview(){
   const practices = S.wb.practices.filter(p => !p.archived);
-  if (!practices.length) return `<div class="empty">${t("还没有习惯，也就没有可回顾的。")}<br><button class="btn primary" data-tab="today">${t("去今天页添加")}</button></div>`;
+  if (!practices.length) return `<div class="empty">${t("还没有习惯，也就没有可回顾的。")}<br><button class="ui-btn" data-tone="primary" data-tab="today">${t("去今天页添加")}</button></div>`;
   const r = S.review, R = RANGES[r.range] || RANGES["4w"];
   const cur = dayList(S.day, R.days), prev = dayList(wb.dayAdd(S.day, -R.days), R.days);
   if (!practices.some(p => p.id === r.metric)) r.metric = practices[0].id;

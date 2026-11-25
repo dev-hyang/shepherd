@@ -28,7 +28,7 @@ function fbar({ id, groups = [], q = null, add = null, extra = "" }){
   return `<div class="fbar-wrap"><div class="fbar">
     ${groups.length ? `<button class="fbtn ${sel.length ? "on" : ""}" data-fpop="${id}" aria-expanded="${open}" aria-controls="fpop-${id}"><span aria-hidden="true">⚲</span> ${t("筛选")}${sel.length ? ` <b class="fn">${sel.length}</b>` : ""}</button>` : ""}
     ${q ? `<input type="search" id="${q.id}" class="fq" value="${esc(q.value)}" placeholder="${esc(t(q.ph))}" aria-label="${esc(t(q.ph))}" enterkeyhint="search" autocomplete="off">` : ""}
-    ${add ? `<button class="btn primary fadd" ${add.attrs}>＋ ${t(add.label)}</button>` : ""}
+    ${add ? `<button class="ui-btn fadd" data-tone="primary" ${add.attrs}>＋ ${t(add.label)}</button>` : ""}
     ${pop}</div>
     ${sel.length ? `<div class="fsum">${sel.map(({ g, cur }) => `<button class="fchip" ${g.opts[0].attrs} aria-label="${esc(t("清除"))}">${esc(t(g.label))}：${cur.label} ✕</button>`).join("")}</div>` : ""}</div>`;
 }
