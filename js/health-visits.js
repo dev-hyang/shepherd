@@ -59,7 +59,7 @@ function visitsListHTML(who){
 }
 function rowsHTML(list){
   return `<div class="panel mlist hl-vrows">${list.map(v => { const k = VISIT_KINDS[v.kind] || VISIT_KINDS.other, labs = S.hl.labs.filter(x => x.visit_id === v.id), bad = labs.filter(labFlag).length;
-    return `<button class="mrow" data-hl="open-visit" data-id="${esc(v.id)}"><span class="mi" aria-hidden="true">${k.icon}</span>
+    return `<button class="ui-row mrow" data-hl="open-visit" data-id="${esc(v.id)}"><span class="mi" aria-hidden="true">${k.icon}</span>
       <span class="mt"><b>${esc(fmtDay(v.day))} · ${esc(t(k.label))}${v.follow_up && v.follow_up >= S.day ? ` <span class="ui-badge" data-tone="caution">${t("复诊 {d}", { d: fmtDay(v.follow_up) })}</span>` : ""}${v.ai ? ` <span class="ui-badge" data-tone="accent">AI</span>` : ""}</b>
         <small>${esc([placeText(v), v.provider].filter(Boolean).join(" · ") || t("没填地点"))}</small>
         ${v.reason || v.diagnosis ? `<small>${esc([v.reason, v.diagnosis].filter(Boolean).join(" · ").slice(0, 120))}</small>` : ""}

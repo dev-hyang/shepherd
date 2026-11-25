@@ -38,7 +38,7 @@ function labItemHTML(who){
       sub: [t("参考 {r}", { r: rangeText(x) || "—" }), visit ? `🩺 ${fmtDay(visit.day)}` : "", x.notes, x.ai_used ? "AI" : ""].filter(Boolean).map(esc).join(" · ") }; };
   const list = mode === "timeline"
     ? `<ol class="hl-tl">${shown.map(x => { const r = rec(x); return `<li class="hl-tl-item"><span class="hl-tl-dot ${r.g ? "flag-" + r.g : ""}" aria-hidden="true">🧪</span><button class="hl-tl-card" data-hl="edit-lab" data-id="${esc(x.id)}"><span class="hl-tl-top"><span class="num muted">${esc(fmtDay(x.day))}</span></span><span>${r.main}</span><span class="small muted">${r.sub}</span></button></li>`; }).join("")}</ol>`
-    : `<div class="panel mlist">${shown.map(x => { const r = rec(x); return `<button class="mrow" data-hl="edit-lab" data-id="${esc(x.id)}"><span class="mi" aria-hidden="true">${r.g ? "!" : "✓"}</span><span class="mt"><b>${esc(fmtDay(x.day))} · ${r.main}</b><small>${r.sub}</small></span><span class="ui-chev" aria-hidden="true">›</span></button>`; }).join("")}</div>`;
+    : `<div class="panel mlist">${shown.map(x => { const r = rec(x); return `<button class="ui-row mrow" data-hl="edit-lab" data-id="${esc(x.id)}"><span class="mi" aria-hidden="true">${r.g ? "!" : "✓"}</span><span class="mt"><b>${esc(fmtDay(x.day))} · ${r.main}</b><small>${r.sub}</small></span><span class="ui-chev" aria-hidden="true">›</span></button>`; }).join("")}</div>`;
   return `${head}${chart}${aiItemHTML(who, k)}${secHead(t("每次的记录"), view, t("点一条改或删"))}${list}${pg.moreBtn("hlLabRec", rows.length)}`;
 }
 

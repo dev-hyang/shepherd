@@ -243,7 +243,7 @@ function measuresHTML(who){
   if (!list.length) return `<div class="panel empty">${t("还没有在家测量的记录。")}<br><button class="ui-btn" data-tone="primary" data-hl="new-measure">${t("记一次测量")}</button></div>`;
   const s = sys();
   const val = m => { const k = MEASURE_KINDS[m.kind]; return m.kind === "bp" ? `${m.value}/${m.value2 ?? "–"} mmHg` : `${toShow(k.dim, m.value, s)} ${unitOf(k.dim, s)}`; };
-  return `<div class="panel mlist">${pg.page("hlMeasures", list).map(m => `<button class="mrow" data-hl="edit-measure" data-id="${esc(m.id)}"><span class="mi" aria-hidden="true">${MEASURE_KINDS[m.kind].icon}</span>
+  return `<div class="panel mlist">${pg.page("hlMeasures", list).map(m => `<button class="ui-row mrow" data-hl="edit-measure" data-id="${esc(m.id)}"><span class="mi" aria-hidden="true">${MEASURE_KINDS[m.kind].icon}</span>
     <span class="mt"><b>${esc(t(MEASURE_KINDS[m.kind].label))} · <span class="num">${esc(val(m))}</span></b><small>${fmtDay(m.day)}${m.notes ? ` · ${esc(m.notes)}` : ""}</small></span><span class="ui-chev" aria-hidden="true">›</span></button>`).join("")}</div>${pg.moreBtn("hlMeasures", list.length)}`;
 }
 /* 档案 */

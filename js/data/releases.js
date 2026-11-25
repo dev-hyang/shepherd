@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-24.18", title: { zh: "菜单行换成共用的行控件", en: "Menu rows use the shared row control" }, items: [
+    { k: "better", zh: "各页面的菜单行换成和爱家小助手同一个行控件：同样的最小高度和分隔线（界面几乎不变）。", en: "Menu rows across the app now use the same row control as Home Pantry: same minimum height and dividers (nearly no visible change)." },
+  ] },
   { v: "2026-11-24.17", title: { zh: "箭头统一成共用控件", en: "Arrows now use the shared arrow control" }, items: [
     { k: "better", zh: "菜单行右边的箭头和发布日志的箭头，换成和爱家小助手同一个箭头控件（界面几乎不变）。", en: "The arrows on menu rows and the release-notes arrow now use the same control as Home Pantry (nearly no visible change)." },
   ] },

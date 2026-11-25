@@ -105,10 +105,10 @@ function aiHTML(who, prof){
 function workoutHTML(who){
   const key = who.key, data = hl.dataOf(key), plan = planOf(key);
   const list = libFor("workout", who.kid).map(ref => ({ ref, tp: tpl(ref, "workout") })).filter(x => x.tp);
-  const lib = `<div class="panel mlist">${list.map(({ ref, tp }) => `<button class="mrow" data-hl="tpl" data-kind="workout" data-ref="${esc(ref)}"><span class="mi" aria-hidden="true">${tp.src === "c" ? "✎" : "🏃"}</span>
+  const lib = `<div class="panel mlist">${list.map(({ ref, tp }) => `<button class="ui-row mrow" data-hl="tpl" data-kind="workout" data-ref="${esc(ref)}"><span class="mi" aria-hidden="true">${tp.src === "c" ? "✎" : "🏃"}</span>
     <span class="mt"><b>${esc(L(tp.x))}${(plan.workout || {}).tpl === ref ? ` <span class="ui-badge" data-tone="ok">${t("当前")}</span>` : ""}</b><small>${t("约 {n} 分钟", { n: tp.x.minutes || 30 })} · ${levelDots(tp.x.level || 1)} · ${(tp.x.tags || []).filter(x => TAGS[x]).map(x => t(TAGS[x])).join(" · ")}</small></span><span class="ui-chev" aria-hidden="true">›</span></button>`).join("")}</div>`;
   const logs = data.activity.filter(a => a.kind === "workout").sort((a, b) => b.day.localeCompare(a.day));
-  const hist = logs.length ? `<div class="panel mlist">${pg.page("hlWk", logs).map(a => { const tp = tpl(a.template, "workout"); return `<button class="mrow" data-hl="wk-edit" data-id="${esc(a.id)}"><span class="mi" aria-hidden="true">✓</span>
+  const hist = logs.length ? `<div class="panel mlist">${pg.page("hlWk", logs).map(a => { const tp = tpl(a.template, "workout"); return `<button class="ui-row mrow" data-hl="wk-edit" data-id="${esc(a.id)}"><span class="mi" aria-hidden="true">✓</span>
       <span class="mt"><b>${esc(tp ? L(tp.x) : t("自由训练"))} · ${t("{n} 分钟", { n: a.minutes || 0 })}</b><small>${fmtDay(a.day)}${(a.data || {}).note ? ` · ${esc(a.data.note)}` : ""}</small></span><span class="ui-chev" aria-hidden="true">›</span></button>`; }).join("")}</div>${pg.moreBtn("hlWk", logs.length)}`
     : `<div class="panel small muted">${t("还没有训练记录。")}</div>`;
   return `${S.hl.plansOk ? "" : noTables()}${secHead(t("训练模版"), S.hl.plansOk ? `<button class="chip" data-hl="tpl-new" data-kind="workout">＋ ${t("自己建一个")}</button>` : "")}${lib}
@@ -127,7 +127,7 @@ function dietHTML(who){
   const cell = (day, slot) => { const m = meals.find(a => a.day === day && (a.data || {}).slot === slot), v = m && m.data.followed; return `<td class="hl-g ${v || ""}" title="${esc(fmtDay(day))}">${v ? FOLLOW.find(f => f[0] === v)[2] : "·"}</td>`; };
   const grid = d && meals.length ? `<div class="panel scroll-x"><table class="hl-grid7"><caption class="sr-only">${t("最近 7 天的饮食")}</caption><thead><tr><th></th>${days.map(x => `<th scope="col">${t("周{d}", { d: t(WEEKDAY[new Date(x + "T12:00:00").getDay()]) })}</th>`).join("")}</tr></thead>
     <tbody>${SLOTS.map(([slot, label]) => `<tr><th scope="row">${t(label)}</th>${days.map(x => cell(x, slot)).join("")}</tr>`).join("")}</tbody></table></div>` : "";
-  const lib = `<div class="panel mlist">${list.map(({ ref, tp }) => `<button class="mrow" data-hl="tpl" data-kind="diet" data-ref="${esc(ref)}"><span class="mi" aria-hidden="true">${tp.src === "c" ? "✎" : "🥗"}</span>
+  const lib = `<div class="panel mlist">${list.map(({ ref, tp }) => `<button class="ui-row mrow" data-hl="tpl" data-kind="diet" data-ref="${esc(ref)}"><span class="mi" aria-hidden="true">${tp.src === "c" ? "✎" : "🥗"}</span>
     <span class="mt"><b>${esc(L(tp.x))}${(plan.diet || {}).tpl === ref ? ` <span class="ui-badge" data-tone="ok">${t("当前")}</span>` : ""}</b><small>${esc(L(tp.x.summary) || "")}</small></span><span class="ui-chev" aria-hidden="true">›</span></button>`).join("")}</div>`;
   return `${S.hl.plansOk ? "" : noTables()}${today}${grid}${secHead(t("饮食模版"), S.hl.plansOk ? `<button class="chip" data-hl="tpl-new" data-kind="diet">＋ ${t("自己建一个")}</button>` : "")}${lib}
     ${who.kid ? `<p class="small muted">${t("孩子按餐盘法，不数热量、不说减重。")}</p>` : ""}`;
