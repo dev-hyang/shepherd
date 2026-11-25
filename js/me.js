@@ -6,11 +6,11 @@ import { esc } from "./core/util.js";
 import { askEntryHTML } from "./ask.js";
 
 /* ============ “我的”页：不常用的入口收到一处 ============ */
-const mrow = (act, title, desc, icon, badge) => `<button class="mrow" ${act}><span class="mi" aria-hidden="true">${icon}</span><span class="mt"><b>${title}</b>${desc ? `<small>${desc}</small>` : ""}</span>${badge ? `<span class="mbadge">${badge}</span>` : ""}<span class="mch" aria-hidden="true">›</span></button>`;
+const mrow = (act, title, desc, icon, badge) => `<button class="mrow" ${act}><span class="mi" aria-hidden="true">${icon}</span><span class="mt"><b>${title}</b>${desc ? `<small>${desc}</small>` : ""}</span>${badge ? `<span class="mbadge">${badge}</span>` : ""}<span class="ui-chev" aria-hidden="true">›</span></button>`;
 function viewMe(){
   const ready = S.cloud === "ready" && S.wb.loaded;
   const who = ready ? esc(myName()) : S.cloud === "signedout" ? t("还没登录") : S.cloud === "anon" ? t("请绑定邮箱") : "";
-  const link = a => `<a class="mrow" href="${a.url}"><span class="mi" aria-hidden="true">↗</span><span class="mt"><b>${esc(t(a.name))}</b><small>${tc(esc(a.desc))}</small></span><span class="mch" aria-hidden="true">›</span></a>`;
+  const link = a => `<a class="mrow" href="${a.url}"><span class="mi" aria-hidden="true">↗</span><span class="mt"><b>${esc(t(a.name))}</b><small>${tc(esc(a.desc))}</small></span><span class="ui-chev" aria-hidden="true">›</span></a>`;
   const live = ready ? S.wb.practices.filter(p => !p.archived) : [];
   const meds = live.filter(p => ["med", "supplement"].includes(p.kind)).length, habits = live.length - meds;
   return `

@@ -145,7 +145,7 @@ function viewAsk(){
 }
 /** 今天页 / 我的 列表里的入口行 */
 function askEntryHTML(){
-  return `<div class="panel mlist ask-entry"><button class="mrow" data-tab="ask"><span class="mi" aria-hidden="true">${aiIcon(22)}</span><span class="mt"><b>${t("咩咩咩")}</b><small>${t("问本周灵修、身体作息、时间专注、祷告与读经…")}</small></span><span class="mch" aria-hidden="true">›</span></button></div>`;
+  return `<div class="panel mlist ask-entry"><button class="mrow" data-tab="ask"><span class="mi" aria-hidden="true">${aiIcon(22)}</span><span class="mt"><b>${t("咩咩咩")}</b><small>${t("问本周灵修、身体作息、时间专注、祷告与读经…")}</small></span><span class="ui-chev" aria-hidden="true">›</span></button></div>`;
 }
 
 /* ---- 动作 ---- */

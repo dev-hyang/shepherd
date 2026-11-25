@@ -63,7 +63,7 @@ function rowsHTML(list){
       <span class="mt"><b>${esc(fmtDay(v.day))} · ${esc(t(k.label))}${v.follow_up && v.follow_up >= S.day ? ` <span class="ui-badge" data-tone="caution">${t("复诊 {d}", { d: fmtDay(v.follow_up) })}</span>` : ""}${v.ai ? ` <span class="ui-badge" data-tone="accent">AI</span>` : ""}</b>
         <small>${esc([placeText(v), v.provider].filter(Boolean).join(" · ") || t("没填地点"))}</small>
         ${v.reason || v.diagnosis ? `<small>${esc([v.reason, v.diagnosis].filter(Boolean).join(" · ").slice(0, 120))}</small>` : ""}
-        ${labs.length ? `<small>${t("化验 {n} 项", { n: labs.length })}${bad ? ` · <span class="hl-bad">${t("{n} 项超出范围", { n: bad })}</span>` : ""}</small>` : ""}</span><span class="mch" aria-hidden="true">›</span></button>`; }).join("")}</div>`;
+        ${labs.length ? `<small>${t("化验 {n} 项", { n: labs.length })}${bad ? ` · <span class="hl-bad">${t("{n} 项超出范围", { n: bad })}</span>` : ""}</small>` : ""}</span><span class="ui-chev" aria-hidden="true">›</span></button>`; }).join("")}</div>`;
 }
 function timelineHTML(list){
   let lastYm = "";
