@@ -122,6 +122,15 @@ body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 .field input[type=text],.field input[type=password],.field input[type=number],.field input[type=date],.field input[type=time],.field textarea,.field select{width:100%;border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:11px 12px;font-size:16px;min-height:var(--ctl-h)}
 .field input[type=text],.field input[type=password],.field input[type=number],.field input[type=date],.field input[type=time],.field input[type=search],.field select{height:var(--ctl-h)}   /* è¾“å…¥æ¡† / ä¸‹æ‹‰ / æ—¥æœŸåŽŸç”Ÿè¡Œé«˜ä¸åŒï¼šåŒä¸€å¼ è¡¨å•é‡Œç»Ÿä¸€æˆä¸€æ ·é«˜ */
 .field textarea{min-height:70px;resize:vertical}
+/* 表单网格：默认每个字段整行；电脑 ≥640px 时带 w 的短字段并排（field--s 占 1/3，field--m 占 1/2）；手机永远单列。网格里行距统一 12px，不靠各字段自己的上下外边距 */
+.fgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin:12px 0}
+.fgrid > *{grid-column:1 / -1;min-width:0}
+.fgrid > .field{margin:0}
+@media (min-width:640px){.fgrid > .field--s{grid-column:span 2}.fgrid > .field--m{grid-column:span 3}}
+/* 前缀 [框] 后缀：「每周 [3] 次」；框保持和别的输入框同高，字不换行 */
+.fin{display:flex;align-items:center;gap:8px}
+.fin > span{flex:none;color:var(--muted);font-size:15px;white-space:nowrap}
+.fin > input{flex:1 1 auto;min-width:0}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg button{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-sm);padding:9px 12px;cursor:pointer;min-height:var(--ctl-h);font-size:15px}
 .seg button[aria-pressed="true"]{background:var(--slate);border-color:var(--slate);color:#fff}

@@ -8,6 +8,7 @@ import { ALL_DAYS, KINDS, WEEKDAY, kindOf, modeOf } from "./data/kinds.js";
 import { PLANS } from "./data/plans.js";
 import { SIZES as PAGE_SIZES, pageSize } from "./pager.js";
 import { fbar } from "./ui.js";
+import { fieldsHtml } from "./form-fields.js";
 import { formBar, formMenu } from "./shared/ui-form.js";
 import { render } from "./views.js";
 import { usageHTML } from "./usage.js";
@@ -57,22 +58,7 @@ function openForm(title, fields, values, onSave, onDelete){
 }
 function drawForm(){
   const { title, fields, draft, onDelete } = form;
-  const html = fields.map(f => {
-    if (f.when && !f.when(draft)) return "";
-    const v = draft[f.k], id = "f_" + f.k, label = t(f.label || ""), ph = esc(t(f.ph || ""));
-    const hint = f.hint ? `<div class="small muted" style="margin-top:4px">${t(f.hint)}</div>` : "";
-    if (f.type === "seg") return `<div class="field"><div class="lab" id="${id}">${label}</div><div class="seg" role="group" aria-labelledby="${id}">${(f.optsFn ? f.optsFn(draft) : f.opts).map(([val, lab]) => `<button type="button" data-seg="${f.k}" data-v="${esc(val)}" aria-pressed="${String(v) === String(val)}">${esc(f.raw ? lab : t(lab))}</button>`).join("")}</div>${hint}</div>`;
-    if (f.type === "multi") return `<div class="field"><div class="lab" id="${id}">${label}</div><div class="seg" role="group" aria-labelledby="${id}">${(f.optsFn ? f.optsFn(draft) : f.opts).map(([val, lab]) => `<button type="button" data-multi="${f.k}" data-v="${esc(val)}" aria-pressed="${(v || []).map(String).includes(String(val))}">${esc(f.raw ? lab : t(lab))}</button>`).join("")}</div>${hint}</div>`;
-    if (f.type === "area") return `<div class="field"><label for="${id}">${label}</label><textarea id="${id}" data-f="${f.k}" placeholder="${ph}" ${f.rows ? `style="min-height:${f.rows * 24}px"` : ""}>${esc(v || "")}</textarea>${hint}</div>`;
-    if (f.type === "num") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="number" inputmode="decimal" min="0" step="${f.step || 1}" data-f="${f.k}" value="${v ?? ""}" placeholder="${ph}">${hint}</div>`;
-    if (f.type === "time") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="time" data-f="${f.k}" value="${esc(v || "")}">${hint}</div>`;
-    if (f.type === "date") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="date" data-f="${f.k}"${f.past ? ` max="${dayKey(Date.now())}"` : ""} value="${esc(v || "")}">${hint}</div>`; // past：记录性质，不能选未来
-    if (f.type === "password") return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="password" data-f="${f.k}" value="${esc(v || "")}" placeholder="${ph}" autocomplete="off" autocapitalize="off" spellcheck="false">${hint}</div>`;
-    if (f.type === "check") return `<div class="field"><label class="check"><input type="checkbox" data-f="${f.k}" ${v ? "checked" : ""}>${label}</label>${hint}</div>`;
-    if (f.type === "html") return `<div class="field">${typeof f.html === "function" ? f.html(draft) : f.html}</div>`;
-    const list = f.list ? `<datalist id="${id}_list">${f.list.map(o => `<option value="${esc(o)}">`).join("")}</datalist>` : "";
-    return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="text" data-f="${f.k}" value="${esc(v || "")}" placeholder="${ph}" ${f.list ? `list="${id}_list"` : ""}>${list}${hint}</div>`;
-  }).join("");
+  const html = fieldsHtml(fields, draft);
   const menu = onDelete ? formMenu([{ label: t("删除"), attrs: 'data-act="form-delete"', tone: "danger" }], { label: t("更多操作") }) : "";   // 删除不常用：放页头右上角 ⋯
   $("#sheetIn").innerHTML = `${head(esc(t(title)), "", menu)}${html}
     ${formBar("edit", [{ role: "cancel", label: t("取消"), attrs: 'data-act="close"' }, { role: "save", label: t("保存"), attrs: 'data-act="form-save"' }])}`;

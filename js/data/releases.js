@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.2", title: { zh: "表单排版：短字段可并排", en: "Forms: short fields can sit side by side" }, items: [
+    { k: "better", zh: "表单现在支持把数字、日期、时间这类短字段排在同一行，也支持「每周 [ 3 ] 次」这样把前后文字放在输入框两侧（电脑上并排，手机上仍是一列）。后面几版会逐个表单用上。", en: "Forms can now place short fields (numbers, dates, times) on one row and wrap an input with text like “Every week [ 3 ] times”. Side by side on laptop, one column on phone. The next versions apply it form by form." },
+  ] },
   { v: "2026-11-26.1", title: { zh: "表单控件统一高度", en: "Form controls now share one height" }, items: [
     { k: "better", zh: "表单里的输入框、下拉、选项按钮、勾选框统一成同一个高度，更整齐，手机上也更好点。", en: "Inputs, dropdowns, option buttons and checkboxes in forms now share one height, tidier and easier to tap." },
   ] },
