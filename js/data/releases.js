@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.15", title: { zh: "搜索、筛选、目录按钮和爱家小助手统一", en: "Search, Filter and Directory buttons match the pantry app" }, items: [
+    { k: "better", zh: "搜索框、「筛选」和「目录」按钮一样高、一样的圆角和线条图标；筛选里选了几项，用小圆标显示个数。", en: "Search box, Filter and Directory buttons share one height, radius and line icons; the number of active filters shows as a small badge." },
+    { k: "better", zh: "筛选面板和目录面板都有标题行；目录里当前页打勾。", en: "Filter and Directory panels have a title row; the current page is checked in Directory." }
+  ] },
   { v: "2026-11-26.14", title: { zh: "路径栏统一：目录列全站页面，网址与路径一致，后退键可用", en: "Unified path bar: full-site Directory, URLs match the path, browser Back works" }, items: [
     { k: "better", zh: "每一页（包括今天、我的）顶上都有路径栏；去掉「返回」按钮，想上一层点路径，想回上一页用浏览器后退。", en: "Every page, including Today and Me, has the path bar; the Back button is gone — click the path to go up, use the browser Back to return." },
     { k: "better", zh: "「目录」列出整棵页面树（今天 / 习惯 / 记录…、任务、健康、祷告、我的），当前页打勾，任何页面都一样。", en: "Directory lists the whole page tree with the current page checked, the same on every page." },

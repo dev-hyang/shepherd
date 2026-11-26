@@ -1062,3 +1062,29 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
 .crumb .dirmenu{max-height:min(70vh,520px);overflow-y:auto;overscroll-behavior:contain}
 .crumb .dir-item[data-lvl="1"]{padding-left:30px}
 .crumb .dir-item[data-lvl="2"]{padding-left:48px}
+
+/* ===== 搜索框 / 筛选按钮 / 目录按钮：和爱家小助手同一套（2026-11-26.15） =====
+   同高 40px、圆角 12px、字 15px（手机 16px，点按区域靠 ::after 延伸到 ≥44px）；筛选 / 目录带线条图标；已选筛选数用墨色小圆标；面板第一行是标题。 */
+:root{--ctl-r:12px}
+.fbtn{min-height:40px;padding:0 14px;border-radius:var(--ctl-r);font-size:15px;font-weight:600;background:var(--surface);color:inherit;gap:6px}
+.fbtn.on{border-color:var(--line);color:inherit;font-weight:600}
+.fbtn[aria-expanded="true"]{background:var(--surface-2,var(--field))}
+.fbtn .fn{background:var(--ink);color:var(--bg)}
+.fq{height:40px;min-height:40px;padding:0 12px;border-radius:var(--ctl-r);font-size:15px}
+.fadd{min-height:40px}
+.fbar:not(:has(.fq)){justify-content:flex-end}
+.fpop{padding:10px 12px 12px;border-radius:var(--ctl-r);box-shadow:0 12px 28px rgba(0,0,0,.16)}
+.fpop-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:0 2px 6px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+.fpop-head b{font-size:15px}
+.fpop-ico{flex:none;display:block}
+.crumb .crumb-menu{min-height:40px;padding:0 14px;border-radius:var(--ctl-r);background:var(--surface);color:inherit;font-size:15px;font-weight:600}
+.crumb .dirmenu{padding:10px 12px 12px}
+.crumb .dir-item{font-weight:600}
+.crumb .dir-item[aria-current="page"]::after{content:"✓";margin-left:auto;font-weight:700}
+@media (max-width:640px),(pointer:coarse){
+  .fq{font-size:16px}
+  .fbtn::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,44px);transform:translateY(-50%)}
+  .crumb .crumb-menu{min-height:40px}
+}
+.fbar > .fpop{left:auto;right:0}   /* 筛选面板从按钮这一侧（右）展开，和爱家小助手一致 */
+@media (max-width:440px){.fbar:has(.fadd) .fq{flex:1 1 100%}.fbar:has(.fadd) .fadd{margin-left:auto}}   /* 手机：有「新增」按钮时，搜索框独占一行，筛选和新增在下一行，不零散折行 */
