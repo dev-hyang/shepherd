@@ -14,7 +14,7 @@ const S = {
   pick: null,              // 今天页“补记”选的过去某一天（null = 今天）；见 wb.viewDay()
   review: { range: "4w", metric: "scripture" },
   prayerFilter: { status: "open", cat: "all", q: "" },
-  prayerView: "pray",      // 祷告页的两个子页：pray 代祷 | notes 灵修笔记
+  prayerView: "home",      // 祷告页：home 首页 | read 读经 | notes 灵修 | pray 祷告
   fpop: null,              // 当前展开的筛选面板（见 ui.js）
   showText: false,         // 今天页是否展开经文正文
   loadedAt: 0              // 上次整批读取成功的时间（auth.loadData）；切回前台 60 秒内不重读

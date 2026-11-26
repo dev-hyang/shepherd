@@ -54,7 +54,7 @@ function routeOf(){
     return `#/health${u.view && u.view !== "overview" ? "/" + u.view + (id ? "/" + enc(id) : "") : ""}${u.who ? "?who=" + enc(u.who) : ""}`;
   }
   if (S.tab === "tasks" && S.tkUi && S.tkUi.seg !== "today") return "#/tasks/" + S.tkUi.seg;
-  if (S.tab === "prayer" && S.prayerView !== "pray") return "#/prayer/" + S.prayerView;
+  if (S.tab === "prayer" && S.prayerView !== "home") return "#/prayer/" + S.prayerView;
   return S.tab === "today" ? "" : "#/" + S.tab;
 }
 /* 刷新后浏览器还留着「表单开着」的历史标记，但页面已经重新开始、什么都没开：清掉，不然 syncRoute 会一直以为表单还开着，再也不更新网址（刷新永远回到同一页） */
@@ -71,7 +71,7 @@ function restoreRoute(){
     if (["lab", "visit", "measure"].includes(r.q.get("new"))) u.openNew = r.q.get("new");   // 其他应用直接打开「录入化验 / 就诊 / 测量」：#/health/labs?who=c:<孩子id>&new=lab（家庭学堂的化验页用）
   }
   if (r.tab === "tasks" && S.tkUi) S.tkUi.seg = ["plan", "list", "done"].includes(r.sub) ? r.sub : "today";
-  if (r.tab === "prayer") S.prayerView = r.sub === "notes" ? "notes" : "pray";
+  if (r.tab === "prayer") S.prayerView = ["read", "notes", "pray"].includes(r.sub) ? r.sub : "home";
   return true;
 }
 function syncRoute(){

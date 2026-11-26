@@ -993,3 +993,12 @@ body.sheet-open .fab{display:none}
 .daybar input[type=date]{min-height:var(--ctl-h,44px);border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:0 10px;font:inherit;font-size:16px;box-sizing:border-box}
 main:has(.fab){padding-bottom:96px}
 @media (min-width:760px){.fab{right:max(16px,calc(50vw - 360px + 16px))}}
+
+/* 祷告首页三张卡、读经页近 7 天（2026-11-26.5） */
+.kpis.k3{grid-template-columns:minmax(0,1fr)}
+@media (min-width:600px){.kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.daystrip{display:flex;gap:8px;justify-content:space-between;margin-top:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+.daystrip span{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.daystrip i{width:100%;max-width:34px;height:26px;border-radius:8px;background:var(--line)}
+.daystrip .on i{background:var(--sage)}
+.daystrip small{font-size:12px;color:var(--muted)}

@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.5", title: { zh: "祷告页重做：首页 + 读经 / 灵修 / 祷告", en: "Prayer page redone: home + Reading / Devotions / Prayer" }, items: [
+    { k: "new", zh: "祷告页有了首页：读经、灵修、祷告三张卡，点进去是各自的页面，也可以用左上角的「目录」直接跳。", en: "The Prayer tab now has a home with three cards (Reading, Devotions, Prayer); open one, or jump with the Directory button." },
+    { k: "better", zh: "读经页：今天这一段、连续天数、近 7 天读了几天、计划进度和最近 7 天的小格子。", en: "Reading page: today's passage, streak, days read this week, plan progress and a 7-day strip." },
+    { k: "better", zh: "新增代祷、新增笔记改成右下角的圆形 ＋。", en: "Adding a prayer or a note now uses the round + at the bottom right." }
+  ] },
   { v: "2026-11-26.4", title: { zh: "新页面「今天 / 习惯」，回顾并进来", en: "New Today / Habits page; Review merged in" }, items: [
     { k: "new", zh: "今天页的「今日习惯」和「家人」搬到新页面「今天 / 习惯」（点今天页的习惯卡进入），日期补记也在这里；新增习惯用右下角的 ＋。", en: "Today's habits and family moved to a new Today / Habits page (tap the Habits card), including back-dating; add a habit with the + at the bottom right." },
     { k: "better", zh: "底部的「回顾」页签去掉了，趋势图和最近 28 天格子放在「习惯」页下半部分，「记录」「顶部卡片」「用药」「专注计时」的入口也在这页。", en: "The Review tab is gone: trends and the 28-day grid now sit at the bottom of the Habits page, next to Records, top cards, meds and focus timer." }

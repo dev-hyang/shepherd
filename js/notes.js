@@ -81,7 +81,7 @@ function viewNotes(){
     { label: "类型", opts: ["all", ...Object.keys(NOTE_KINDS)].map(k => opt("kind", k, k === "all" ? t("全部") : `${kindIcon(k)} ${esc(kindLabel(k))}`, cnt(k))) },
     ...(tags.length ? [{ label: "标签", opts: [opt("tag", "all", t("全部标签")), ...tags.slice(0, 30).map(([x, c]) => opt("tag", x, `#${esc(x)}`, c))] }] : [])];
   return `<div class="sec-acts-row">${ui.scope === "mine" && s.mine ? chipBtn(t("导出 / 打印 / 整理"), 'data-act="note-export" data-fresh="1"') : ""}${chipBtn(t("AI 设置"), 'data-act="ai-settings"')}</div>
-  ${fbar({ id: "nt", groups, q: { id: "ntQ", value: ui.q, ph: "搜索笔记" }, add: ui.scope === "mine" ? { attrs: 'data-act="note-add"', label: "笔记" } : null })}
+  ${fbar({ id: "nt", groups, q: { id: "ntQ", value: ui.q, ph: "搜索笔记" } })}
   <div id="ntBody">${bodyHTML()}</div>
   <p class="small muted" style="margin-top:8px">${t("默认只有你自己看得到；每一条可以单独分享给指定的家人（对方只读）。拍照识字的照片不会被保存。")}</p>`;
 }

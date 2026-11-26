@@ -12,6 +12,8 @@ import { heroTrackHTML } from "./med-hero.js";
 import { howText } from "./med-hero-lib.js";
 import { releaseBadgeHTML } from "./releases-ui.js";
 import { chipBtn, secHead } from "./ui.js";
+import { kpiCard, leftText } from "./kpi.js";
+import { readingHTML } from "./reading.js";
 import { familyTasks, mitBlock, nudgeBar, tasksBlock } from "./tasks.js";
 
 /* ============ 今天页：读经 → 今日习惯 → 家人 ============ */
@@ -37,15 +39,6 @@ function viewToday(){
   return `${heroTrackHTML(hero, past)}${releaseBadgeHTML()}${joinNote}${nudgeBar()}${kpisHTML(day, list)}${askEntryHTML()}<div class="tgrid"><div class="tcol tcol-a">${colA}</div><div class="tcol tcol-b">${colB}</div></div>`;
 }
 
-/* 统计卡：数字（完成/总数）+ 进度条 + 一行说明（还剩什么 / 全部完成 / 逾期）。全部做完变绿 */
-function kpiCard({ label, value, unit = "", pct = null, sub = "", state = "", target }){
-  const attr = target.startsWith("tab:") ? `data-tab="${target.slice(4)}"` : `data-scroll="${target}"`;
-  return `<button class="kpi ${state}" ${attr}><span class="kl">${label}</span><span class="kv">${value}${unit ? `<small>${unit}</small>` : ""}</span>
-    ${pct == null ? "" : `<span class="kbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}" aria-label="${label}"><i style="width:${Math.round(pct)}%"></i></span>`}
-    <span class="ks ${state === "warn" ? "warn" : ""}">${sub}</span></button>`;
-}
-/** 还剩哪几项：最多列两个名字，其余写“等 N 项” */
-const leftText = names => (names.length <= 2 ? names.map(esc).join("、") : t("{a} 等 {n} 项", { a: names.slice(0, 2).map(esc).join("、"), n: names.length }));
 function kpisHTML(day, list){
   const past = day !== S.day, cards = [];
   // 习惯（不含读经，读经单独一张）
@@ -79,36 +72,6 @@ function notesHTML(){
   const sum = last ? `${t("最近：{h}", { h: esc(noteHeading(last, kindLabel)) })} · ${esc(last.day)}` : t("读书、读经、祷告时的心得、疑问或感动，随手记在这里。");
   return `${secHead(t("灵修笔记"), chipBtn(t("全部") + (n ? ` ${n}` : ""), 'data-act="notes"'))}<div class="panel"><div class="small muted">${sum}</div>
     <div class="ui-acts btns"><button class="ui-btn" data-tone="primary" data-act="note-add" data-kind="reading" data-photo="1">📷 ${t("拍照摘录")}</button><button class="ui-btn" data-tone="ghost" data-act="note-add" data-kind="scripture" data-ref="${esc(ref)}">✎ ${t("记心得")}</button></div></div>${loaded ? otdHTML(2) : ""}`;
-}
-
-/* 读经：计划里今天这一段。读完打勾进一格；也可以记一段计划外的 */
-function readingHTML(){
-  const tp = wb.todayPassage(), rl = wb.readingLog(), extra = wb.logsOfKind("scripture", wb.viewDay()).filter(l => l !== rl);
-  const s = wb.settings(), zh = s.versionZh || "和合本", en = s.versionEn == null ? "BSB" : s.versionEn;
-  let body;
-  if (!tp) body = `<p class="muted">${t("还没选读经计划。选一个，每天这里就会列出当天的段落。")}</p><div class="ui-acts btns" style="margin-top:0"><button class="ui-btn" data-tone="primary" data-act="plan">${t("选读经计划")}</button><button class="ui-btn" data-tone="ghost" data-act="read-other">${t("记一段读过的")}</button></div>`;
-  else {
-    const it = tp.item;
-    // 读完后：大字显示今天读了哪段，小字预告明天；没读完：大字是今天这段
-    const headline = rl ? `<b style="font-size:18px">${esc(rl.data.ref || it.label)} ✓</b><div class="small muted">${t("明天：{label}", { label: esc(it.label) })}</div>` : `<b style="font-size:18px">${esc(it.label)}</b>${it.note ? `<div class="small">${esc(it.note)}</div>` : ""}`;
-    body = `<div class="row"><div class="v">${headline}<div class="small muted">${tc(esc(tp.plan.name))} · ${t("第 {i} / {n} 段", { i: tp.index + 1, n: tp.total })}${tp.round ? ` · ${t("第 {r} 轮", { r: tp.round + 1 })}` : ""}</div></div></div>
-    ${!rl && it.parts && it.parts.length ? `<div class="ui-acts btns" style="margin-top:10px"><button class="chip" data-act="read-text" aria-pressed="${S.showText}">${S.showText ? t("收起经文") : t("显示经文")}</button>${S.showText ? `<span class="small muted" style="align-self:center">${esc(zh)}${en ? " · " + esc(en) : ""} <button class="chip" data-act="plan">${t("换译本")}</button></span>` : ""}</div>
-    ${S.showText ? `<div id="passage" class="passage"><p class="muted small">${t("正在抓取经文…")}</p></div>` : ""}` : ""}
-    <div class="ui-acts btns">${rl ? `<button class="ui-btn" data-tone="ghost" data-act="read-undo">${t("今天读完了 ✓ · 点击撤销")}</button>` : `<button class="ui-btn" data-tone="primary" data-act="read-done">${t("读完了")}</button>`}<button class="ui-btn" data-tone="ghost" data-act="read-other">${t("另记一段")}</button></div>`;
-  }
-  const extraRows = extra.map(l => `<div class="small muted" style="margin-top:6px" data-swipe-del="extra-read">${t("另读了")} <b>${esc(l.data.ref || "")}</b>${l.data.note ? ` · ${esc(l.data.note)}` : ""} <button class="chip swipe-src" data-act="log-del" data-lid="${esc(l.id)}">${t("删")}</button></div>`).join("");
-  if (S.showText && tp && tp.item.parts && tp.item.parts.length) loadPassage(tp.item, zh, en);
-  return `${secHead(t("读经"), chipBtn(t("计划"), 'data-act="plan"'))}<div class="panel ${rl ? "done" : ""}">${body}${extraRows}</div>`;
-}
-async function loadPassage(item, zh, en){
-  // 渲染时被调用，这时 #passage 还没插进页面：等一拍再找容器
-  await new Promise(r => setTimeout(r, 0));
-  const box = () => document.querySelector("#passage"); if (!box()) return;
-  const zhText = await wb.passageText(item, zh);
-  if (!box()) return;
-  const chap = (c, enC) => `<h3 style="margin-top:12px">${esc(c.title)}</h3>${c.error ? `<p class="small muted">${t("没取到：")}${esc(c.error)}</p>` : c.verses.map((v, i) => `<p class="verse"><sup>${v.v}</sup>${esc(v.text)}${enC && enC.verses && enC.verses[i] ? `<span class="en">${esc(enC.verses[i].text)}</span>` : ""}</p>`).join("")}`;
-  box().innerHTML = zhText.map(c => chap(c, null)).join("");
-  if (en) { const enText = await wb.passageText(item, en); if (box()) box().innerHTML = zhText.map((c, i) => chap(c, enText[i])).join(""); }
 }
 
 export { viewToday };
