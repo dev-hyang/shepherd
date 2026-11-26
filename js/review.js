@@ -35,7 +35,7 @@ function summarize(p, days){
   return { main: done, unit: "天", sub: t("/ {n} 天", { n: scheduled }), done, scheduled };
 }
 function reviewBody(){
-  const practices = S.wb.practices.filter(p => !p.archived);
+  const practices = S.wb.practices.filter(p => !p.archived && p.kind !== "scripture");   // 读经在 祷告 / 读经 里看，这里不画
   if (!practices.length) return `<div class="empty">${t("还没有习惯，也就没有可回顾的。")}<br></div>`;
   const r = S.review, R = RANGES[r.range] || RANGES["4w"];
   const cur = dayList(S.day, R.days), prev = dayList(wb.dayAdd(S.day, -R.days), R.days);

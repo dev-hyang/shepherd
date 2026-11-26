@@ -96,6 +96,7 @@ document.addEventListener("click", async ev => {
   if (d.verEn !== undefined) { await wb.saveSettings({ versionEn: d.verEn }); openPlan(); return; }
   if (d.pfStatus) { S.prayerFilter.status = d.pfStatus; pg.reset("prayers"); render(); return; }
   if (d.pfCat) { S.prayerFilter.cat = d.pfCat; pg.reset("prayers"); render(); return; }
+  if (d.hview) { S.habView = d.hview; render(); return; }   // 今天 / 习惯：回顾 ⇄ 今日打卡
   if (d.range) { S.review.range = d.range; render(); return; }
   if (d.metric) { S.review.metric = d.metric; render(); return; }
 

@@ -1055,3 +1055,6 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
   .chip::after,.seg.mini button::after,.linkbtn::after,.crumb .crumb-menu::after,.crumb .crumb-link::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,44px);transform:translateY(-50%)}
   .crumb .crumb-menu{min-height:36px}
 }
+
+/* 今天 / 习惯 视图切换条（ui-seg）：和下面内容留出同样的间距 */
+.habseg{margin:12px 0 4px}

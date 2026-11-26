@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.12", title: { zh: "计时卡片回到今天首页，习惯页先看回顾", en: "Timer cards moved to Today; Habits opens on Review" }, items: [
+    { k: "better", zh: "顶部「距上次」计时卡片搬到今天首页最上面，不再放在 今天 / 习惯 里。", en: "The top 'time since last' cards now sit at the top of the Today home page, not inside Today / Habits." },
+    { k: "better", zh: "今天 / 习惯 用「回顾 | 今日打卡」切换：回顾（含最近 28 天）在前，读经的图不再显示。", en: "Today / Habits switches between Review and Daily check-ins: Review (with the last 28 days) comes first; scripture is no longer charted there." },
+    { k: "new", zh: "新增统一的视图切换控件（ui-seg），其他页面以后都用它。", en: "New shared view-switch control (ui-seg) for use across pages." }
+  ] },
   { v: "2026-11-26.11", title: { zh: "「我的」精简，路径栏目录按真实层级", en: "Me page trimmed; Directory follows the real page hierarchy" }, items: [
     { k: "better", zh: "「我的」只留设置、备份、日历订阅、介绍、发布日志和姊妹应用；习惯与用药、读经计划、灵修笔记、专注计时等入口在各自的页面里（今天 / 习惯、祷告）。", en: "Me now keeps only settings, backup, calendar, About, release notes and sister apps; habits, meds, reading plan, notes and focus timer live in their own pages." },
     { k: "better", zh: "子页的「目录」按真实层级列出：今天 / 习惯 / 记录 / 顶部卡片，我的 / 发布日志。", en: "On sub-pages the Directory lists the real hierarchy: Today / Habits / Records / Top cards, and Me / Release notes." }

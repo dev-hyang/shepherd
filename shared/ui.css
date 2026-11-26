@@ -208,3 +208,14 @@ input[data-num] { font-variant-numeric: tabular-nums; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%238a8f87' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E"); }
 .sug-in:focus { border-color: var(--sel-accent); }
 .sug-list { position: fixed; z-index: 70; min-width: 0; max-width: calc(100vw - 16px); }
+
+/* ── 视图切换 ui-seg（2026-11-26）：一排互斥按钮切换同一页的两三个视图（今日 / 回顾、列表 / 日历…）──
+ * <div class="ui-seg" role="group" aria-label="…" data-fill><button aria-pressed="true">回顾</button><button aria-pressed="false">打卡</button></div>
+ * data-fill：占满一行、按钮等宽（手机用）；省略 = 按内容宽。选中色读 --btn-primary-bg / --btn-primary-ink，圆角读 --ctl-r。手机上点按区域靠 ::after 延伸到 ≥44px。 */
+.ui-seg { display: inline-flex; max-width: 100%; padding: 3px; gap: 2px; box-sizing: border-box; border: 1px solid var(--line); border-radius: var(--ctl-r, 12px); background: var(--surface-2, var(--bg)); }
+.ui-seg[data-fill] { display: flex; width: 100%; }
+.ui-seg > button { position: relative; flex: 1 1 auto; min-height: 36px; padding: 0 14px; border: 0; border-radius: calc(var(--ctl-r, 12px) - 3px); background: transparent; color: var(--muted, inherit); font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.ui-seg[data-fill] > button { flex: 1 1 0; min-width: 0; }
+.ui-seg > button[aria-pressed="true"] { background: var(--btn-primary-bg, var(--ink)); color: var(--btn-primary-ink, var(--surface)); }
+.ui-seg > button:focus-visible { outline: 3px solid var(--focus, #1f6feb); outline-offset: 1px; }
+@media (pointer: coarse), (max-width: 640px) { .ui-seg > button::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: max(100%, 44px); transform: translateY(-50%); } }
