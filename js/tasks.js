@@ -6,13 +6,14 @@ import { addDays, addMonths, diffDays, periodEnd, recurText, weekStart, wdOf } f
 import * as pg from "./pager.js";
 import { closeSheet, openForm, openInfo } from "./sheet.js";
 import * as tk from "./tk.js";
-import { chipBtn, fbar, pageHead, routeNav, secHead } from "./ui.js";
+import { chipBtn, fab, fbar, pageHead, routeNav, secHead } from "./ui.js";
+import { homeView } from "./tasks-home.js";
 import * as wb from "./wb.js";
 
 /* ============ 任务页 + 今天页的任务块 ============
    任务页四段：今天 / 计划（日 周 月）/ 清单（大类 → 小类）/ 已完成。今天页只放“现在该做的”（催办条、三件大事、今日任务）。
    设计见 docs/design-tasks.md。 */
-S.tkUi = S.tkUi || { seg: "today", range: "day", day: null, st: "open", prio: "all", cat: "all", q: "" };
+S.tkUi = S.tkUi || { seg: "home", range: "day", day: null, st: "open", prio: "all", cat: "all", q: "" };
 const ui = () => S.tkUi;
 const planDay = () => ui().day || S.day;
 
@@ -105,7 +106,7 @@ function tasksBlock({ full = false } = {}){
     + (today.length ? `${od.length ? `<h3 class="tk-h">${past ? t("当天") : t("今天")}</h3>` : ""}${rows(today)}` : "")
     + (week.length ? `<h3 class="tk-h">${t("本周要做")}</h3>${rows(week)}` : "") + (month.length ? `<h3 class="tk-h">${t("本月要做")}</h3>${rows(month)}` : "")
     + (inb.length ? `<h3 class="tk-h">${t("收件箱")} ${inb.length} <button class="chip" data-act="tk-tidy">${t("整理")}</button></h3>${rows(inb, { showDue: false })}` : "");
-  return `${secHead(past ? t("当天的任务") : t("今日任务"), chipBtn(`＋ ${t("任务")}`, 'data-act="tk-new"') + (full ? "" : chipBtn(t("全部"), 'data-act="tk-open-list"')))}
+  return `${secHead(past ? t("当天的任务") : t("今日任务"), full ? "" : chipBtn(t("全部"), 'data-act="tk-open-list"'))}
   ${full ? quickForm() : ""}
   <div class="panel" style="padding:4px 10px">${body || `<div class="empty">${past ? t("这天没有排任务。") : t("今天没有排任务。")}</div>`}</div>
   ${capacityLine(left)}${evening(left)}${doneToday(day)}`;
@@ -182,7 +183,7 @@ function listView(){
       ${ss.map(g => `<h3 class="tk-h" style="margin:8px 4px 2px">${esc(tk.subName(c, g.s))} <span class="muted small">${g.list.length}</span></h3><div class="panel" style="padding:4px 10px">${rows(g.part, { showDue: true })}</div>`).join("")}</details>`;
   }).join("");
   const opt = (key, v, label, on, count) => ({ label, attrs: `data-tkf="${key}" data-v="${esc(v)}"`, on, count });
-  const bar = fbar({ id: "tk", q: { id: "tkQ", value: f.q, ph: "搜索任务" }, add: { attrs: 'data-act="tk-new"', label: "任务" },
+  const bar = fbar({ id: "tk", q: { id: "tkQ", value: f.q, ph: "搜索任务" }, 
     groups: [
       { label: "优先级", opts: [["all", "全部"], ["any", "有优先级"], ["hi", "只看高"]].map(([v, l]) => opt("prio", v, t(l), f.prio === v)) },
       { label: "分类", opts: [opt("cat", "all", t("全部"), f.cat === "all", all.length), ...cats.filter(c => all.some(x => x.cat === c.id)).map(c => opt("cat", c.id, `${c.icon} ${esc(tk.catName(c))}`, f.cat === c.id, all.filter(x => x.cat === c.id).length))] }],
@@ -203,10 +204,11 @@ function doneView(){
 function viewTasks(){
   const g = gate(); if (g) return `${pageHead(t("任务"))}${g}`;
   const seg = ui().seg;
-  const segs = [["today", "今天"], ["plan", "计划"], ["list", "清单"], ["done", "已完成"]];
-  return `${routeNav([{ label: t("任务"), attrs: 'data-tks="today"' }, { label: t((segs.find(x => x[0] === seg) || segs[0])[1]) }], { dir: segs.map(([k, l]) => ({ label: t(l), attrs: `data-tks="${k}"`, on: seg === k })), actions: seg === "list" ? "" : `<button class="ui-btn" data-size="sm" data-tone="primary" data-act="tk-new">＋ ${t("新任务")}</button>` })}
-  <div class="seg eq" role="group" aria-label="${t("任务视图")}">${[["today", "今天"], ["plan", "计划"], ["list", "清单"], ["done", "已完成"]].map(([k, l]) => `<button data-tks="${k}" aria-pressed="${seg === k}">${t(l)}</button>`).join("")}</div>
-  ${seg === "today" ? `${nudgeBar()}${mitBlock()}${tasksBlock({ full: true })}${familyTasks(wb.viewDay())}` : seg === "plan" ? planView() : seg === "list" ? listView() : doneView()}`;
+  const segs = [["home", "首页"], ["today", "今日"], ["list", "清单"], ["plan", "计划"]];   // 目录里的页面；「已完成」从首页点进去
+  const cur = segs.find(x => x[0] === seg) || (seg === "done" ? ["done", "已完成"] : segs[0]);
+  const parts = cur[0] === "home" ? [{ label: t("任务") }] : [{ label: t("任务"), attrs: 'data-tks="home"' }, { label: t(cur[1]) }];
+  const body = seg === "today" ? `${nudgeBar()}${mitBlock()}${tasksBlock({ full: true })}${familyTasks(wb.viewDay())}` : seg === "plan" ? planView() : seg === "list" ? listView() : seg === "done" ? doneView() : homeView(rows);
+  return `${routeNav(parts, { dir: segs.map(([k, l]) => ({ label: t(l), attrs: `data-tks="${k}"`, on: cur[0] === k })) })}${body}${fab('data-act="tk-new"', t("新任务"))}`;
 }
 
 /* ---- 表单 ---- */

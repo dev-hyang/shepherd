@@ -1020,3 +1020,15 @@ main:has(.fab){padding-bottom:96px}
 .ask-h .aq{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
 .ask-h small{color:var(--muted);flex:none}
 .ask-h .md{padding:0 0 4px}
+
+/* 任务首页：四张卡、柱状图、分类横条（2026-11-26.7） */
+.kpis.k4{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:600px){.kpis.k4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+svg.bars{display:block;max-height:190px}
+svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fill:var(--muted)}
+.hbars{display:flex;flex-direction:column;gap:10px}
+.hb-row{display:grid;grid-template-columns:minmax(84px,32%) 1fr 28px;align-items:center;gap:10px;font-size:14px}
+.hb-l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb-t{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.hb-t i{display:block;height:100%;border-radius:99px}
+.hb-n{text-align:right;font-family:var(--f-num)}

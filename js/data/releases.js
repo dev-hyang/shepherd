@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.7", title: { zh: "任务首页 + 右下角新增按钮", en: "Tasks home dashboard + round add button" }, items: [
+    { k: "new", zh: "任务有了首页：今日进度、逾期、近 7 天完成、收件箱四张卡，加上完成趋势图（按天 / 按月）、待办按分类的分布和马上要做的几件。", en: "Tasks now has a home: today's progress, overdue, last-7-day completions and inbox cards, a completion trend (by day / month), open tasks by category and what's next." },
+    { k: "better", zh: "任务页用左上角的「目录」在 首页 / 今日 / 清单 / 计划 之间切换，原来的一排切换按钮去掉了。", en: "Tasks pages are now switched with the Directory button (Home / Today / List / Plan); the old row of tabs is gone." },
+    { k: "better", zh: "所有「新任务」按钮换成右下角的圆形 ＋。", en: "Every New task button is now the round + at the bottom right." }
+  ] },
   { v: "2026-11-26.6", title: { zh: "今天页只留五张卡 + 咩咩咩", en: "Today is now five cards plus Baa-baa" }, items: [
     { k: "new", zh: "今天页精简成五张卡：习惯、任务、读经、祷告、健康，点哪张进哪个页面；健康卡显示待办条数、上次就诊和异常化验的项数（不显示具体数值）。", en: "Today now shows five cards (Habits, Tasks, Reading, Prayer, Health), each opening its page. The Health card shows counts and dates only, never values." },
     { k: "new", zh: "咩咩咩直接在今天页提问，不用再进「我的」；问过的回答折叠成一行一条，可以点开、追问、复制或删除（只存在这台设备上）。", en: "Ask Baa-baa right on Today; past answers fold into one line each, with follow-up, copy and delete (kept on this device only)." },

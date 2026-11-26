@@ -72,7 +72,7 @@ document.addEventListener("click", async ev => {
   if (d.act === "nav-back") d.tab = backTo(d.parent);   // 返回：上一页，没有就上一层
   if (d.tab && d.tab === S.tab && btn.closest("nav.tabs")) {   // 再点一次当前的底部页签（双击也一样）：回到这一页的第一层（健康 / 概览、任务 / 今天、祷告 / 代祷）
     if (d.tab === "health" && S.hlUi) { S.hlUi.view = "overview"; S.hlUi.back = null; }
-    if (d.tab === "tasks" && S.tkUi) S.tkUi.seg = "today";
+    if (d.tab === "tasks" && S.tkUi) S.tkUi.seg = "home";
     if (d.tab === "prayer") S.prayerView = "home";
   }
   if (d.tab) { close(); S.fpop = null; S.tab = d.tab; if (d.pv) S.prayerView = d.pv;   // 今天页的读经 / 祷告卡直接进祷告的子页
@@ -83,7 +83,8 @@ document.addEventListener("click", async ev => {
   if (d.localeSet !== undefined) { await setLocale(d.localeSet); render(); openSettings(); if (S.cloud === "ready" && S.wb.loaded) wb.saveSettings({ lang: d.localeSet }).catch(() => {}); return; }
   // generic form controls
   if (d.seg) { readForm(); const dr = getForm().draft; dr[d.seg] = d.v; if (d.seg === "cat") dr.sub = ""; drawForm(); return; }   // 换大类：小类清空重选
-  if (d.tks) { S.tkUi.seg = d.tks; pg.reset("tkList", "tkDone", "tkDropped"); render(); return; }
+  if (d.tkc) { S.tkUi.chart = d.tkc; render(); return; }   // 任务首页：趋势图按天 / 按月
+  if (d.tks) { S.fpop = null; S.tab = "tasks"; S.tkUi.seg = d.tks; pg.reset("tkList", "tkDone", "tkDropped"); render(); return; }
   if (d.tkr) { S.tkUi.range = d.tkr; render(); return; }
   if (d.multi) { readForm(); const f = getForm().draft, cur = (f[d.multi] || []).map(String); f[d.multi] = cur.includes(d.v) ? cur.filter(x => x !== d.v) : [...cur, d.v]; drawForm(); return; }
   // chips with their own data attributes

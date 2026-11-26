@@ -52,7 +52,7 @@ function routeOf(){
     const u = S.hlUi, id = u.view === "visit" ? u.visitId : u.view === "lab" ? u.labKey : "";
     return `#/health${u.view && u.view !== "overview" ? "/" + u.view + (id ? "/" + enc(id) : "") : ""}${u.who ? "?who=" + enc(u.who) : ""}`;
   }
-  if (S.tab === "tasks" && S.tkUi && S.tkUi.seg !== "today") return "#/tasks/" + S.tkUi.seg;
+  if (S.tab === "tasks" && S.tkUi && S.tkUi.seg !== "home") return "#/tasks/" + S.tkUi.seg;
   if (S.tab === "prayer" && S.prayerView !== "home") return "#/prayer/" + S.prayerView;
   return S.tab === "today" ? "" : "#/" + S.tab;
 }
@@ -69,7 +69,7 @@ function restoreRoute(){
     if (r.q.get("who")) u.who = r.q.get("who");
     if (["lab", "visit", "measure"].includes(r.q.get("new"))) u.openNew = r.q.get("new");   // 其他应用直接打开「录入化验 / 就诊 / 测量」：#/health/labs?who=c:<孩子id>&new=lab（家庭学堂的化验页用）
   }
-  if (r.tab === "tasks" && S.tkUi) S.tkUi.seg = ["plan", "list", "done"].includes(r.sub) ? r.sub : "today";
+  if (r.tab === "tasks" && S.tkUi) S.tkUi.seg = ["today", "plan", "list", "done"].includes(r.sub) ? r.sub : "home";
   if (r.tab === "prayer") S.prayerView = ["read", "notes", "pray"].includes(r.sub) ? r.sub : "home";
   return true;
 }

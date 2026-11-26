@@ -4,6 +4,7 @@ import { esc } from "./core/util.js";
 /* 统计卡（今天、任务、祷告、健康的首页 dashboard 共用）。target：tab:<页签> | tab:<页签>:<子页> | pview:<祷告子页> | <元素 id>（滚动过去） */
 function targetAttr(target){
   if (target.startsWith("tab:")) { const [, tab, pv] = target.split(":"); return `data-tab="${tab}"${pv ? ` data-pv="${pv}"` : ""}`; }
+  if (target.startsWith("tks:")) return `data-tks="${target.slice(4)}"`;
   if (target.startsWith("pview:")) return `data-pview="${target.slice(6)}"`;
   return `data-scroll="${target}"`;
 }
