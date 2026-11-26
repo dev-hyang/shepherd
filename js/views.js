@@ -69,7 +69,8 @@ function restoreRoute(){
     if (r.q.get("who")) u.who = r.q.get("who");
     if (["lab", "visit", "measure"].includes(r.q.get("new"))) u.openNew = r.q.get("new");   // 其他应用直接打开「录入化验 / 就诊 / 测量」：#/health/labs?who=c:<孩子id>&new=lab（家庭学堂的化验页用）
   }
-  if (r.tab === "tasks" && S.tkUi) S.tkUi.seg = ["today", "plan", "list", "done"].includes(r.sub) ? r.sub : "home";
+  if (r.tab === "tasks" && S.tkUi) S.tkUi.seg = ["today", "plan", "list"].includes(r.sub) ? r.sub : "home";
+  if (r.tab === "tasks" && S.tkUi && r.sub === "done") { S.tkUi.seg = "list"; S.tkUi.st = "done"; }   // 旧链接：已完成 = 清单里筛「已完成」
   if (r.tab === "prayer") S.prayerView = ["read", "notes", "pray"].includes(r.sub) ? r.sub : "home";
   return true;
 }

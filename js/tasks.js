@@ -185,19 +185,30 @@ function listView(){
   const opt = (key, v, label, on, count) => ({ label, attrs: `data-tkf="${key}" data-v="${esc(v)}"`, on, count });
   const bar = fbar({ id: "tk", q: { id: "tkQ", value: f.q, ph: "搜索任务" }, 
     groups: [
+      { label: "状态", opts: [["open", "待办"], ["done", "已完成"], ["dropped", "放弃的"]].map(([v, l]) => opt("st", v, t(l), f.st === v)) },
       { label: "优先级", opts: [["all", "全部"], ["any", "有优先级"], ["hi", "只看高"]].map(([v, l]) => opt("prio", v, t(l), f.prio === v)) },
       { label: "分类", opts: [opt("cat", "all", t("全部"), f.cat === "all", all.length), ...cats.filter(c => all.some(x => x.cat === c.id)).map(c => opt("cat", c.id, `${c.icon} ${esc(tk.catName(c))}`, f.cat === c.id, all.filter(x => x.cat === c.id).length))] }],
     extra: chipBtn(t("管理分类"), 'data-act="tk-cats"') });
+  if (f.st !== "open") return `${bar}${archiveView(f)}`;
   return `${bar}${groups || `<div class="empty">${t("没有符合条件的任务。")}</div>`}${pg.moreBtn("tkList", mine.length)}`;
 }
 
-/* ---- 已完成 ---- */
-function doneView(){
-  const logs = tk.doneLogs(), dropped = S.tk.items.filter(x => x.status === "dropped").sort((a, b) => (b.done_at || "").localeCompare(a.done_at || ""));
-  return `<h3 class="tk-h">${t("最近完成（12 周内）")}</h3>
-  <div class="panel" style="padding:4px 10px">${logs.length ? pg.page("tkDone", logs).map(l => `<div class="habit done"><span class="hi" style="background:var(--sage-soft);color:var(--sage)">✓</span><span class="main"><span class="title">${esc(l.data.title || "")}</span><span class="meta">${l.day}${l.data.cat ? ` · ${esc(tk.catLabel({ cat: l.data.cat, sub: l.data.sub }))}` : ""}</span></span><span class="acts"><button class="chip" data-act="tk-undo-log" data-lid="${esc(l.id)}">${t("撤销")}</button></span></div>`).join("") : `<div class="empty">${t("还没有完成的任务。")}</div>`}</div>
-  ${pg.moreBtn("tkDone", logs.length)}
-  ${dropped.length ? `<h3 class="tk-h">${t("放弃的")}</h3><div class="panel" style="padding:4px 10px">${pg.page("tkDropped", dropped).map(x => `<div class="habit done" data-swipe-del="dropped-task"><span class="hi">⌀</span><span class="main"><span class="title">${esc(x.title)}</span><span class="meta">${(x.done_at || "").slice(0, 10)}</span></span><span class="acts"><button class="chip" data-act="tk-reopen" data-tid="${esc(x.id)}">${t("重新打开")}</button><button class="chip swipe-src" data-act="tk-del" data-tid="${esc(x.id)}">${t("删除")}</button></span></div>`).join("")}</div>${pg.moreBtn("tkDropped", dropped.length)}` : ""}`;
+/* ---- 清单里的「已完成」「放弃的」：和待办用同一个搜索 / 筛选条 ---- */
+function archiveView(f){
+  const q = f.q.trim().toLowerCase(), has = s => !q || String(s || "").toLowerCase().includes(q);
+  if (f.st === "done") {
+    const logs = tk.doneLogs().filter(l => has(l.data.title));
+    return `<div class="panel" style="padding:4px 10px">${logs.length ? pg.page("tkDone", logs).map(l => `<div class="habit done"><span class="hi" style="background:var(--sage-soft);color:var(--sage)">✓</span><span class="main"><span class="title">${esc(l.data.title || "")}</span><span class="meta">${l.day}${l.data.cat ? ` · ${esc(tk.catLabel({ cat: l.data.cat, sub: l.data.sub }))}` : ""}</span></span><span class="acts"><button class="chip" data-act="tk-undo-log" data-lid="${esc(l.id)}">${t("撤销")}</button></span></div>`).join("") : `<div class="empty">${t("没有符合的已完成任务（只保留 12 周内的）。")}</div>`}</div>${pg.moreBtn("tkDone", logs.length)}`;
+  }
+  const dropped = S.tk.items.filter(x => x.status === "dropped" && has(x.title)).sort((a, b) => (b.done_at || "").localeCompare(a.done_at || ""));
+  return `<div class="panel" style="padding:4px 10px">${dropped.length ? pg.page("tkDropped", dropped).map(x => `<div class="habit done" data-swipe-del="dropped-task"><span class="hi">⌀</span><span class="main"><span class="title">${esc(x.title)}</span><span class="meta">${(x.done_at || "").slice(0, 10)}</span></span><span class="acts"><button class="chip" data-act="tk-reopen" data-tid="${esc(x.id)}">${t("重新打开")}</button><button class="chip swipe-src" data-act="tk-del" data-tid="${esc(x.id)}">${t("删除")}</button></span></div>`).join("") : `<div class="empty">${t("没有放弃的任务。")}</div>`}</div>${pg.moreBtn("tkDropped", dropped.length)}`;
+}
+
+/* 今日页顶部：几月几日周几 + 完成进度条 */
+function todaySummary(){
+  const day = wb.viewDay(), d = new Date(day + "T12:00:00"), doneN = tk.doneLogs().filter(l => l.day === day).length, left = (day === S.day ? tk.overdue() : []).length + tk.onDay(day).filter(x => !x.virtual).length, total = doneN + left, pct = total ? Math.round(doneN / total * 100) : 0;
+  return `<div class="panel tk-sum"><div><b>${d.getMonth() + 1}/${d.getDate()} ${wdLabel(day)}</b><div class="small muted">${total ? (left ? t("已完成 {a} / {b} 件", { a: doneN, b: total }) : `✓ ${t("今天的都完成了")}`) : t("今天没有排任务")}</div></div>
+    <span class="kbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${esc(t("完成进度"))}"><i style="width:${pct}%"></i></span></div>`;
 }
 
 /* ---- 任务页 ---- */
@@ -205,9 +216,9 @@ function viewTasks(){
   const g = gate(); if (g) return `${pageHead(t("任务"))}${g}`;
   const seg = ui().seg;
   const segs = [["home", "首页"], ["today", "今日"], ["list", "清单"], ["plan", "计划"]];   // 目录里的页面；「已完成」从首页点进去
-  const cur = segs.find(x => x[0] === seg) || (seg === "done" ? ["done", "已完成"] : segs[0]);
+  const cur = segs.find(x => x[0] === seg) || segs[0];
   const parts = cur[0] === "home" ? [{ label: t("任务") }] : [{ label: t("任务"), attrs: 'data-tks="home"' }, { label: t(cur[1]) }];
-  const body = seg === "today" ? `${nudgeBar()}${mitBlock()}${tasksBlock({ full: true })}${familyTasks(wb.viewDay())}` : seg === "plan" ? planView() : seg === "list" ? listView() : seg === "done" ? doneView() : homeView(rows);
+  const body = seg === "today" ? `${todaySummary()}${nudgeBar()}${mitBlock()}${tasksBlock({ full: true })}${familyTasks(wb.viewDay())}` : seg === "plan" ? planView() : seg === "list" ? listView() : homeView(rows);
   return `${routeNav(parts, { dir: segs.map(([k, l]) => ({ label: t(l), attrs: `data-tks="${k}"`, on: cur[0] === k })) })}${body}${fab('data-act="tk-new"', t("新任务"))}`;
 }
 
@@ -222,16 +233,16 @@ function taskFields(){
     { k: "cat", label: "大类", type: "seg", raw: true, opts: cats.map(c => [c.id, `${c.icon} ${tk.catName(c)}`]) },
     { k: "sub", label: "小类", type: "seg", raw: true, when: d => (tk.catOf(d.cat).subs || []).length > 0, optsFn: d => [["", t("不分")], ...(tk.catOf(d.cat).subs || []).map(s => [s.id, tk.subName(tk.catOf(d.cat), s)])] },
     { k: "period", label: "什么时候做", type: "seg", opts: PERIODS },
-    { k: "due", label: "日期（本周 / 本月 / 本季度 / 本年度的，选那个周期里的任意一天）", type: "date" },
-    { k: "start_time", label: "几点开始（可空）", type: "time", when: d => d.period === "day" },
-    { k: "dur", label: "预估多少分钟（可空）", type: "num" },
+    { k: "due", label: "日期", type: "date", w: "m", hint: "本周 / 本月 / 本季度 / 本年度的，选那个周期里的任意一天" },
+    { k: "start_time", label: "开始时间（可空）", type: "time", w: "m", when: d => d.period === "day" },
+    { k: "dur", label: "预估时长（可空）", type: "num", w: "m", suf: "分钟" },
     { k: "rfreq", label: "重复", type: "seg", opts: RECUR_FREQ, when: d => d.period === "day" },
     { k: "rperiod", label: "重复", type: "seg", opts: [["", "不重复"], ["1", "每个周期"]], when: d => d.period !== "day", hint: "如“每季度体检”：选“每个周期”，到期完成后自动排到下一个周期。" },
-    { k: "revery", label: "每隔几个（天 / 周 / 月 / 年；1 = 每个）", type: "num", when: d => (d.period === "day" && d.rfreq) || (d.period !== "day" && d.rperiod) },
+    { k: "revery", label: "间隔（1 = 每个）", type: "num", w: "m", pre: "每隔", suf: "个", when: d => (d.period === "day" && d.rfreq) || (d.period !== "day" && d.rperiod) },
     { k: "rdays", label: "每周哪几天", type: "multi", opts: WEEKDAY.map((w, i) => [i, "周" + w]), when: d => d.period === "day" && d.rfreq === "week" && !d.rafter },
-    { k: "rmday", label: "每月几号（空 = 同一天）", type: "num", when: d => d.period === "day" && d.rfreq === "month" && !d.rafter },
+    { k: "rmday", label: "每月几号（空 = 同一天）", type: "num", w: "m", pre: "每月", suf: "号", when: d => d.period === "day" && d.rfreq === "month" && !d.rafter },
     { k: "rafter", label: "完成后再算下一次（洗车、换滤芯这类），不按固定日子", type: "check", when: d => d.period === "day" && d.rfreq },
-    { k: "runtil", label: "重复到（可空）", type: "date", when: d => (d.period === "day" && d.rfreq) || (d.period !== "day" && d.rperiod) },
+    { k: "runtil", label: "重复到（可空）", type: "date", w: "m", when: d => (d.period === "day" && d.rfreq) || (d.period !== "day" && d.rperiod) },
     { k: "prio", label: "优先级", type: "seg", opts: [["0", "无"], ["1", "低"], ["2", "中"], ["3", "高"]] },
     { k: "remind", label: "提醒（进手机日历，需要有开始时间或日期）", type: "multi", opts: REMIND_OPTS },
     { k: "nag", label: "要催：到点后 15 分钟、60 分钟再响一次", type: "check" },

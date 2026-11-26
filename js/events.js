@@ -68,7 +68,7 @@ document.addEventListener("click", async ev => {
   if (d.scroll) { const el = document.getElementById(d.scroll); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   if (d.pagerMore) { if (d.pagerMore === "notes") nts.moreNotes(); else { pg.more(d.pagerMore); render(); } return; }   // 继续加载（js/pager.js）
   if (d.pview) { S.prayerView = d.pview; S.fpop = null; pg.reset("prayers"); render(); return; }
-  if (d.tkf) { S.tkUi[d.tkf] = d.v; pg.reset("tkList"); render(); return; }
+  if (d.tkf) { S.tkUi[d.tkf] = d.v; pg.reset("tkList", "tkDone", "tkDropped"); render(); return; }
   if (d.act === "nav-back") d.tab = backTo(d.parent);   // 返回：上一页，没有就上一层
   if (d.tab && d.tab === S.tab && btn.closest("nav.tabs")) {   // 再点一次当前的底部页签（双击也一样）：回到这一页的第一层（健康 / 概览、任务 / 今天、祷告 / 代祷）
     if (d.tab === "health" && S.hlUi) { S.hlUi.view = "overview"; S.hlUi.back = null; }

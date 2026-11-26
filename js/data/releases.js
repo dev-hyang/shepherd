@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.8", title: { zh: "任务 今日 / 清单 / 计划 重做", en: "Tasks: Today / List / Plan reworked" }, items: [
+    { k: "better", zh: "今日页顶部多了当天进度卡（几月几日、完成几件、进度条）。", en: "Today now starts with a progress card (date, tasks done, progress bar)." },
+    { k: "better", zh: "清单页的搜索和筛选换成统一的筛选条，「已完成」「放弃的」并进筛选里的「状态」，原来单独的「已完成」页去掉了。", en: "The list now uses the shared filter bar; Done and Dropped are a Status filter instead of a separate page." },
+    { k: "better", zh: "新增 / 编辑任务的表单：日期和开始时间、预估时长并排，重复的间隔、几号写成「每隔 [ ] 个」「每月 [ ] 号」。", en: "The task form puts date, start time and duration side by side, and repeat settings read like sentences." }
+  ] },
   { v: "2026-11-26.7", title: { zh: "任务首页 + 右下角新增按钮", en: "Tasks home dashboard + round add button" }, items: [
     { k: "new", zh: "任务有了首页：今日进度、逾期、近 7 天完成、收件箱四张卡，加上完成趋势图（按天 / 按月）、待办按分类的分布和马上要做的几件。", en: "Tasks now has a home: today's progress, overdue, last-7-day completions and inbox cards, a completion trend (by day / month), open tasks by category and what's next." },
     { k: "better", zh: "任务页用左上角的「目录」在 首页 / 今日 / 清单 / 计划 之间切换，原来的一排切换按钮去掉了。", en: "Tasks pages are now switched with the Directory button (Home / Today / List / Plan); the old row of tabs is gone." },

@@ -20,7 +20,7 @@ function cardsHTML(by){
   return `<div class="kpis k4">
     ${kpiCard({ label: `☀ ${t("今日")}`, value: doneN, unit: `/${total}`, pct: total ? doneN / total * 100 : null, sub: total ? (doneN === total ? `✓ ${t("全部完成")}` : t("还剩 {n} 项", { n: total - doneN })) : t("今天没有排任务"), state: total && doneN === total ? "done" : "", target: "tks:today" })}
     ${kpiCard({ label: `⚠ ${t("逾期")}`, value: od.length, unit: t("件"), sub: od.length ? t("最久 {d} 天", { d: tk.overdueDays(od[0]) }) : `✓ ${t("没有逾期")}`, state: od.length ? "warn" : "done", target: "tks:today" })}
-    ${kpiCard({ label: `✓ ${t("近 7 天完成")}`, value: week, unit: t("件"), sub: week === prev ? t("和前 7 天一样") : t("前 7 天 {n} 件", { n: prev }), target: "tks:done" })}
+    ${kpiCard({ label: `✓ ${t("近 7 天完成")}`, value: week, unit: t("件"), sub: week === prev ? t("和前 7 天一样") : t("前 7 天 {n} 件", { n: prev }), target: "tks:list" })}
     ${kpiCard({ label: `📥 ${t("收件箱")}`, value: inb, unit: t("件"), sub: inb ? t("还没排日期，去清单整理") : `✓ ${t("已清空")}`, target: "tks:list" })}</div>`;
 }
 /** 完成趋势：近 14 天（按天）或近 6 个月（按月） */

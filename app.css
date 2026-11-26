@@ -1032,3 +1032,9 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
 .hb-t{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
 .hb-t i{display:block;height:100%;border-radius:99px}
 .hb-n{text-align:right;font-family:var(--f-num)}
+
+/* 任务今日页的进度卡（2026-11-26.8） */
+.tk-sum{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.tk-sum>div{flex:none}
+.tk-sum .kbar{display:block;flex:1;height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:0}
+.tk-sum .kbar i{display:block;height:100%;background:var(--slate);border-radius:99px}
