@@ -18,9 +18,8 @@ const VIEWS = [["home", "首页"], ["read", "读经"], ["notes", "灵修"], ["pr
 function viewPrayer(){
   const v = VIEWS.some(x => x[0] === S.prayerView) ? S.prayerView : "home", name = k => t(VIEWS.find(x => x[0] === k)[1]);
   const parts = v === "home" ? [{ label: t("祷告") }] : [{ label: t("祷告"), attrs: 'data-pview="home"' }, { label: name(v) }];
-  const dir = VIEWS.map(([k, l]) => ({ label: t(l), attrs: `data-pview="${k}"`, on: v === k }));
   const body = v === "read" ? readingView() : v === "notes" ? viewNotes() + (S.ntUi.scope === "mine" ? fab('data-act="note-add"', t("新增笔记")) : "") : v === "pray" ? viewPray() + fab('data-act="prayer-add"', t("新增代祷")) : homeView();
-  return `${routeNav(parts, { dir })}${body}`;
+  return `${routeNav(parts)}${body}`;
 }
 /** 首页三张卡 */
 function homeView(){

@@ -1057,3 +1057,8 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
 
 /* 今天 / 习惯 视图切换条（ui-seg）：和下面内容留出同样的间距 */
 .habseg{margin:12px 0 4px}
+
+/* 目录：整棵页面树，子页缩进；面板太高时自己滚 */
+.crumb .dirmenu{max-height:min(70vh,520px);overflow-y:auto;overscroll-behavior:contain}
+.crumb .dir-item[data-lvl="1"]{padding-left:30px}
+.crumb .dir-item[data-lvl="2"]{padding-left:48px}

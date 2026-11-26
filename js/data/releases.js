@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.14", title: { zh: "路径栏统一：目录列全站页面，网址与路径一致，后退键可用", en: "Unified path bar: full-site Directory, URLs match the path, browser Back works" }, items: [
+    { k: "better", zh: "每一页（包括今天、我的）顶上都有路径栏；去掉「返回」按钮，想上一层点路径，想回上一页用浏览器后退。", en: "Every page, including Today and Me, has the path bar; the Back button is gone — click the path to go up, use the browser Back to return." },
+    { k: "better", zh: "「目录」列出整棵页面树（今天 / 习惯 / 记录…、任务、健康、祷告、我的），当前页打勾，任何页面都一样。", en: "Directory lists the whole page tree with the current page checked, the same on every page." },
+    { k: "better", zh: "网址和路径一致，例如 #/today/habits/records、#/health/visits/…，刷新、收藏、前进后退都停在对应的页。", en: "URLs now match the path (e.g. #/today/habits/records, #/health/visits/…); refresh, bookmarks and Back/Forward land on the right page." }
+  ] },
   { v: "2026-11-26.13", title: { zh: "所有页面电脑上一样宽", en: "Same page width everywhere on desktop" }, items: [
     { k: "better", zh: "今天、任务、健康、祷告、我的在电脑上用同一个内容宽度，不再有的宽有的窄；底部页签、顶部路径条、表单也一样宽。", en: "Today, Tasks, Health, Prayer and Me share one content width on desktop; the tab bar, mini bar and forms match." }
   ] },

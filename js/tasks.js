@@ -219,7 +219,7 @@ function viewTasks(){
   const cur = segs.find(x => x[0] === seg) || segs[0];
   const parts = cur[0] === "home" ? [{ label: t("任务") }] : [{ label: t("任务"), attrs: 'data-tks="home"' }, { label: t(cur[1]) }];
   const body = seg === "today" ? `${todaySummary()}${nudgeBar()}${mitBlock()}${tasksBlock({ full: true })}${familyTasks(wb.viewDay())}` : seg === "plan" ? planView() : seg === "list" ? listView() : homeView(rows);
-  return `${routeNav(parts, { dir: segs.map(([k, l]) => ({ label: t(l), attrs: `data-tks="${k}"`, on: cur[0] === k })) })}${body}${fab('data-act="tk-new"', t("新任务"))}`;
+  return `${routeNav(parts)}${body}${fab('data-act="tk-new"', t("新任务"))}`;
 }
 
 /* ---- 表单 ---- */

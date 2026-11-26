@@ -68,13 +68,12 @@ function viewHealth(){
 
 /** 顶部路径：健康 / 概览（第二层）；单次就诊、单个化验项目是第三层：健康 / 就诊 / 10/30 年度体检，带「‹ 返回」 */
 function healthRoute(ui){
-  const dir = VIEWS.map(([k, l]) => ({ label: t(l), attrs: `data-hl="view" data-v="${k}"`, on: parentView(ui.view) === k }));   // 目录：健康下的各子页
   const root = { label: t("健康"), attrs: 'data-hl="view" data-v="overview"' }, viewName = v => t((VIEWS.find(x => x[0] === v) || VIEWS[0])[1]);
   if (ui.view === "visit") { const v = S.hl.visits.find(x => x.id === ui.visitId), k = v && (VISIT_KINDS[v.kind] || VISIT_KINDS.other);
-    return routeNav([root, { label: viewName("visits"), attrs: 'data-hl="view" data-v="visits"' }, { label: v ? `${fmtDay(v.day).slice(5)} ${t(k.label)}` : t("就诊") }], { back: 'data-hl="back"', dir }); }
+    return routeNav([root, { label: viewName("visits"), attrs: 'data-hl="view" data-v="visits"' }, { label: v ? `${fmtDay(v.day).slice(5)} ${t(k.label)}` : t("就诊") }]); }
   if (ui.view === "lab") { const x = S.hl.labs.find(y => (y.code || y.name) === ui.labKey);
-    return routeNav([root, { label: viewName("labs"), attrs: 'data-hl="view" data-v="labs"' }, { label: x ? labName(x, lang()) : t("化验") }], { back: 'data-hl="back"', dir }); }
-  return routeNav(ui.view === "overview" ? [root, { label: viewName("overview") }] : [root, { label: viewName(ui.view) }], { dir });
+    return routeNav([root, { label: viewName("labs"), attrs: 'data-hl="view" data-v="labs"' }, { label: x ? labName(x, lang()) : t("化验") }]); }
+  return routeNav(ui.view === "overview" ? [root, { label: viewName("overview") }] : [root, { label: viewName(ui.view) }]);
 }
 /* 概览：左栏（待办、最近一次就诊）+ 右栏（关键指标、走势图） */
 function overviewHTML(who){

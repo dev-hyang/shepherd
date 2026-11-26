@@ -3,6 +3,7 @@ import { APP_VERSION, SISTER_APPS, THIS_APP } from "./core/config.js";
 import { t, tc } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc } from "./core/util.js";
+import { routeNav } from "./ui.js";
 
 /* ============ “我的”页：不常用的入口收到一处 ============ */
 const mrow = (act, title, desc, icon, badge) => `<button class="ui-row mrow" ${act}><span class="mi" aria-hidden="true">${icon}</span><span class="mt"><b>${title}</b>${desc ? `<small>${desc}</small>` : ""}</span>${badge ? `<span class="mbadge">${badge}</span>` : ""}<span class="ui-chev" aria-hidden="true">›</span></button>`;
@@ -10,8 +11,8 @@ function viewMe(){
   const ready = S.cloud === "ready" && S.wb.loaded;
   const who = ready ? esc(myName()) : S.cloud === "signedout" ? t("还没登录") : S.cloud === "anon" ? t("请绑定邮箱") : "";
   const link = a => `<a class="ui-row mrow" href="${a.url}"><span class="mi" aria-hidden="true">↗</span><span class="mt"><b>${esc(t(a.name))}</b><small>${tc(esc(a.desc))}</small></span><span class="ui-chev" aria-hidden="true">›</span></a>`;
-  return `
-  <h2>${t("我的")}${who ? ` <span class="small muted" style="font-family:var(--f-body);font-weight:400">${who}</span>` : ""}</h2>
+  return `${routeNav([{ label: t("我的") }])}
+  ${who ? `<p class="small muted" style="margin-top:12px">${who}</p>` : ""}
   <div class="msec">${t("提醒与设置")}</div>
   <div class="panel mlist">
     ${ready ? mrow('data-act="calendar"', t("日历订阅提醒"), t("把提醒放进手机日历，到点响铃"), "⏰") : ""}

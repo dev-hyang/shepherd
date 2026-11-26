@@ -10,7 +10,7 @@ import { openAbout } from "./about.js";
 import { askAct } from "./ask.js";
 import * as fz from "./focus.js";
 import { closeSheet, drawForm, getForm, head, openCalendar, openForm, openHabits, openInfo, openPlan, openPractice, openSettings, readForm, showSheet } from "./sheet.js";
-import { backTo, render, renderBg } from "./views.js";
+import { render, renderBg } from "./views.js";
 import * as wb from "./wb.js";
 import { goHero } from "./med-hero.js";
 import { recAct, setQ } from "./records.js";
@@ -65,11 +65,15 @@ document.addEventListener("click", async ev => {
   const d = btn.dataset;
   if (btn.closest(".dirmenu, .fab-menu")) S.fpop = null;   // 目录里点了一项：收起菜单再跳
   if (d.fpop) { togglePop(d.fpop); return; }
+  if (d.go) {   // 目录里点一页：跳到它的网址（js/nav-tree.js）；网址一变 views.js 的 hashchange 负责重画，浏览器后退能回来
+    S.fpop = null; S.pick = null; pg.resetAll(); close();
+    if (d.go.startsWith("#/health") && S.tab !== "health" && S.hlUi) S.hlUi.show = false;   // 健康数值每次进来都重新遮上
+    const cur = location.hash || "#/"; if (cur === d.go) render(); else location.hash = d.go;
+    return; }
   if (d.scroll) { const el = document.getElementById(d.scroll); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   if (d.pagerMore) { if (d.pagerMore === "notes") nts.moreNotes(); else { pg.more(d.pagerMore); render(); } return; }   // 继续加载（js/pager.js）
   if (d.pview) { S.prayerView = d.pview; S.fpop = null; pg.reset("prayers"); render(); return; }
   if (d.tkf) { S.tkUi[d.tkf] = d.v; pg.reset("tkList", "tkDone", "tkDropped"); render(); return; }
-  if (d.act === "nav-back") d.tab = backTo(d.parent);   // 返回：上一页，没有就上一层
   if (d.tab && d.tab === S.tab && btn.closest("nav.tabs")) {   // 再点一次当前的底部页签（双击也一样）：回到这一页的第一层（健康 / 概览、任务 / 今天、祷告 / 代祷）
     if (d.tab === "health" && S.hlUi) { S.hlUi.view = "overview"; S.hlUi.back = null; }
     if (d.tab === "tasks" && S.tkUi) S.tkUi.seg = "home";

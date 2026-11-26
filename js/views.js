@@ -41,23 +41,31 @@ function crumbParts(tab){
    只用 replaceState，不往浏览器历史里加条目（返回仍由「‹ 返回」/ 面包屑管）。登录回跳时 # 后面是 Supabase 的令牌，那时不动。 */
 const ROUTE_TABS = new Set([...Object.keys(VIEWS), ...Object.keys(SUB)]);
 function readRoute(hash = location.hash){
+  if (hash === "" || hash === "#" || hash === "#/") return { tab: "today", sub: "", id: "", q: new URLSearchParams() };   // 没有 # = 今天首页（浏览器后退回到首页时要认得）
   const m = /^#\/([^?]*)(?:\?(.*))?$/.exec(hash); if (!m) return null;
-  let [tab, sub, id] = m[1].split("/").map(x => { try { return decodeURIComponent(x); } catch (e) { return ""; } });
+  let [tab, sub, id, id2] = m[1].split("/").map(x => { try { return decodeURIComponent(x); } catch (e) { return ""; } });
   if (tab === "review") tab = "habits"; if (tab === "ask") tab = "today";   // 回顾页已并进「今天 / 习惯」，旧链接转过去
+  // 网址和路径栏一致：#/today/habits[/records|/herocfg]、#/me/releases、#/health/visits/<id>、#/health/labs/<项目>；旧写法（#/habits、#/health/visit/<id>…）仍认
+  if (tab === "today" && sub === "habits") { tab = SUB[id] && SUB[id].parent === "habits" ? id : "habits"; sub = id = ""; }
+  else if (tab === "me" && sub === "releases") { tab = "releases"; sub = ""; }
+  else if (tab === "health" && (sub === "visits" || sub === "labs") && id) { sub = sub === "visits" ? "visit" : "lab"; }
   return ROUTE_TABS.has(tab) ? { tab, sub: sub || "", id: id || "", q: new URLSearchParams(m[2] || "") } : null;
 }
 function routeOf(){
   const enc = encodeURIComponent;
   if (S.tab === "health" && S.hlUi) {
     const u = S.hlUi, id = u.view === "visit" ? u.visitId : u.view === "lab" ? u.labKey : "";
-    return `#/health${u.view && u.view !== "overview" ? "/" + u.view + (id ? "/" + enc(id) : "") : ""}${u.who ? "?who=" + enc(u.who) : ""}`;
+    const seg = u.view === "visit" ? "visits" : u.view === "lab" ? "labs" : u.view;   // 路径和路径栏一致：健康 / 就诊 / <某次就诊> → #/health/visits/<id>
+    return `#/health${u.view && u.view !== "overview" ? "/" + seg + (id ? "/" + enc(id) : "") : ""}${u.who ? "?who=" + enc(u.who) : ""}`;
   }
+  if (SUB[S.tab]) { const names = []; let p = S.tab; while (SUB[p]) { names.unshift(p); p = SUB[p].parent; } return `#/${p}/${names.join("/")}`; }   // 子页：#/today/habits/records、#/me/releases
   if (S.tab === "tasks" && S.tkUi && S.tkUi.seg !== "home") return "#/tasks/" + S.tkUi.seg;
   if (S.tab === "prayer" && S.prayerView !== "home") return "#/prayer/" + S.prayerView;
   return S.tab === "today" ? "" : "#/" + S.tab;
 }
 /* 刷新后浏览器还留着「表单开着」的历史标记，但页面已经重新开始、什么都没开：清掉，不然 syncRoute 会一直以为表单还开着，再也不更新网址（刷新永远回到同一页） */
 function clearStaleMarker(){ const hs = history.state; if (hs && hs.sheet) try { history.replaceState(null, "", location.href); } catch (e) {} }
+let synced = false, fromUrl = false;   // synced：已写过一次网址；fromUrl：这次换页是读网址得来的（不再往历史里加条目）
 let routeHash = null;   // 上一次写进 / 读出网址的 #；网址里的 # 和它不一样 = 外面改的（手动输入、收藏、浏览器后退），以网址为准
 function restoreRoute(){
   routeHash = location.hash; clearStaleMarker(); const r = readRoute(); if (!r) return false;
@@ -79,22 +87,17 @@ function syncRoute(){
   const hs = history.state;
   if ((hs && hs.sheet) || (location.hash.includes("=") && !location.hash.startsWith("#/"))) return;
   const h = routeOf();
-  if (location.hash !== h) try { history.replaceState(history.state, "", location.pathname + location.search + h); } catch (e) {}
+  // 换了页就往浏览器历史里加一条（后退 / 前进能在页面之间走）；第一次写、或这次是从网址读进来的（后退 / 手输 / 旧链接改成新写法）只替换，不加条目
+  if (location.hash !== h && !(h === "" && (location.hash === "" || location.hash === "#"))) { const first = !synced || fromUrl; try { history[first ? "replaceState" : "pushState"](first ? history.state : null, "", location.pathname + location.search + h); } catch (e) {} }
+  synced = true; fromUrl = false;
   routeHash = location.hash;
 }
 // 改了网址里的 #：跳到那一页（有的浏览器先派发 popstate，表单的关闭逻辑会抢先重画一次，所以 render 开头也查一遍）
-function adoptRoute(){ if (routeHash === null || location.hash === routeHash || !readRoute()) return false; restoreRoute(); return true; }
+function adoptRoute(){ if (routeHash === null || location.hash === routeHash || !readRoute()) return false; restoreRoute(); fromUrl = true; return true; }
 window.addEventListener("hashchange", () => { if (adoptRoute()) { render(); window.scrollTo(0, 0); } });
-/* 「‹ 返回」= 回到你刚才来的那一页；直接打开或刷新后没有上一页时，退到上一层。面包屑负责按层级往上跳，两者分工（和 iOS / 安卓 / 网页的常见做法一致） */
-const NAV = { last: null, stack: [], back: false };
-function trackNav(tab){ if (NAV.last && NAV.last !== tab && !NAV.back) { NAV.stack.push(NAV.last); if (NAV.stack.length > 30) NAV.stack.shift(); } NAV.back = false; NAV.last = tab; }
-function backTo(parent){ NAV.back = true; while (NAV.stack.length) { const p = NAV.stack.pop(); if (p !== S.tab) return p; } return parent; }
 /** 面包屑：第一项带「‹ 」，中间项可点，最后一项加粗当标题 */
 function crumbNav(parts, cls = ""){
-  const mini = cls.includes("mb"), cur = S.tab;
-  // 目录 = 这一支的根页面 + 同一支下的所有子页（今天 / 习惯 / 记录 / 顶部卡片；我的 / 发布日志）
-  const root = rootOf(cur), dir = mini ? null : [{ label: t(TAB_LABELS[root]), attrs: `data-tab="${root}"`, on: cur === root }, ...Object.keys(SUB).filter(k => rootOf(k) === root).map(k => ({ label: t(SUB[k].label), attrs: `data-tab="${k}"`, on: cur === k }))];
-  return crumbHTML(parts.map(x => ({ label: t(x.label), attrs: x.tab ? `data-tab="${x.tab}"` : "" })), { back: `data-act="nav-back" data-parent="${parts[parts.length - 2].tab}"`, dir, cls: `route ${cls}`.trim() });
+  return crumbHTML(parts.map(x => ({ label: t(x.label), attrs: x.tab ? `data-tab="${x.tab}"` : "" })), { cls: `route ${cls}`.trim() });   // 目录是整棵页面树（js/nav-tree.js）
 }
 // 应用切换（姊妹站点共用）：右上角九宫格按钮，宽屏浮层、手机底部抽屉。组件是本应用自己的副本 js/shared/（母版在 home-pantry/shared/）。
 // 语言切换：地球按钮 + 列表，以后加语言只要在 LOCALES 里加一项。
@@ -126,7 +129,6 @@ function renderStatus(){
 function render(opts){
   if (adoptRoute()) window.scrollTo(0, 0);
   renderStatus();
-  trackNav(S.tab);
   const sub = SUB[S.tab], cur = rootOf(S.tab);   // 子页时底部仍高亮它所属的页签
   document.querySelectorAll("nav.tabs button").forEach(b => { if (b.dataset.tab === cur) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
@@ -139,7 +141,7 @@ function render(opts){
   restoreHero();   // 今天页顶上的滑动卡：滑回刚才停的那一张
   openPendingNew();   // 网址里带 new=… 且健康数据已读完：打开对应的录入表（只一次）
   syncRoute();   // 页面画完再写网址（健康页会在画的时候纠正不存在的子页 / 人）
-  updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : S.route ? routeNav(S.route).replace('class="crumb route"', 'class="crumb route mb"') : "", t("回到顶部"));
+  updateMiniBar($("#bname").textContent, sub ? crumbNav(crumbParts(S.tab), "mb") : S.route ? crumbHTML(S.route, { cls: "route mb" }) : "", t("回到顶部"));
 }
 /** 后台重画 = render({ bg: true }) */
 const renderBg = () => render({ bg: true });
@@ -158,4 +160,4 @@ function gateHTML(){
   return "";
 }
 
-export { backTo, renderStatus, render, renderBg, refreshSettingsIfOpen, gateHTML, crumbNav, SUB, restoreRoute };
+export { renderStatus, render, renderBg, refreshSettingsIfOpen, gateHTML, crumbNav, SUB, restoreRoute };
