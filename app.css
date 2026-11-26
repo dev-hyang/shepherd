@@ -4,7 +4,8 @@
   --bg:#F4F2EA; --surface:#FFFFFF; --field:#F8F7F1; --ink:#1F2A1B; --muted:#5E6B58; --line:#DDD9C8;
   --slate:#4C7A3F; --slate-soft:#E3EEDC; --hero-a:#3F6B34; --hero-b:#7FA86A; --honey:#D9A441; --honey-soft:#FBF0D3;
   --sage:#3F8664; --sage-soft:#DFF0E6; --rose:#B44B60; --rose-soft:#FBE6EA; --sky:#5F95CC;
-  --ctl-h:44px; --radius-lg:22px; --radius:12px; --radius-sm:8px;
+  --ctl-h:44px; --page-w:960px;   /* 所有页面同一个内容宽度（今天、任务、健康、祷告、我的 在电脑上一样宽） */
+   --radius-lg:22px; --radius:12px; --radius-sm:8px;
   --f-body:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
   --f-head:"Lora","Noto Serif SC","Songti SC","STSong","SimSun",Georgia,serif;
   --f-num:"Outfit","Noto Sans SC",system-ui,sans-serif;
@@ -36,7 +37,7 @@ html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
 button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--slate);outline-offset:2px;border-radius:6px}
-.wrap{max-width:720px;margin:0 auto;padding:0 16px 120px}
+.wrap{max-width:var(--page-w);margin:0 auto;padding:0 16px 120px}
 header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 8px}
 .brand{display:flex;flex-direction:column;position:relative}
 .brand > span{font-size:13px;color:var(--muted)}
@@ -103,14 +104,14 @@ code{font-size:13px;background:var(--slate-soft);padding:1px 5px;border-radius:4
 
 /* bottom nav */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
-nav.tabs .in{max-width:720px;margin:0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+nav.tabs .in{max-width:var(--page-w);margin:0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
 nav.tabs button{background:none;border:0;padding:8px 0 10px;min-height:56px;cursor:pointer;font-size:12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
 nav.tabs button i{font-style:normal;font-size:20px}
 nav.tabs button[aria-current="page"]{color:var(--slate);font-weight:700}
 nav.tabs button[aria-current="page"] i{transform:translateY(-1px)}
 
 /* sheet â†’ full-screen page in normal flowï¼ˆnothing floats over iOS toolbarsï¼‰ */
-dialog.sheet{position:static;display:none;inset:auto;transform:none;margin:0 auto;width:100%;max-width:720px;max-height:none;overflow:visible;border:0;padding:0;background:var(--bg);color:var(--ink)}
+dialog.sheet{position:static;display:none;inset:auto;transform:none;margin:0 auto;width:100%;max-width:var(--page-w);max-height:none;overflow:visible;border:0;padding:0;background:var(--bg);color:var(--ink)}
 dialog.sheet[open]{display:block}
 body.sheet-open .wrap,body.sheet-open nav.tabs{display:none}
 .sheet-in{padding:0 16px 0;overflow:visible;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}   /* 底部留白交给贴底的 ui-formbar；内容短时操作条也沉到屏幕底部 */
@@ -322,7 +323,7 @@ nav.tabs button{position:relative}
 /* the narrow bar that holds the title and the way back once the header has scrolled away (js/minibar.js) */
 .minibar{position:fixed;top:0;left:0;right:0;z-index:12;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);transform:translateY(-100%);visibility:hidden;transition:transform .18s ease,visibility 0s linear .18s}
 .minibar.show{transform:none;visibility:visible;transition:transform .18s ease}
-.minibar .in{max-width:720px;margin:0 auto;padding:0 16px;min-height:44px;display:flex;align-items:center;gap:10px}
+.minibar .in{max-width:var(--page-w);margin:0 auto;padding:0 16px;min-height:44px;display:flex;align-items:center;gap:10px}
 .minibar .chip{flex:none}
 .mb-title{all:unset;box-sizing:border-box;flex:1;min-width:0;min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mb-title:focus-visible{outline:2px solid var(--slate);outline-offset:-2px;border-radius:6px}
@@ -451,8 +452,6 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .tgrid{column-count:1}
 .tsec{break-inside:avoid;padding-top:1px}
 @media (min-width:900px){
-  .wrap{max-width:1040px}
-  main.narrow{max-width:720px;margin:0 auto}
   .tgrid{column-count:2;column-gap:28px}
   .tsec .sec-head:first-child{margin-top:20px}
 }

@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.13", title: { zh: "所有页面电脑上一样宽", en: "Same page width everywhere on desktop" }, items: [
+    { k: "better", zh: "今天、任务、健康、祷告、我的在电脑上用同一个内容宽度，不再有的宽有的窄；底部页签、顶部路径条、表单也一样宽。", en: "Today, Tasks, Health, Prayer and Me share one content width on desktop; the tab bar, mini bar and forms match." }
+  ] },
   { v: "2026-11-26.12", title: { zh: "计时卡片回到今天首页，习惯页先看回顾", en: "Timer cards moved to Today; Habits opens on Review" }, items: [
     { k: "better", zh: "顶部「距上次」计时卡片搬到今天首页最上面，不再放在 今天 / 习惯 里。", en: "The top 'time since last' cards now sit at the top of the Today home page, not inside Today / Habits." },
     { k: "better", zh: "今天 / 习惯 用「回顾 | 今日打卡」切换：回顾（含最近 28 天）在前，读经的图不再显示。", en: "Today / Habits switches between Review and Daily check-ins: Review (with the last 28 days) comes first; scripture is no longer charted there." },

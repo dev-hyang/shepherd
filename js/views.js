@@ -130,7 +130,7 @@ function render(opts){
   const sub = SUB[S.tab], cur = rootOf(S.tab);   // 子页时底部仍高亮它所属的页签
   document.querySelectorAll("nav.tabs button").forEach(b => { if (b.dataset.tab === cur) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
-  $("#main").className = S.tab === "today" || S.tab === "health" ? "wide" : "narrow";   // 今天、健康在宽屏用两栏
+  $("#main").className = "";   // 所有页面同一个宽度（--page-w，app.css）；今天页在宽屏自己分两栏
   const crumb = sub ? crumbNav(crumbParts(S.tab)) : "";
   S.route = null;   // 页面自己画路径（ui.routeNav）时记在这里，迷你栏用
   const html = crumb + (S.tab === "me" || (sub && sub.open) ? v() : (gateHTML() || v()));   // 我的、咩咩咩、发布日志 没登录也能看
