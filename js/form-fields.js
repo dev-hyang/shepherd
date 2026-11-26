@@ -3,7 +3,7 @@ import { dayKey, esc } from "./core/util.js";
 
 /* 表单里单个字段的 HTML。字段描述（spec）：
    k 键 · label 标签 · type（text / num / time / date / password / area / seg / multi / check / html）· ph 占位 · hint 说明
-   w：宽度。省略 = 整行；"s" = 1/3 行；"m" = 1/2 行（电脑 ≥640px 才并排，手机一律单列）
+   w：宽度。省略 = 整行；"s" = 1/3 行；"m" = 1/2 行（电脑 ≥640px 才并排，手机单列）；"h" = 1/2 行（手机也并排：日期、时间、数字这类短字段两两一行）
    pre / suf：输入框前后的字（如「每周 [3] 次」），只用于 num / text / time；只有 pre / suf、没有 label 时，它们就是这个框的名字（读屏用 aria-label）
    sel：下拉（opts = [[值, 文字]]），选项 ≥ 9 项电脑上自动可搜索（shared/ui-select.js）；redraw: true = 改了值就重画表单（别的字段的 when 依赖它时用）
    fill：seg / multi 用统一的视图切换条 ui-seg，占满一行、按钮等宽（选项少、文字短时用，如「每天 / 每周」「周一…周日」） */

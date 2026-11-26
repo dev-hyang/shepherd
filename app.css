@@ -1096,3 +1096,6 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
 .field .fin--num > input{flex:0 0 5.5em;width:5.5em;text-align:center}
 .field .ui-seg{min-height:var(--ctl-h)}
 .field .ui-seg[data-fill] > button{padding:0 4px}
+
+/* 表单里的短字段（日期、时间、数字、下拉）两两一行，手机也并排：w: "h" */
+.fgrid > .field--h{grid-column:span 3}

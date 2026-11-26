@@ -262,8 +262,8 @@ function profileHTML(who){
 /* ---- 表单 ---- */
 const peopleOpts = () => hl.people().map(p => [p.key, p.name]);
 /** 表单里的「谁」：和健康页头部同一个样式的下拉框（以前是一排按钮）；换人时重画（就诊列表、单位跟着这个人） */
-const whoField = (label = "谁") => ({ k: "subject", type: "html", html: d => `<div class="field" style="margin:0"><label for="f_subject">${t(label)}</label><select id="f_subject" data-f="subject" class="hl-fsel">${hl.people().map(p => `<option value="${esc(p.key)}" ${p.key === d.subject ? "selected" : ""}>${p.kid ? "🧒 " : "👤 "}${esc(p.name)}${p.me ? ` (${t("我")})` : ""}</option>`).join("")}</select></div>` });
-const selectField = (k, label, opts) => ({ k, type: "html", html: d => `<div class="field" style="margin:0"><label for="f_${k}">${t(label)}</label><select id="f_${k}" data-f="${k}" class="hl-fsel">${opts().map(([v, l]) => `<option value="${esc(v)}" ${String(d[k] ?? "") === String(v) ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div>` });
+const whoField = (label = "谁", w) => ({ k: "subject", w, type: "html", html: d => `<div class="field" style="margin:0"><label for="f_subject">${t(label)}</label><select id="f_subject" data-f="subject" class="hl-fsel">${hl.people().map(p => `<option value="${esc(p.key)}" ${p.key === d.subject ? "selected" : ""}>${p.kid ? "🧒 " : "👤 "}${esc(p.name)}${p.me ? ` (${t("我")})` : ""}</option>`).join("")}</select></div>` });
+const selectField = (k, label, opts, w) => ({ k, w, type: "html", html: d => `<div class="field" style="margin:0"><label for="f_${k}">${t(label)}</label><select id="f_${k}" data-f="${k}" class="hl-fsel">${opts().map(([v, l]) => `<option value="${esc(v)}" ${String(d[k] ?? "") === String(v) ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div>` });
 const fh = title => `<div class="fh">${t(title)}</div>`;
 const today = () => S.day;
 /* AI 读取（2026-11-12 统一版式，js/attach.js）：收起来的一块「用 AI 读取」，里面一排缩略图（可多张、可删）+ 粘贴文字框 + 「让 AI 读出来」 */
@@ -283,21 +283,21 @@ function openVisit(v){
     : { subject: UI().who, day: today(), kind: "regular" };
   openForm(v ? "编辑就诊" : "记一次就诊", [
     { k: "h_ai", type: "html", html: d => aiBlock("visit", d) },
-    whoField(),
-    { k: "day", label: "日期", type: "date", past: true },
-    selectField("kind", "类型", () => Object.entries(VISIT_KINDS).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`])),
-    selectField("place", "地点", () => [["", t("（不填）")], ...Object.entries(PLACES).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`])]),
+    whoField("谁", "h"),
+    { k: "day", label: "日期", type: "date", past: true, w: "h" },
+    selectField("kind", "类型", () => Object.entries(VISIT_KINDS).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`]), "h"),
+    selectField("place", "地点", () => [["", t("（不填）")], ...Object.entries(PLACES).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`])], "h"),
     { k: "location", label: "地点名称 / 地址", type: "text", ph: "例如 Duly Health · Naperville", list: [...new Set(S.hl.visits.map(x => x.location).filter(Boolean))].slice(0, 30) },
     { k: "provider", label: "医生 / 科室", type: "text", ph: "例如 Dr. Lee · 家庭医生" },
     { k: "reason", label: "就诊原因", type: "text", ph: "年度体检 / 咳嗽一周 / 复查血脂" },
     { k: "h_v", type: "html", html: () => fh("体征（可不填）") },
-    { k: "v_weight", label: t("体重（{u}）", { u: unitOf("weight", s) }), type: "num", step: .1 },
-    { k: "v_height", label: t("身高（{u}）", { u: unitOf("length", s) }), type: "num", step: .1 },
-    { k: "v_sys", label: "收缩压（高压）", type: "num" },
-    { k: "v_dia", label: "舒张压（低压）", type: "num" },
-    { k: "v_hr", label: "心率", type: "num" },
-    { k: "v_temp", label: t("体温（{u}）", { u: unitOf("temp", s) }), type: "num", step: .1 },
-    { k: "v_spo2", label: "血氧 %", type: "num" },
+    { k: "v_weight", label: t("体重（{u}）", { u: unitOf("weight", s) }), type: "num", step: .1, w: "h" },
+    { k: "v_height", label: t("身高（{u}）", { u: unitOf("length", s) }), type: "num", step: .1, w: "h" },
+    { k: "v_sys", label: "收缩压（高压）", type: "num", w: "h" },
+    { k: "v_dia", label: "舒张压（低压）", type: "num", w: "h" },
+    { k: "v_hr", label: "心率", type: "num", w: "h" },
+    { k: "v_temp", label: t("体温（{u}）", { u: unitOf("temp", s) }), type: "num", step: .1, w: "h" },
+    { k: "v_spo2", label: "血氧 %", type: "num", w: "h" },
     { k: "h_d", type: "html", html: () => fh("医生说了什么") },
     { k: "diagnosis", label: "诊断", type: "area", rows: 2 },
     { k: "advice", label: "医生建议", type: "area", rows: 3, ph: "减重 5%、少盐、三个月后复查血脂……", hint: "原话记下来，以后推荐饮食和锻炼按这个来" },
@@ -323,15 +323,15 @@ function openLab(x){
   const init = x ? { ...x } : { subject: UI().who, day: today(), code: "ldl", unit: LABS.ldl.unit, ref_low: LABS.ldl.low, ref_high: LABS.ldl.high };
   openForm(x ? "编辑化验" : "记一份化验", [
     ...(x ? [] : [{ k: "h_ai", type: "html", html: d => aiBlock("lab", d) }]),
-    whoField(),
-    { k: "day", label: "日期", type: "date", past: true },
+    whoField("谁", "h"),
+    { k: "day", label: "日期", type: "date", past: true, w: "h" },
     { k: "h_labs", type: "html", html: d => labsPreview(d) },
     { k: "code", type: "html", html: d => (d._labs && d._labs.length ? "" : codeSelect(d)) },
     { k: "name", label: "项目名称", type: "text", when: d => !d.code && !(d._labs && d._labs.length) },
-    { k: "value", label: "结果", type: "num", step: .01, when: d => !(d._labs && d._labs.length) },
-    { k: "unit", label: "单位", type: "text", when: d => !(d._labs && d._labs.length) },
-    { k: "ref_low", label: "参考下限", type: "num", step: .01, when: d => !(d._labs && d._labs.length) },
-    { k: "ref_high", label: "参考上限", type: "num", step: .01, when: d => !(d._labs && d._labs.length), hint: "按化验单上的范围改；偏高 / 偏低按这里判断" },
+    { k: "value", label: "结果", type: "num", step: .01, w: "h", when: d => !(d._labs && d._labs.length) },
+    { k: "unit", label: "单位", type: "text", w: "h", when: d => !(d._labs && d._labs.length) },
+    { k: "ref_low", label: "参考下限", type: "num", step: .01, w: "h", when: d => !(d._labs && d._labs.length) },
+    { k: "ref_high", label: "参考上限", type: "num", step: .01, w: "h", when: d => !(d._labs && d._labs.length), hint: "按化验单上的范围改；偏高 / 偏低按这里判断" },
     { k: "notes", label: "备注", type: "text", when: d => !(d._labs && d._labs.length) }
   ], init, async d => {
     if (!d.day) { toast(t("请填日期")); return; }
@@ -413,13 +413,13 @@ function openMeasure(m){
   const init = m ? { ...m, value: m.kind === "bp" ? m.value : toShow(MEASURE_KINDS[m.kind].dim, m.value, s) } : { subject: UI().who, day: today(), kind: "weight" };
   const unitL = d => (d.kind === "bp" ? "mmHg" : unitOf(MEASURE_KINDS[d.kind || "weight"].dim, s));
   openForm(m ? "编辑测量" : "记一次测量", [
-    whoField(),
-    { k: "day", label: "日期", type: "date", past: true },
+    whoField("谁", "h"),
+    { k: "day", label: "日期", type: "date", past: true, w: "h" },
     { k: "kind", label: "测什么", type: "seg", opts: Object.entries(MEASURE_KINDS).map(([k, x]) => [k, `${x.icon} ${t(x.label)}`]), raw: true },
     { k: "h_u", type: "html", html: d => `<div class="small muted">${t("单位：{u}", { u: unitL(d) })}</div>` },
     { k: "value", label: "数值", type: "num", step: .1, when: d => d.kind !== "bp" },
-    { k: "value_bp", label: "收缩压（高压）", type: "num", when: d => d.kind === "bp" },
-    { k: "value2", label: "舒张压（低压）", type: "num", when: d => d.kind === "bp" },
+    { k: "value_bp", label: "收缩压（高压）", type: "num", w: "h", when: d => d.kind === "bp" },
+    { k: "value2", label: "舒张压（低压）", type: "num", w: "h", when: d => d.kind === "bp" },
     { k: "notes", label: "备注", type: "text", ph: "早上空腹 / 运动后" }
   ], m && m.kind === "bp" ? { ...init, value_bp: m.value } : init, async d => {
     const k = d.kind || "weight", raw = k === "bp" ? d.value_bp : d.value;

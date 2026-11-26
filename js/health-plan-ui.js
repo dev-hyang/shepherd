@@ -162,8 +162,8 @@ function openTplForm(kind, ref){
         breakfast: ((x.meals || {}).breakfast || []).map(tl).join("；"), lunch: ((x.meals || {}).lunch || []).map(tl).join("；"), dinner: ((x.meals || {}).dinner || []).map(tl).join("；"), snack: ((x.meals || {}).snack || []).map(tl).join("；"), shop: (x.shop || []).map(tl).join("、"), tags: x.tags || [] };
   const tagOpts = Object.entries(TAGS).filter(([k]) => (kind === "workout" ? !["iron"].includes(k) : !["cardio", "strength", "flex", "gentle"].includes(k)));
   const fields = kind === "workout" ? [
-    { k: "name", label: "名称", type: "text" }, { k: "minutes", label: "大约几分钟", type: "num" },
-    { k: "level", label: "难度", type: "seg", opts: [["1", "容易"], ["2", "中等"], ["3", "较难"]] },
+    { k: "name", label: "名称", type: "text" }, { k: "minutes", label: "大约几分钟", type: "num", w: "h" },
+    { k: "level", label: "难度", type: "seg", fill: true, opts: [["1", "容易"], ["2", "中等"], ["3", "较难"]] },
     { k: "items", label: "动作（一行一个）", type: "area", rows: 6, ph: "深蹲 3×12\n平板支撑 3×30秒\n快走 20分钟", hint: "写成「名称 组数×次数」「名称 组数×秒数秒」或「名称 分钟数分钟」" },
     { k: "tags", label: "适合", type: "multi", opts: tagOpts }
   ] : [
@@ -204,9 +204,9 @@ function openWorkoutLog(a){
   const key = UI().who, plan = planOf(key), refs = libFor("workout", (hl.person(key) || {}).kid);
   const init = a ? { day: a.day, template: a.template, minutes: a.minutes, note: (a.data || {}).note || "" } : { day: S.day, template: (plan.workout || {}).tpl || refs[0], minutes: null, note: "" };
   openForm(a ? "编辑训练" : "记一次训练", [
-    { k: "day", label: "日期", type: "date", past: true },
+    { k: "day", label: "日期", type: "date", past: true, w: "h" },
     { k: "template", type: "html", html: d => `<div class="field" style="margin:0"><label for="f_tpl">${t("模版")}</label><select id="f_tpl" data-f="template"><option value="" ${!d.template ? "selected" : ""}>${t("自由训练（不按模版）")}</option>${refs.map(r => { const tp = tpl(r, "workout"); return `<option value="${esc(r)}" ${d.template === r ? "selected" : ""}>${esc(L(tp.x))}</option>`; }).join("")}</select></div>` },
-    { k: "minutes", label: "多少分钟", type: "num", ph: "30", hint: "不填就按模版的分钟数" },
+    { k: "minutes", label: "多少分钟", type: "num", ph: "30", w: "h", hint: "不填就按模版的分钟数" },
     { k: "note", label: "备注", type: "text", ph: "跑了 3 公里 / 膝盖有点疼" }
   ], init, async f => {
     const tp = f.template ? tpl(f.template, "workout") : null, minutes = f.minutes || (tp ? tp.x.minutes : 0);
@@ -231,8 +231,8 @@ function openSchedule(){
   const key = UI().who, plan = planOf(key), w = plan.workout && tpl(plan.workout.tpl, "workout"); if (!w) return;
   const days = plan.workout.days && plan.workout.days.length ? plan.workout.days : w.x.days || [];
   openForm("训练的日子和提醒", [
-    { k: "days", label: "哪几天", type: "multi", opts: [1, 2, 3, 4, 5, 6, 0].map(d => [d, t("周{d}", { d: t(WEEKDAY[d]) })]), raw: true },
-    { k: "time", label: "几点提醒", type: "time" },
+    { k: "days", label: "哪几天", type: "multi", fill: true, opts: [1, 2, 3, 4, 5, 6, 0].map(d => [d, t("周{d}", { d: t(WEEKDAY[d]) })]), raw: true },
+    { k: "time", label: "几点提醒", type: "time", w: "h" },
     { k: "remind", label: "放进日历订阅提醒", type: "check", hint: "我的 → 日历订阅提醒；自己和孩子的训练会出现在你的日历里" }
   ], { days: days.map(String), time: plan.workout.time || "18:00", remind: plan.workout.remind !== false }, async f => {
     await setPlan(key, { workout: { ...plan.workout, days: (f.days || []).map(Number), time: f.time || "", remind: !!f.remind } });

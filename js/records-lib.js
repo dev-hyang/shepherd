@@ -50,12 +50,12 @@ function groupByDay(list){
 
 /** 编辑 / 补记表单的字段（模式不同字段不同；日期和时间永远有） */
 function recFields(mode, opts = {}){
-  const f = [{ k: "day", label: "日期", type: "date", past: true }, { k: "time", label: "时间", type: "time" }];
-  if (mode === "minutes") f.push({ k: "minutes", label: "分钟", type: "num" }, { k: "type", label: "类型（可空）", type: "text", ph: "走路、跑步、力量…" });
+  const f = [{ k: "day", label: "日期", type: "date", past: true, w: "h" }, { k: "time", label: "时间", type: "time", w: "h" }];
+  if (mode === "minutes") f.push({ k: "minutes", label: "分钟", type: "num", w: "h" }, { k: "type", label: "类型（可空）", type: "text", ph: "走路、跑步、力量…" });
   if (mode === "count") { if (opts.rest) f.push({ k: "what", label: "哪一项", type: "seg", opts: PRESET_REST.map(i => [i.k, i.label]) }); f.push({ k: "minutes", label: "分钟（可空）", type: "num" }); }
-  if (mode === "rating") f.push({ k: "rating", label: "评价", type: "seg", opts: Object.entries(RATINGS).sort((a, b) => b[0] - a[0]) });
+  if (mode === "rating") f.push({ k: "rating", label: "评价", type: "seg", fill: true, opts: Object.entries(RATINGS).sort((a, b) => b[0] - a[0]) });
   if (mode === "value") f.push({ k: "value", label: "数值", type: "num", step: 0.5 });
-  if (mode === "slots") f.push({ k: "taken", label: "结果", type: "seg", opts: [["1", "服了"], ["0", "跳过"]] }, { k: "slot", label: "对应的时间点（可空）", type: "text", ph: "08:00" });
+  if (mode === "slots") f.push({ k: "taken", label: "结果", type: "seg", fill: true, opts: [["1", "服了"], ["0", "跳过"]] }, { k: "slot", label: "对应的时间点（可空）", type: "text", ph: "08:00" });
   f.push({ k: "note", label: "备注（可空）", type: "text" });
   return f;
 }
