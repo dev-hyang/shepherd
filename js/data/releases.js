@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.11", title: { zh: "「我的」精简，路径栏目录按真实层级", en: "Me page trimmed; Directory follows the real page hierarchy" }, items: [
+    { k: "better", zh: "「我的」只留设置、备份、日历订阅、介绍、发布日志和姊妹应用；习惯与用药、读经计划、灵修笔记、专注计时等入口在各自的页面里（今天 / 习惯、祷告）。", en: "Me now keeps only settings, backup, calendar, About, release notes and sister apps; habits, meds, reading plan, notes and focus timer live in their own pages." },
+    { k: "better", zh: "子页的「目录」按真实层级列出：今天 / 习惯 / 记录 / 顶部卡片，我的 / 发布日志。", en: "On sub-pages the Directory lists the real hierarchy: Today / Habits / Records / Top cards, and Me / Release notes." }
+  ] },
   { v: "2026-11-26.10", title: { zh: "健康各页统一：新增只留右下角 ＋，小按钮更好点", en: "Health pages unified: add via + only, easier small buttons" }, items: [
     { k: "better", zh: "化验、训练等页面里零散的「＋ 录入化验」「＋ 记一次」按钮去掉，新增统一用右下角的 ＋。", en: "Scattered add buttons on the Labs and Workout pages are gone; adding is always the + at the bottom right." },
     { k: "better", zh: "手机上的小标签按钮、目录按钮、路径文字，点按区域都扩大到不小于 44px（外观不变）。", en: "On phones, chips, the Directory button and breadcrumb links now have at least a 44px tap area (looks unchanged)." }

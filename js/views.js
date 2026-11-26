@@ -92,7 +92,8 @@ function backTo(parent){ NAV.back = true; while (NAV.stack.length) { const p = N
 /** 面包屑：第一项带「‹ 」，中间项可点，最后一项加粗当标题 */
 function crumbNav(parts, cls = ""){
   const mini = cls.includes("mb"), cur = S.tab;
-  const dir = mini ? null : ["today", "tasks", "health", "prayer", "me"].map(k => ({ label: t(TAB_LABELS[k]), attrs: `data-tab="${k}"`, on: k === rootOf(cur) }));
+  // 目录 = 这一支的根页面 + 同一支下的所有子页（今天 / 习惯 / 记录 / 顶部卡片；我的 / 发布日志）
+  const root = rootOf(cur), dir = mini ? null : [{ label: t(TAB_LABELS[root]), attrs: `data-tab="${root}"`, on: cur === root }, ...Object.keys(SUB).filter(k => rootOf(k) === root).map(k => ({ label: t(SUB[k].label), attrs: `data-tab="${k}"`, on: cur === k }))];
   return crumbHTML(parts.map(x => ({ label: t(x.label), attrs: x.tab ? `data-tab="${x.tab}"` : "" })), { back: `data-act="nav-back" data-parent="${parts[parts.length - 2].tab}"`, dir, cls: `route ${cls}`.trim() });
 }
 // 应用切换（姊妹站点共用）：右上角九宫格按钮，宽屏浮层、手机底部抽屉。组件是本应用自己的副本 js/shared/（母版在 home-pantry/shared/）。
