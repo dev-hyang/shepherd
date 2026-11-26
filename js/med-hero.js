@@ -43,8 +43,8 @@ const cfgBar = `<div class="herocfgbar"><button class="chip" data-tab="herocfg">
 function heroTrackHTML(greetHero, past){
   if (past) return greetHero;
   const cards = shownCards(S.wb.practices, (S.wb.profile || {}).settings);
-  if (!cards.length) return greetHero + cfgBar;
-  const now = new Date(), slides = [greetHero, ...cards.map(c => (c.type === "med" ? medCard(c.p, now) : presetCard(c.key, now)))], cur = Math.min(S.heroIdx || 0, slides.length - 1);
+  if (!cards.length) return greetHero ? greetHero + cfgBar : "";
+  const now = new Date(), slides = [greetHero, ...cards.map(c => (c.type === "med" ? medCard(c.p, now) : presetCard(c.key, now)))].filter(Boolean), cur = Math.min(S.heroIdx || 0, slides.length - 1);
   return `<div class="herobox"><div class="herotrack" id="heroTrack" tabindex="0" role="region" aria-roledescription="carousel" aria-label="${esc(t("今天：问候与卡片"))}">${slides.join("")}</div>
     <div class="herodots" role="group" aria-label="${esc(t("切换卡片"))}">${slides.map((_, i) => `<button class="herodot" data-act="hero-go" data-i="${i}" aria-label="${i + 1}/${slides.length}" aria-current="${i === cur}"></button>`).join("")}</div>${cfgBar}</div>`;
 }

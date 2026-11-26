@@ -2,6 +2,7 @@ import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc } from "./core/util.js";
 import { RATINGS, kindOf } from "./data/kinds.js";
+import { heroTrackHTML } from "./med-hero.js";
 import { howText } from "./med-hero-lib.js";
 import { reviewBody } from "./review.js";
 import { chipBtn, fab, secHead } from "./ui.js";
@@ -20,7 +21,7 @@ function dayBar(day, past){
 }
 function viewHabits(){
   const day = wb.viewDay(), past = day !== S.day, list = wb.forDay(day).filter(p => !(p.meta && p.meta.preset));   // 陪伴 / 休息是顶部卡片的记录，不进今日习惯
-  return `${dayBar(day, past)}${habitsHTML(day, list)}
+  return `${dayBar(day, past)}${heroTrackHTML("", past)}${habitsHTML(day, list)}
   <div class="panel mlist" style="margin-top:14px;padding:0">
     ${link('data-tab="herocfg"', "⏱", t("顶部卡片"), t("每种药一张「距上次」卡片：显示 / 隐藏、调顺序"))}
     ${link('data-act="meds"', "💊", t("用药与保健品"), t("剂量、时间点、库存与补货提醒"))}

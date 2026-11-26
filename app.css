@@ -1002,3 +1002,21 @@ main:has(.fab){padding-bottom:96px}
 .daystrip i{width:100%;max-width:34px;height:26px;border-radius:8px;background:var(--line)}
 .daystrip .on i{background:var(--sage)}
 .daystrip small{font-size:12px;color:var(--muted)}
+
+/* 今天页：五张卡、咩咩咩原地展开和历史（2026-11-26.6） */
+.kpis.k5>:last-child:nth-child(odd){grid-column:1/-1}
+@media (min-width:600px){.kpis.k5{grid-template-columns:repeat(3,minmax(0,1fr))}.kpis.k5>:last-child:nth-child(odd){grid-column:auto}}
+@media (min-width:900px){.kpis.k5{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.ask-form textarea{min-height:64px}
+.ask-more{margin:8px 0}.ask-more>summary{cursor:pointer;min-height:32px;display:flex;align-items:center}
+.ask-follow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;padding:6px 10px;border-radius:var(--radius-sm);background:var(--slate-soft);font-size:13.5px}
+.ask-follow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ask-hist{padding:4px 14px}
+.ask-h{border-bottom:1px solid var(--line);padding:2px 0}.ask-h:last-child{border-bottom:0}
+.ask-h>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:10px;list-style:none}
+.ask-h>summary::-webkit-details-marker{display:none}
+.ask-h>summary::before{content:"›";color:var(--muted);transition:transform .15s}
+.ask-h[open]>summary::before{transform:rotate(90deg)}
+.ask-h .aq{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.ask-h small{color:var(--muted);flex:none}
+.ask-h .md{padding:0 0 4px}

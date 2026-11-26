@@ -10,7 +10,6 @@ import { LOCALES, locale, t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { $, esc, keepForms } from "./core/util.js";
 import { WEEKDAY } from "./data/kinds.js";
-import { viewAsk } from "./ask.js";
 import { releasesView } from "./releases-lazy.js";
 import { viewMe } from "./me.js";
 import { viewPrayer } from "./prayer.js";
@@ -29,7 +28,7 @@ import { crumbHTML, routeNav } from "./ui.js";
 const TAB_LABELS = { today: "今天", tasks: "任务", health: "健康", prayer: "祷告", me: "我的" };
 const VIEWS = { today: viewToday, tasks: viewTasks, health: viewHealth, prayer: viewPrayer, me: viewMe };
 /* 子页：挂在某个底部页签下面，顶部显示完整路径（像爱家小助手）：‹ 我的 / 咩咩咩。parent 也可以是另一个子页，路径一路显示到底部页签 */
-const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk, open: true }, releases: { parent: "me", label: "发布日志", view: releasesView, open: true }, habits: { parent: "today", label: "习惯", view: viewHabits }, records: { parent: "habits", label: "记录", view: viewRecords }, herocfg: { parent: "habits", label: "顶部卡片", view: viewHeroCfg } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
+const SUB = { releases: { parent: "me", label: "发布日志", view: releasesView, open: true }, habits: { parent: "today", label: "习惯", view: viewHabits }, records: { parent: "habits", label: "记录", view: viewRecords }, herocfg: { parent: "habits", label: "顶部卡片", view: viewHeroCfg } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
 /** 子页一路往上找到它所在的底部页签（今天 / 习惯 / 顶部卡片 → 今天） */
 const rootOf = tab => { let p = tab; while (SUB[p]) p = SUB[p].parent; return p; };
 function crumbParts(tab){
@@ -44,7 +43,7 @@ const ROUTE_TABS = new Set([...Object.keys(VIEWS), ...Object.keys(SUB)]);
 function readRoute(hash = location.hash){
   const m = /^#\/([^?]*)(?:\?(.*))?$/.exec(hash); if (!m) return null;
   let [tab, sub, id] = m[1].split("/").map(x => { try { return decodeURIComponent(x); } catch (e) { return ""; } });
-  if (tab === "review") tab = "habits";   // 回顾页已并进「今天 / 习惯」，旧链接转过去
+  if (tab === "review") tab = "habits"; if (tab === "ask") tab = "today";   // 回顾页已并进「今天 / 习惯」，旧链接转过去
   return ROUTE_TABS.has(tab) ? { tab, sub: sub || "", id: id || "", q: new URLSearchParams(m[2] || "") } : null;
 }
 function routeOf(){

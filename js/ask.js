@@ -3,10 +3,10 @@ import { S } from "./core/state.js";
 import { $, esc, toast } from "./core/util.js";
 import { PRAYER_CATS, kindOf, modeOf } from "./data/kinds.js";
 import { aiReady, aiSettings, askText, providerOf } from "./ai.js";
-import { mdToHtml } from "./markdown.js";
 import { openAiSettings } from "./notes.js";
 import { summarize } from "./review.js";
-import { chipBtn, pageHead } from "./ui.js";
+import { chipBtn, secHead } from "./ui.js";
+import { MAX, histHTML, loadHist, saveHist } from "./ask-history.js";
 import { render, renderBg } from "./views.js";
 import * as tk from "./tk.js";
 import * as wb from "./wb.js";
@@ -116,36 +116,33 @@ const systemPrompt = () => `你是「咩咩」：一位温和、不说教的属�
 用${LANG_NAME[locale()] || "简体中文"}回答，250 字以内（英文 180 词），分 2–4 个短段落。`;
 function userPrompt(a){
   const ctx = a.withCtx ? contextText(a.topic) : "";
-  return `${ctx ? `我最近的记录摘要：\n${ctx}\n\n` : ""}问题：${a.q}`;
+  const fu = a.follow && (S.ask.hist || []).find(x => x.id === a.follow);
+  return `${ctx ? `我最近的记录摘要：\n${ctx}\n\n` : ""}${fu ? `上一轮的问题：${fu.q}\n上一轮的回答：${fu.a}\n\n` : ""}问题：${a.q}`;
 }
 const promptText = a => `${systemPrompt()}\n\n${userPrompt(a)}`;
 
-/* ---- 页面 ---- */
-function viewAsk(){
-  const a = st(), ready = aiReady(), p = providerOf(aiSettings().provider), ctx = a.withCtx ? contextText(a.topic) : "";
+/* ---- 页面：今天页上的咩咩咩（原地展开，不再有单独的页面）---- */
+function askBody(){
+  const a = st(), ready = aiReady(), ctx = a.withCtx ? contextText(a.topic) : "", hist = (S.ask.hist ||= loadHist()), fu = a.follow && hist.find(x => x.id === a.follow);
   const topics = TOPICS.map(x => `<button type="button" class="chip" data-act="ask-topic" data-topic="${x.id}" aria-pressed="${a.topic === x.id}">${x.icon} ${t(x.name)}</button>`).join("");
   const sites = AI_SITES.map(([n, u]) => `<a class="ui-btn" data-size="sm" data-tone="ghost" href="${u}" target="_blank" rel="noopener noreferrer">${t(n)}</a>`).join("");
-  return `${pageHead(`${aiIcon(26)} ${t("咩咩咩")}`, chipBtn(ready ? t("换模型") : t("填 API key"), 'data-act="ask-settings"'))}
-  <p class="small muted" style="margin:0 0 4px">${ready
-    ? t("直接问，回答来自你自己填的 {p}。可以附带最近 7 天的记录摘要（只有数字和进度）。", { p: t(p.name) })
-    : t("还没填 API key：把问题连同记录摘要拼成提示词，复制到任一 AI 粘贴即可；填了 key（免费的 Gemini 就行）就能在这里直接出答案。")}</p>
-  <div class="chips" style="margin:8px 0">${topics}</div>
+  return `${secHead(`${aiIcon(22)} ${t("咩咩咩")}`, chipBtn(ready ? t("换模型") : t("填 API key"), 'data-act="ask-settings"'))}
   <form id="askForm" class="panel ask-form">
-    <textarea name="q" data-autosize rows="3" maxlength="1000" aria-label="${esc(t("要问的问题"))}" placeholder="${esc(t("例如：最近读经总是读不进去，怎么办？"))}">${esc(a.q)}</textarea>
-    <div class="ask-att">${attachHTML(ATT_ASK, { t, esc, noText: true, hint: t("可以拍几张照片或选文件一起问（笔记、讲章、体检单、冰箱里的菜…），也能选 PDF。照片不保存。") })}</div>
-    <label class="ask-ctx"><input type="checkbox" name="ctx" ${a.withCtx ? "checked" : ""}><span>${t("附带我最近 7 天的记录摘要（只有统计数字和计划进度；不含祷告内容、笔记正文、任务标题和家人姓名）")}</span></label>
-    ${a.withCtx ? `<details class="ask-ctxv"><summary class="small muted">${ctx ? t("看看会发出去什么") : t("摘要为空（登录并记几天后才有）")}</summary>${ctx ? `<pre>${esc(ctx)}</pre>` : ""}</details>` : ""}
+    ${fu ? `<div class="ask-follow"><span>${t("追问")}：${esc(fu.q)}</span><button type="button" class="chip" data-act="ask-follow-off" aria-label="${esc(t("取消追问"))}">✕</button></div>` : ""}
+    <textarea name="q" data-autosize rows="2" maxlength="1000" aria-label="${esc(t("要问的问题"))}" placeholder="${esc(t("问本周灵修、身体作息、时间专注、祷告与读经……"))}">${esc(a.q)}</textarea>
+    <details class="ask-more"><summary class="small muted">${t("话题、附件、记录摘要")}</summary>
+      <div class="chips" style="margin:8px 0">${topics}</div>
+      <div class="ask-att">${attachHTML(ATT_ASK, { t, esc, noText: true, hint: t("可以拍几张照片或选文件一起问（笔记、讲章、体检单、冰箱里的菜…），也能选 PDF。照片不保存。") })}</div>
+      <label class="ask-ctx"><input type="checkbox" name="ctx" ${a.withCtx ? "checked" : ""}><span>${t("附带我最近 7 天的记录摘要（只有统计数字和计划进度；不含祷告内容、笔记正文、任务标题和家人姓名）")}</span></label>
+      ${a.withCtx ? `<details class="ask-ctxv"><summary class="small muted">${ctx ? t("看看会发出去什么") : t("摘要为空（登录并记几天后才有）")}</summary>${ctx ? `<pre>${esc(ctx)}</pre>` : ""}</details>` : ""}
+    </details>
     <div class="ui-acts btns">${ready ? `<button type="submit" class="ui-btn" data-tone="primary" ${a.busy ? "disabled" : ""}>${a.busy ? t("思考中…") : t("发送")}</button>` : ""}<button type="button" class="ui-btn" data-tone="${ready ? "ghost" : "primary"}" data-act="ask-copy">${t("复制提示词")}</button></div>
     ${a.error ? `<p class="small" style="color:var(--rose);margin:8px 0 0" role="alert">${esc(a.error)}</p>` : ""}
+    ${ready ? "" : `<p class="small muted" style="margin:8px 0 0">${t("还没填 API key：把问题连同记录摘要拼成提示词，复制到任一 AI 粘贴即可；填了 key（免费的 Gemini 就行）就能在这里直接出答案。")}</p>`}
   </form>
   ${!ready ? `<div class="panel" style="margin-top:10px"><p class="small muted" style="margin:0 0 8px">${t("复制后打开任一 AI 粘贴（手机上会直接打开已安装的 App）：")}</p><div class="ui-acts btns" style="margin-top:0">${sites}</div></div>` : ""}
-  ${a.answer ? `<div class="panel ask-answer" style="margin-top:10px"><div class="sec-head" style="margin:0 0 6px"><h2 style="margin:0">${t("咩咩的回答")}</h2><span class="sec-acts">${chipBtn(t("复制"), 'data-act="ask-copy-answer"')}</span></div>
-    <div class="md">${mdToHtml(a.answer)}</div>
-    <p class="small muted" style="margin:10px 0 0">${t("AI 回答仅供参考；身体不适请就医，属灵问题多与牧者和家人交通。")}</p></div>` : ""}`;
-}
-/** 今天页 / 我的 列表里的入口行 */
-function askEntryHTML(){
-  return `<div class="panel mlist ask-entry"><button class="ui-row mrow" data-tab="ask"><span class="mi" aria-hidden="true">${aiIcon(22)}</span><span class="mt"><b>${t("咩咩咩")}</b><small>${t("问本周灵修、身体作息、时间专注、祷告与读经…")}</small></span><span class="ui-chev" aria-hidden="true">›</span></button></div>`;
+  ${histHTML(hist, a.fresh)}
+  <p class="small muted" style="margin-top:8px">${t("AI 回答仅供参考；身体不适请就医，属灵问题多与牧者和家人交通。")}</p>`;
 }
 
 /* ---- 动作 ---- */
@@ -160,7 +157,11 @@ async function askAct(act, el){
     case "ask-topic": { const id = el.dataset.topic; a.topic = a.topic === id ? null : id; if (a.topic) a.q = t(topicOf(a.topic).q); render(); break; }
     case "ask-settings": openAiSettings(() => render()); break;
     case "ask-copy": if (!a.q) { toast(t("先写一句要问的")); break; } await copy(promptText(a), t("提示词已复制，打开任一 AI 粘贴即可")); break;
-    case "ask-copy-answer": if (a.answer) await copy(a.answer, t("已复制")); break;
+    case "ask-copy-answer": { const h = (S.ask.hist || []).find(x => x.id === el.dataset.id); if (h) await copy(h.a, t("已复制")); break; }
+    case "ask-follow": a.follow = el.dataset.id; a.fresh = null; render(); { const q = $("#askForm") && $("#askForm").elements.q; if (q) q.focus(); } break;
+    case "ask-follow-off": a.follow = null; render(); break;
+    case "ask-hdel": S.ask.hist = (S.ask.hist || []).filter(x => x.id !== el.dataset.id); saveHist(S.ask.hist); if (a.follow === el.dataset.id) a.follow = null; render(); break;
+    case "ask-hclear": S.ask.hist = []; saveHist([]); a.follow = null; a.fresh = null; render(); break;
     case "ask-send": {
       const att = attachPayload(ATT_ASK);   // 照片 / PDF / 文字文件（js/attach.js）
       if (!a.q && !att.images.length && !att.text) { a.error = t("先写一句要问的"); render(); break; }
@@ -168,12 +169,14 @@ async function askAct(act, el){
       a.busy = true; a.error = null; render();
       try { a.answer = await askText(systemPrompt(), userPrompt(a) + (att.text ? `\n\n${t("附件里的文字")}：\n${att.text.slice(0, 12000)}` : "") + (att.images.length ? `\n\n${t("（附了 {n} 张照片 / 文件，请一起看）", { n: att.images.length })}` : ""), { maxTokens: 1800, temperature: 0.5, images: att.images }); }
       catch (e) { a.error = String(e.message || e); }
-      a.busy = false; renderBg();   // 等回答时改了问题，别被冲掉
-      const box = document.querySelector(".ask-answer"); if (box) box.scrollIntoView({ behavior: "smooth", block: "start" });
+      a.busy = false;
+      if (a.answer) { const h = { id: Date.now().toString(36), ts: Date.now(), q: a.q, a: a.answer }; S.ask.hist = [h, ...(S.ask.hist || loadHist())].slice(0, MAX); saveHist(S.ask.hist); a.fresh = h.id; a.answer = null; a.q = ""; a.follow = null; }
+      renderBg();   // 等回答时改了问题，别被冲掉
+      const box = document.querySelector(".ask-h[open]"); if (box) box.scrollIntoView({ behavior: "smooth", block: "nearest" });
       break; }
     default: return false;
   }
   return true;
 }
 
-export { TOPICS, viewAsk, askEntryHTML, askAct, aiIcon, contextText };
+export { TOPICS, askBody, askAct, aiIcon, contextText };

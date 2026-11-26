@@ -206,7 +206,7 @@ function viewTasks(){
   const segs = [["today", "今天"], ["plan", "计划"], ["list", "清单"], ["done", "已完成"]];
   return `${routeNav([{ label: t("任务"), attrs: 'data-tks="today"' }, { label: t((segs.find(x => x[0] === seg) || segs[0])[1]) }], { dir: segs.map(([k, l]) => ({ label: t(l), attrs: `data-tks="${k}"`, on: seg === k })), actions: seg === "list" ? "" : `<button class="ui-btn" data-size="sm" data-tone="primary" data-act="tk-new">＋ ${t("新任务")}</button>` })}
   <div class="seg eq" role="group" aria-label="${t("任务视图")}">${[["today", "今天"], ["plan", "计划"], ["list", "清单"], ["done", "已完成"]].map(([k, l]) => `<button data-tks="${k}" aria-pressed="${seg === k}">${t(l)}</button>`).join("")}</div>
-  ${seg === "today" ? `${nudgeBar()}${mitBlock()}${tasksBlock({ full: true })}` : seg === "plan" ? planView() : seg === "list" ? listView() : doneView()}`;
+  ${seg === "today" ? `${nudgeBar()}${mitBlock()}${tasksBlock({ full: true })}${familyTasks(wb.viewDay())}` : seg === "plan" ? planView() : seg === "list" ? listView() : doneView()}`;
 }
 
 /* ---- 表单 ---- */

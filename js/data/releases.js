@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.6", title: { zh: "今天页只留五张卡 + 咩咩咩", en: "Today is now five cards plus Baa-baa" }, items: [
+    { k: "new", zh: "今天页精简成五张卡：习惯、任务、读经、祷告、健康，点哪张进哪个页面；健康卡显示待办条数、上次就诊和异常化验的项数（不显示具体数值）。", en: "Today now shows five cards (Habits, Tasks, Reading, Prayer, Health), each opening its page. The Health card shows counts and dates only, never values." },
+    { k: "new", zh: "咩咩咩直接在今天页提问，不用再进「我的」；问过的回答折叠成一行一条，可以点开、追问、复制或删除（只存在这台设备上）。", en: "Ask Baa-baa right on Today; past answers fold into one line each, with follow-up, copy and delete (kept on this device only)." },
+    { k: "better", zh: "原来在今天页的内容都有了新位置：药物卡片和家人习惯在「今天 / 习惯」，三件大事、任务和家人的安排在「任务」，读经和灵修在「祷告」。", en: "Everything that used to sit on Today moved: medicine cards and family habits to Habits, big-three and tasks to Tasks, reading and notes to Prayer." }
+  ] },
   { v: "2026-11-26.5", title: { zh: "祷告页重做：首页 + 读经 / 灵修 / 祷告", en: "Prayer page redone: home + Reading / Devotions / Prayer" }, items: [
     { k: "new", zh: "祷告页有了首页：读经、灵修、祷告三张卡，点进去是各自的页面，也可以用左上角的「目录」直接跳。", en: "The Prayer tab now has a home with three cards (Reading, Devotions, Prayer); open one, or jump with the Directory button." },
     { k: "better", zh: "读经页：今天这一段、连续天数、近 7 天读了几天、计划进度和最近 7 天的小格子。", en: "Reading page: today's passage, streak, days read this week, plan progress and a 7-day strip." },
