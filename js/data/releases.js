@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.10", title: { zh: "健康各页统一：新增只留右下角 ＋，小按钮更好点", en: "Health pages unified: add via + only, easier small buttons" }, items: [
+    { k: "better", zh: "化验、训练等页面里零散的「＋ 录入化验」「＋ 记一次」按钮去掉，新增统一用右下角的 ＋。", en: "Scattered add buttons on the Labs and Workout pages are gone; adding is always the + at the bottom right." },
+    { k: "better", zh: "手机上的小标签按钮、目录按钮、路径文字，点按区域都扩大到不小于 44px（外观不变）。", en: "On phones, chips, the Directory button and breadcrumb links now have at least a 44px tap area (looks unchanged)." }
+  ] },
   { v: "2026-11-26.9", title: { zh: "健康页：统一头部、数值默认遮挡、概览摘要卡", en: "Health: one header, values hidden by default, summary cards" }, items: [
     { k: "new", zh: "健康页顶部换成统一的样子：左上角「目录」跳到 概览 / 就诊 / 化验 / 测量 / 计划 / 训练 / 饮食 / 档案；「筛选」面板里选看谁（默认是你自己）和是否显示健康数值。", en: "The Health header is now the shared one: a Directory button for the sub-pages and a Filter panel to pick the person (you by default) and show or hide values." },
     { k: "new", zh: "健康数值默认遮挡（模糊）：体重、血压、化验结果、走势图等，每次进健康页都先遮上，在筛选面板里点「显示」才看得到。", en: "Health values (weight, blood pressure, lab results, charts…) are blurred by default each time you open Health; turn them on in the Filter panel." },

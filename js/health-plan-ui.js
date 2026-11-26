@@ -112,7 +112,7 @@ function workoutHTML(who){
       <span class="mt"><b>${esc(tp ? L(tp.x) : t("自由训练"))} · ${t("{n} 分钟", { n: a.minutes || 0 })}</b><small>${fmtDay(a.day)}${(a.data || {}).note ? ` · ${esc(a.data.note)}` : ""}</small></span><span class="ui-chev" aria-hidden="true">›</span></button>`; }).join("")}</div>${pg.moreBtn("hlWk", logs.length)}`
     : `<div class="panel small muted">${t("还没有训练记录。")}</div>`;
   return `${S.hl.plansOk ? "" : noTables()}${secHead(t("训练模版"), S.hl.plansOk ? `<button class="chip" data-hl="tpl-new" data-kind="workout">＋ ${t("自己建一个")}</button>` : "")}${lib}
-    ${secHead(t("训练记录"), S.hl.plansOk ? `<button class="chip" data-hl="wk-new">＋ ${t("记一次")}</button>` : "")}${hist}
+    ${secHead(t("训练记录"))}${hist}
     <p class="small muted">${who.key === "u:" + S.user.id ? t("给自己记的训练会同时计入「锻炼」习惯的分钟（如果建了这个习惯）。") : ""}</p>`;
 }
 

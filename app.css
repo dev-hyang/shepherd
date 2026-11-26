@@ -1048,3 +1048,10 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
 @media (min-width:760px){.fab-menu{right:max(16px,calc(50vw - 360px + 16px))}}
 .dir-item{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;min-height:44px;padding:0 12px;border-radius:var(--radius-sm);font-size:15px;color:var(--ink)}
 .dir-item:hover,.dir-item:focus-visible{background:var(--slate-soft)}
+
+/* 点按区域至少 44px：视觉高度不变，用透明的 ::after 在上下各延伸一点（手机 / 触屏）（2026-11-26.10） */
+@media (pointer:coarse),(max-width:640px){
+  .chip,.seg.mini button,.linkbtn,.crumb .crumb-menu,.crumb .crumb-link,.fbtn{position:relative}
+  .chip::after,.seg.mini button::after,.linkbtn::after,.crumb .crumb-menu::after,.crumb .crumb-link::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,44px);transform:translateY(-50%)}
+  .crumb .crumb-menu{min-height:36px}
+}

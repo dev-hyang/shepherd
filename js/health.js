@@ -205,14 +205,14 @@ function labLine(r, { metric = null, hist = false } = {}){
 /** 概览里的化验：下拉框选套餐（默认「需要留意」：有偏高 / 偏低的；都正常时选最近一次化验的那一套） */
 function labOverviewHTML(data){
   const ui = UI(), rows = latestLabs(data);
-  if (!rows.length) return `${secHead(t("化验结果"), `<button class="chip" data-hl="new-lab">＋ ${t("录入化验")}</button>`)}<div class="panel small muted">${t("还没有化验。拍化验单 / 截图（可多张），或按套餐一次填一整份。")}</div>`;
+  if (!rows.length) return `${secHead(t("化验结果"))}<div class="panel small muted">${t("还没有化验。拍化验单 / 截图（可多张），或按套餐一次填一整份。")}</div>`;
   const groups = Object.keys(LAB_GROUPS).filter(g => rows.some(r => r.group === g)), flagged = rows.filter(r => r.flag);
   const newest = rows.reduce((a, r) => (r.x.day > a.x.day ? r : a), rows[0]);
   const opts = [...(flagged.length ? [["flag", t("需要留意（{n}）", { n: flagged.length })]] : []), ...groups.map(g => [g, `${t(LAB_GROUPS[g])}（${rows.filter(r => r.group === g).length}）`]), ["all", t("全部（{n}）", { n: rows.length })]];
   if (!opts.some(([v]) => v === ui.labGroup)) ui.labGroup = flagged.length ? "flag" : newest.group;
   const shown = (ui.labGroup === "flag" ? flagged : ui.labGroup === "all" ? rows : rows.filter(r => r.group === ui.labGroup)).sort(byOrder);
   const last = shown.reduce((a, r) => (r.x.day > a ? r.x.day : a), "");
-  return `${secHead(t("化验结果"), `<button class="chip" data-hl="new-lab">＋ ${t("录入化验")}</button>`)}
+  return `${secHead(t("化验结果"))}
     <div class="panel hl-labs-ov"><div class="hl-labs-bar"><label class="sr-only" for="hlLabGroup">${t("选套餐")}</label><select id="hlLabGroup">${opts.map(([v, l]) => `<option value="${v}" ${ui.labGroup === v ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>
       <span class="small muted">${last ? t("最近 {d}", { d: fmtDay(last) }) : ""} · <button class="linkbtn" data-hl="view" data-v="labs">${t("全部化验")} ›</button></span></div>
       ${shown.map(r => labLine(r, { metric: ui.metric })).join("")}</div>`;
@@ -228,7 +228,7 @@ function visitsHTML(who){
 function labsHTML(who){
   const data = hl.dataOf(who.key), rows = latestLabs(data);
   if (!rows.length) return `<div class="panel empty">${t("还没有化验记录。")}<br><button class="ui-btn" data-tone="primary" data-hl="new-lab">${t("录入化验")}</button></div>`;
-  return `<div class="ui-acts btns" style="margin-top:0"><button class="ui-btn" data-tone="primary" data-hl="new-lab">＋ ${t("录入化验")}</button></div>` + Object.keys(LAB_GROUPS).filter(g => rows.some(r => r.group === g)).map(g => {
+  return Object.keys(LAB_GROUPS).filter(g => rows.some(r => r.group === g)).map(g => {
     const list = rows.filter(r => r.group === g).sort(byOrder), n = list.filter(r => r.flag).length;
     return `${secHead(t(LAB_GROUPS[g]), `<button class="chip" data-hl="ai-panel" data-v="${g}" ${S.hlAiBusy === "panel:" + g ? "disabled" : ""}>✦ ${S.hlAiBusy === "panel:" + g ? t("分析中…") : t("AI 解读这一套")}</button>`, n ? t("{n} 项超出范围", { n }) : t("都在范围内"))}
       ${panelAiHTML(who, g)}<div class="panel hl-labs-ov">${list.map(r => labLine(r, { hist: true })).join("")}</div>`;
