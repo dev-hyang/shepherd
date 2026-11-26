@@ -13,7 +13,8 @@ import { labAct, labItemHTML, panelAiHTML } from "./health-labs.js";
 import { reviewAct, reviewHTML } from "./health-review.js";
 import * as pg from "./pager.js";
 import { closeSheet, drawForm, getForm, openForm, readForm } from "./sheet.js";
-import { pageHead, routeNav, secHead } from "./ui.js";
+import { fabMenu, pageHead, routeNav, secHead } from "./ui.js";
+import { filterBar, summaryHTML } from "./health-nav.js";
 import { render } from "./views.js";
 import { attachHTML, attachPayload, attachReset } from "./attach.js";
 
@@ -26,7 +27,7 @@ const UI = () => (S.hlUi ||= { who: null, view: "overview", metric: null });
 const UNIT_KEY = LS_PREFIX + ".units";
 const sys = () => loadJSON(UNIT_KEY, null) || (locale() === "en" ? "us" : "metric");
 const lang = () => (locale() === "en" ? "en" : "zh");
-const VIEWS = [["overview", "概览"], ["plan", "计划"], ["workout", "训练"], ["diet", "饮食"], ["visits", "就诊"], ["labs", "化验"], ["measures", "测量"], ["profile", "档案"]];
+const VIEWS = [["overview", "概览"], ["visits", "就诊"], ["labs", "化验"], ["measures", "测量"], ["plan", "计划"], ["workout", "训练"], ["diet", "饮食"], ["profile", "档案"]];
 const fmtDay = d => (d ? d.replace(/-/g, "/") : "");
 const parentView = v => ({ visit: "visits", lab: "labs" }[v] || v);
 
@@ -55,31 +56,25 @@ function viewHealth(){
   if (!ppl.some(p => p.key === ui.who)) ui.who = ppl[0] ? ppl[0].key : null;
   if (!ui.who) return `<div class="empty">${t("先登录。")}</div>`;
   const who = hl.person(ui.who);
-  // 头部（2026-11-02 重新设计）：宽屏 = 新建按钮一排 + 家人芯片 + 内容芯片；手机 = 一行「家人下拉框 + ＋ 记一笔（展开小菜单）」+ 一个内容下拉框，
-  // 八个芯片在手机上占三四行、要横着找；下拉框一眼看到当前是谁、哪一页。默认是当前登录的人（列表第一个）。不用浮动的 + 按钮：会挡住底部页签和列表最后一行
+  // 头部：路径栏（目录按钮）+ 筛选条（人员、眼睛）+ 右下角 ＋ 小菜单；手机和电脑同一套（js/health-nav.js）
   const NEW = [["visit", "就诊", "🩺"], ["lab", "化验", "🧪"], ["measure", "测量", "⚖"], ...(S.hl.plansOk ? [["workout", "训练", "🏃"]] : [])];
   const newAct = k => (k === "workout" ? "wk-new" : "new-" + k);
-  const add = `<span class="hl-add hl-d">${NEW.map(([k, l]) => `<button class="chip" data-hl="${newAct(k)}">＋ ${t(l)}</button>`).join("")}</span>`;
-  const addMenu = `<details class="hl-addmenu"><summary class="ui-btn hl-addbtn" data-tone="ghost">＋ ${t("记一笔")}</summary><div class="hl-addmenu-list" role="menu">${NEW.map(([k, l, ic]) => `<button role="menuitem" data-hl="${newAct(k)}"><span aria-hidden="true">${ic}</span> ${t(l)}</button>`).join("")}</div></details>`;
-  const chips = `<div class="chips hl-people hl-d" role="group" aria-label="${esc(t("看谁的"))}">${ppl.map(p => `<button class="chip" data-hl="who" data-key="${esc(p.key)}" aria-pressed="${p.key === ui.who}">${p.kid ? "🧒 " : ""}${esc(p.name)}${p.me ? ` <span class="cnt">${t("我")}</span>` : ""}</button>`).join("")}</div>`;
-  const tabs = `<div class="chips hl-views hl-d" role="group" aria-label="${esc(t("健康内容"))}">${VIEWS.map(([k, l]) => `<button class="chip" data-hl="view" data-v="${k}" aria-pressed="${parentView(ui.view) === k}">${t(l)}</button>`).join("")}</div>`;
-  const mobile = `<div class="hl-mhead hl-m"><div class="hl-mrow"><label class="sr-only" for="hlWho">${t("看谁的")}</label><select id="hlWho" class="hl-sel">${ppl.map(p => `<option value="${esc(p.key)}" ${p.key === ui.who ? "selected" : ""}>${p.kid ? "🧒 " : "👤 "}${esc(p.name)}${p.me ? ` (${t("我")})` : ""}</option>`).join("")}</select>${addMenu}</div>
-    <label class="sr-only" for="hlView">${t("健康内容")}</label><select id="hlView" class="hl-sel hl-sel-view">${VIEWS.map(([k, l]) => `<option value="${k}" ${parentView(ui.view) === k ? "selected" : ""}>${t(l)}</option>`).join("")}</select></div>`;
+  const addMenu = fabMenu(NEW.map(([k, l, ic]) => ({ icon: ic, label: t(l), attrs: `data-hl="${newAct(k)}"` })), t("记一笔"));
   // 详情页（单次就诊、单个化验项目）不在下拉框里：选中的是它们的上一级
   const body = { overview: overviewHTML, plan: planHTML, workout: workoutHTML, diet: dietHTML, visits: visitsListHTML, visit: visitDetailHTML, labs: labsHTML, lab: labItemHTML, measures: measuresHTML, profile: profileHTML }[ui.view] || overviewHTML;
-  return `${healthRoute(ui, add)}${mobile}${chips}${tabs}${body(who)}
-    <p class="small muted hl-foot">${t("这里只做记录和按公开指南的提醒，不是诊断；有疑问以医生意见为准。家里的人都看得到这家人的健康记录。")}</p>`;
+  return `<div class="hl-wrap ${ui.show ? "" : "hl-masked"}">${healthRoute(ui)}${filterBar(ui, ppl)}${body(who)}
+    <p class="small muted hl-foot">${t("这里只做记录和按公开指南的提醒，不是诊断；有疑问以医生意见为准。家里的人都看得到这家人的健康记录。")}</p>${addMenu}</div>`;
 }
 
 /** 顶部路径：健康 / 概览（第二层）；单次就诊、单个化验项目是第三层：健康 / 就诊 / 10/30 年度体检，带「‹ 返回」 */
-function healthRoute(ui, add){
+function healthRoute(ui){
   const dir = VIEWS.map(([k, l]) => ({ label: t(l), attrs: `data-hl="view" data-v="${k}"`, on: parentView(ui.view) === k }));   // 目录：健康下的各子页
   const root = { label: t("健康"), attrs: 'data-hl="view" data-v="overview"' }, viewName = v => t((VIEWS.find(x => x[0] === v) || VIEWS[0])[1]);
   if (ui.view === "visit") { const v = S.hl.visits.find(x => x.id === ui.visitId), k = v && (VISIT_KINDS[v.kind] || VISIT_KINDS.other);
     return routeNav([root, { label: viewName("visits"), attrs: 'data-hl="view" data-v="visits"' }, { label: v ? `${fmtDay(v.day).slice(5)} ${t(k.label)}` : t("就诊") }], { back: 'data-hl="back"', dir }); }
   if (ui.view === "lab") { const x = S.hl.labs.find(y => (y.code || y.name) === ui.labKey);
     return routeNav([root, { label: viewName("labs"), attrs: 'data-hl="view" data-v="labs"' }, { label: x ? labName(x, lang()) : t("化验") }], { back: 'data-hl="back"', dir }); }
-  return routeNav(ui.view === "overview" ? [root, { label: viewName("overview") }] : [root, { label: viewName(ui.view) }], { actions: add, dir });
+  return routeNav(ui.view === "overview" ? [root, { label: viewName("overview") }] : [root, { label: viewName(ui.view) }], { dir });
 }
 /* 概览：左栏（待办、最近一次就诊）+ 右栏（关键指标、走势图） */
 function overviewHTML(who){
@@ -90,22 +85,23 @@ function overviewHTML(who){
   const vitals0 = vitalMetricsOf(data, { kid, heightCm });
   if (!vitals0.includes(ui.metric)) ui.metric = vitals0[0] || null;
   const due = dueItems({ data, today: S.day, kid });
-  const left = `${todayPlanHTML(who)}${secHead(t("待办"))}${dueHTML(due, kid)}${reviewHTML(who)}${lastVisitHTML(data)}${kid ? `<p class="small muted" style="margin-top:10px">${t("孩子的身高体重和体检日程以小月亮为准，这里只读。")} <a href="https://dev-hyang.github.io/baby-log/" target="_blank" rel="noopener">${t("去小月亮")} ↗</a></p>` : ""}`;
-  if (!metrics.length) return `<div class="hl-grid"><div class="hl-col">${left}</div><div class="hl-col">${secHead(t("关键指标"))}<div class="panel empty">${t("还没有数字。记一次就诊（带体征）、一份化验或一次在家测量，这里就会出现走势。")}<br>
+  const left = `${todayPlanHTML(who)}<div id="hl-due"></div>${secHead(t("待办"))}${dueHTML(due, kid)}${reviewHTML(who)}${lastVisitHTML(data)}${kid ? `<p class="small muted" style="margin-top:10px">${t("孩子的身高体重和体检日程以小月亮为准，这里只读。")} <a href="https://dev-hyang.github.io/baby-log/" target="_blank" rel="noopener">${t("去小月亮")} ↗</a></p>` : ""}`;
+  const sum = summaryHTML(who, data);
+  if (!metrics.length) return `${sum}<div class="hl-grid"><div class="hl-col">${left}</div><div class="hl-col">${secHead(t("关键指标"))}<div class="panel empty">${t("还没有数字。记一次就诊（带体征）、一份化验或一次在家测量，这里就会出现走势。")}<br>
     <button class="ui-btn" data-tone="primary" data-hl="new-visit">${t("记一次就诊")}</button> <button class="ui-btn" data-tone="ghost" data-hl="new-measure">${t("记一次测量")}</button></div></div></div>`;
   const vitals = vitalMetricsOf(data, { kid, heightCm });
   const cards = vitals.map(m => {
     const meta = metricMeta(m, data), s = series(m, data, { heightCm }), l = latest(s), f = metricFlag(m, l, data, { kid });
     const delta = l && l.delta != null && m !== "bp" ? `<span class="d">${l.delta > 0 ? "↑" : l.delta < 0 ? "↓" : "→"} ${Math.abs(meta.dim ? toShow(meta.dim, Math.abs(l.delta), sys()) : l.delta)}</span>` : "";
     return `<button class="kpi hl-kpi ${ui.metric === m ? "sel" : ""}" data-hl="metric" data-v="${esc(m)}" aria-pressed="${ui.metric === m}">
-      <span class="k">${esc(meta.name)}</span><b class="v num">${showPoint(m, meta, l)}<small> ${esc(meta.unit)}</small></b>
+      <span class="k">${esc(meta.name)}</span><b class="v num sens">${showPoint(m, meta, l)}<small> ${esc(meta.unit)}</small></b>
       <span class="hl-kpi-foot">${f ? `<span class="ui-badge" data-tone="${f.level === "high" ? "danger" : "caution"}">${esc(t(f.text))}</span>` : `<span class="small muted">${fmtDay(l.day)}</span>`}${delta}</span>
       ${spark(s)}</button>`;
   }).join("");
   // 右栏：体征卡片（体重 / BMI / 血压 / 心率…）→ 化验结果（按套餐，下拉框切换，范围条）→ 选中那一项的走势图
   const right = `${secHead(t("关键指标"))}${vitals.length ? `<div class="kpis hl-kpis">${cards}</div>` : `<div class="panel small muted">${t("还没有体征。")}</div>`}
     ${labOverviewHTML(data)}${ui.metric ? chartPanel(ui.metric, data, { heightCm, kid }) : ""}`;
-  return `<div class="hl-grid"><div class="hl-col">${left}</div><div class="hl-col">${right}</div></div>`;
+  return `${sum}<div class="hl-grid"><div class="hl-col">${left}</div><div class="hl-col">${right}</div></div>`;
 }
 function dueHTML(due, kid){
   if (!due.length) return `<div class="panel small muted">${kid ? t("没有要复诊的。") : t("没有到期的复诊、体检或复查 ✓")}</div>`;
@@ -173,7 +169,7 @@ function chartPanel(m, data, { heightCm, kid }){
   };
   const src = { home: t("在家"), visit: t("就诊"), lab: t("化验"), growth: t("小月亮") };
   const table = `<details class="hl-table"><summary>${t("看数据（{n} 条）", { n: s.length })}</summary><div class="scroll-x"><table><thead><tr><th scope="col">${t("日期")}</th><th scope="col">${esc(meta.name)}${meta.unit ? ` (${esc(meta.unit)})` : ""}</th><th scope="col">${t("来源")}</th></tr></thead>
-    <tbody>${[...s].reverse().map(p => `<tr><td>${fmtDay(p.day)}</td><td class="num">${showPoint(m, meta, p)}</td><td>${esc(src[p.src] || "")}</td></tr>`).join("")}</tbody></table></div></details>`;
+    <tbody>${[...s].reverse().map(p => `<tr><td>${fmtDay(p.day)}</td><td class="num sens">${showPoint(m, meta, p)}</td><td>${esc(src[p.src] || "")}</td></tr>`).join("")}</tbody></table></div></details>`;
   const legend = `<span class="small muted">${band && !kid ? `<span class="hl-sw band"></span>${t("参考范围")} · ` : ""}<span class="hl-sw dot"></span>${t("在家 / 化验")} · <span class="hl-sw ring"></span>${t("就诊")}${m === "bp" ? ` · <span class="hl-sw sky"></span>${t("舒张压")}` : ""}</span>`;
   // 只有一个点：画不出走势，直接说清楚（化验一般一年一次，下一次记了就有线）
   if (s.length < 2) return `<div class="panel hl-chart"><div class="hl-chart-head"><b>${esc(meta.name)}</b></div><p class="small muted" style="margin:0">${t("目前只有 {d} 这一次（{v}），再记一次就能看到走势。", { d: fmtDay(s[0].day), v: `${showPoint(m, meta, s[0])}${meta.unit ? " " + meta.unit : ""}` })}</p>${table}</div>`;
@@ -200,7 +196,7 @@ function labLine(r, { metric = null, hist = false } = {}){
   return `<div class="hl-lr ${r.flag ? "flag-" + r.flag : ""} ${metric === m ? "sel" : ""}">
     <button class="hl-lr-main" data-hl="lab-open" data-v="${esc(r.k)}" aria-label="${esc(t("看 {n} 的走势和每次记录", { n: labName(x, lang()) }))}">
       <span class="hl-lr-name"><b>${esc(labName(x, lang()))}</b><small>${t("参考 {r}", { r: rangeText(x) || "—" })}${x.unit ? ` ${esc(x.unit)}` : ""}</small></span>
-      <span class="hl-lr-val"><b class="num">${esc(+(+x.value).toFixed(2))}</b>${r.flag ? `<span class="ui-badge" data-tone="${r.flag === "high" ? "danger" : "caution"}">${t(r.flag === "high" ? "偏高" : "偏低")}</span>` : ""}${d ? `<small class="muted">${d > 0 ? "↑" : "↓"} ${Math.abs(d)}</small>` : ""}</span>
+      <span class="hl-lr-val"><b class="num sens">${esc(+(+x.value).toFixed(2))}</b>${r.flag ? `<span class="ui-badge" data-tone="${r.flag === "high" ? "danger" : "caution"}">${t(r.flag === "high" ? "偏高" : "偏低")}</span>` : ""}${d ? `<small class="muted">${d > 0 ? "↑" : "↓"} ${Math.abs(d)}</small>` : ""}</span>
       ${bar ? `<span class="hl-rbar" aria-hidden="true"><i class="ok" style="left:${bar.lo.toFixed(1)}%;width:${(bar.hi - bar.lo).toFixed(1)}%"></i><i class="at" style="left:${bar.at.toFixed(1)}%"></i></span>` : ""}
     </button>
     ${hist ? `<span class="hl-lab-hist">${S.hl.labs.filter(y => (y.code || y.name) === r.k && y.subject === x.subject).sort((a, b) => b.day.localeCompare(a.day)).slice(0, 4).map(y => `<button class="hl-lab-v ${labFlag(y) ? "flag-" + labFlag(y) : ""}" data-hl="edit-lab" data-id="${esc(y.id)}" title="${esc(t("改这一条"))}"><b class="num">${esc(+(+y.value).toFixed(2))}</b><small>${fmtDay(y.day).slice(2)}</small></button>`).join("")}</span>` : ""}
@@ -245,7 +241,7 @@ function measuresHTML(who){
   const s = sys();
   const val = m => { const k = MEASURE_KINDS[m.kind]; return m.kind === "bp" ? `${m.value}/${m.value2 ?? "–"} mmHg` : `${toShow(k.dim, m.value, s)} ${unitOf(k.dim, s)}`; };
   return `<div class="panel mlist">${pg.page("hlMeasures", list).map(m => `<button class="ui-row mrow" data-hl="edit-measure" data-id="${esc(m.id)}"><span class="mi" aria-hidden="true">${MEASURE_KINDS[m.kind].icon}</span>
-    <span class="mt"><b>${esc(t(MEASURE_KINDS[m.kind].label))} · <span class="num">${esc(val(m))}</span></b><small>${fmtDay(m.day)}${m.notes ? ` · ${esc(m.notes)}` : ""}</small></span><span class="ui-chev" aria-hidden="true">›</span></button>`).join("")}</div>${pg.moreBtn("hlMeasures", list.length)}`;
+    <span class="mt"><b>${esc(t(MEASURE_KINDS[m.kind].label))} · <span class="num sens">${esc(val(m))}</span></b><small>${fmtDay(m.day)}${m.notes ? ` · ${esc(m.notes)}` : ""}</small></span><span class="ui-chev" aria-hidden="true">›</span></button>`).join("")}</div>${pg.moreBtn("hlMeasures", list.length)}`;
 }
 /* 档案 */
 function profileHTML(who){
@@ -487,7 +483,8 @@ async function hlAct(act, btn){
   const ui = UI(), d = btn.dataset;
   switch (act) {
     case "who": ui.who = d.key; ui.metric = null; pg.reset("hlVisits", "hlMeasures", "hlWk"); render(); return;
-    case "view": ui.view = d.v; render(); window.scrollTo(0, 0); return;
+    case "eye": ui.show = d.v === "1"; render(); return;   // 健康数值 显示 / 隐藏（遮挡 = 模糊，js/health-nav.js）
+    case "view": ui.view = d.v; S.fpop = null; render(); window.scrollTo(0, 0); return;
     case "metric": ui.metric = d.v; render(); requestAnimationFrame(() => document.querySelector(".hl-chart")?.scrollIntoView({ block: "nearest", behavior: "smooth" })); return;
     case "lab-open": ui.labKey = d.v; ui.back = ui.view; ui.view = "lab"; pg.reset("hlLabRec"); render(); window.scrollTo(0, 0); return;
     case "back": ui.view = ui.back && ui.back !== ui.view ? ui.back : parentView(ui.view) === ui.view ? "overview" : parentView(ui.view); ui.back = null; render(); window.scrollTo(0, 0); return;

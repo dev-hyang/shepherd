@@ -3,6 +3,12 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.9", title: { zh: "健康页：统一头部、数值默认遮挡、概览摘要卡", en: "Health: one header, values hidden by default, summary cards" }, items: [
+    { k: "new", zh: "健康页顶部换成统一的样子：左上角「目录」跳到 概览 / 就诊 / 化验 / 测量 / 计划 / 训练 / 饮食 / 档案；「筛选」面板里选看谁（默认是你自己）和是否显示健康数值。", en: "The Health header is now the shared one: a Directory button for the sub-pages and a Filter panel to pick the person (you by default) and show or hide values." },
+    { k: "new", zh: "健康数值默认遮挡（模糊）：体重、血压、化验结果、走势图等，每次进健康页都先遮上，在筛选面板里点「显示」才看得到。", en: "Health values (weight, blood pressure, lab results, charts…) are blurred by default each time you open Health; turn them on in the Filter panel." },
+    { k: "new", zh: "概览顶部有四张摘要卡：待办、上次就诊、异常化验、近 30 天测量。", en: "The overview starts with four summary cards: to-do, last visit, abnormal labs, measurements in the last 30 days." },
+    { k: "better", zh: "「记一笔」换成右下角的圆形 ＋，点开选就诊 / 化验 / 测量 / 训练。", en: "Add something is now the round + at the bottom right (visit / lab / measurement / workout)." }
+  ] },
   { v: "2026-11-26.8", title: { zh: "任务 今日 / 清单 / 计划 重做", en: "Tasks: Today / List / Plan reworked" }, items: [
     { k: "better", zh: "今日页顶部多了当天进度卡（几月几日、完成几件、进度条）。", en: "Today now starts with a progress card (date, tasks done, progress bar)." },
     { k: "better", zh: "清单页的搜索和筛选换成统一的筛选条，「已完成」「放弃的」并进筛选里的「状态」，原来单独的「已完成」页去掉了。", en: "The list now uses the shared filter bar; Done and Dropped are a Status filter instead of a separate page." },

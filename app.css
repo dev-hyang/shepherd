@@ -1038,3 +1038,13 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
 .tk-sum>div{flex:none}
 .tk-sum .kbar{display:block;flex:1;height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:0}
 .tk-sum .kbar i{display:block;height:100%;background:var(--slate);border-radius:99px}
+
+/* 健康页：数值遮挡（眼睛）、右下角 ＋ 小菜单（2026-11-26.9） */
+.hl-masked :is(.sens,.hl-spark,.hl-chart svg,.hl-chart-head,.hl-rbar,.hl-lab-v,.hl-line.small.muted){filter:blur(7px);user-select:none;pointer-events:none}
+.hl-masked .hl-kpi,.hl-masked .hl-lr-main{overflow:hidden}
+.fab-wrap{margin:0}
+.fab-menu{position:fixed;left:auto;top:auto;right:16px;bottom:calc(56px + env(safe-area-inset-bottom,0px) + 16px + 56px + 10px);width:210px;max-width:calc(100vw - 32px);padding:6px;display:flex;flex-direction:column;gap:2px;z-index:9}
+.fab-menu[hidden]{display:none}
+@media (min-width:760px){.fab-menu{right:max(16px,calc(50vw - 360px + 16px))}}
+.dir-item{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;min-height:44px;padding:0 12px;border-radius:var(--radius-sm);font-size:15px;color:var(--ink)}
+.dir-item:hover,.dir-item:focus-visible{background:var(--slate-soft)}

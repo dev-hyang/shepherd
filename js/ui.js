@@ -49,4 +49,7 @@ function togglePop(id){
 }
 const closePop = () => { if (S.fpop) togglePop("close"); };
 
-export { crumbHTML, fab, routeNav, secHead, pageHead, chipBtn, fbar, togglePop, closePop };
+/** 右下角 ＋ 展开小菜单：items = [{ icon, label, attrs }]，点一项执行，点外面收起 */
+const fabMenu = (items, label) => `<div class="fbar-wrap fab-wrap"><div class="fpop fab-menu" id="fpop-fab" ${S.fpop === "fab" ? "" : "hidden"} role="menu" aria-label="${esc(label)}">${items.map(i => `<button type="button" role="menuitem" class="dir-item" ${i.attrs}><span aria-hidden="true">${i.icon}</span>&nbsp;${esc(i.label)}</button>`).join("")}</div>
+  <button type="button" class="fab" data-fpop="fab" aria-expanded="${S.fpop === "fab"}" aria-controls="fpop-fab" aria-label="${esc(label)}" title="${esc(label)}"><span aria-hidden="true">＋</span></button></div>`;
+export { crumbHTML, fab, fabMenu, routeNav, secHead, pageHead, chipBtn, fbar, togglePop, closePop };

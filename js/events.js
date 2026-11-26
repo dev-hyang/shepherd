@@ -63,7 +63,7 @@ document.addEventListener("input", ev => { if (ev.target && ev.target.id === "tk
 document.addEventListener("click", async ev => {
   const btn = ev.target.closest("button"); if (!btn) return;
   const d = btn.dataset;
-  if (btn.closest(".dirmenu")) S.fpop = null;   // 目录里点了一项：收起菜单再跳
+  if (btn.closest(".dirmenu, .fab-menu")) S.fpop = null;   // 目录里点了一项：收起菜单再跳
   if (d.fpop) { togglePop(d.fpop); return; }
   if (d.scroll) { const el = document.getElementById(d.scroll); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   if (d.pagerMore) { if (d.pagerMore === "notes") nts.moreNotes(); else { pg.more(d.pagerMore); render(); } return; }   // 继续加载（js/pager.js）
@@ -75,7 +75,8 @@ document.addEventListener("click", async ev => {
     if (d.tab === "tasks" && S.tkUi) S.tkUi.seg = "home";
     if (d.tab === "prayer") S.prayerView = "home";
   }
-  if (d.tab) { close(); S.fpop = null; S.tab = d.tab; if (d.pv) S.prayerView = d.pv;   // 今天页的读经 / 祷告卡直接进祷告的子页
+  if (d.tab) { close(); S.fpop = null; if (d.tab === "health" && S.tab !== "health" && S.hlUi) S.hlUi.show = false;   // 健康数值每次进来都重新遮上
+    S.tab = d.tab; if (d.pv) S.prayerView = d.pv;   // 今天页的读经 / 祷告卡直接进祷告的子页
     S.pick = null; pg.resetAll(); render(); window.scrollTo(0, 0); return; }
   if (d.copy) { try { await navigator.clipboard.writeText(d.copy); toast(t("已复制")); } catch (e) { toast(t("请手动复制：") + d.copy); } return; }
   if (d.themeSet !== undefined) { if (d.themeSet) document.documentElement.dataset.theme = d.themeSet; else delete document.documentElement.dataset.theme; try { localStorage.setItem(LS_PREFIX + ".theme", d.themeSet); } catch (e) {} openSettings(); return; }
