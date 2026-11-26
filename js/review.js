@@ -3,7 +3,6 @@ import { S } from "./core/state.js";
 import { esc } from "./core/util.js";
 import { RATINGS, kindOf, modeOf } from "./data/kinds.js";
 import * as wb from "./wb.js";
-import { routeNav } from "./ui.js";
 
 /* ============ 回顾页：本周 / 4 周 / 12 周 ============
    每项习惯一块：这段时间做到的天数或分钟，和上一段同样长的时间比；选中的一项画柱状图；下面是最近 28 天的格子。
@@ -35,9 +34,9 @@ function summarize(p, days){
   const done = days.filter(d => wb.scheduledOn(p, d) && wb.statusOf(p, d).done).length;
   return { main: done, unit: "天", sub: t("/ {n} 天", { n: scheduled }), done, scheduled };
 }
-function viewReview(){
+function reviewBody(){
   const practices = S.wb.practices.filter(p => !p.archived);
-  if (!practices.length) return `<div class="empty">${t("还没有习惯，也就没有可回顾的。")}<br><button class="ui-btn" data-tone="primary" data-tab="today">${t("去今天页添加")}</button></div>`;
+  if (!practices.length) return `<div class="empty">${t("还没有习惯，也就没有可回顾的。")}<br></div>`;
   const r = S.review, R = RANGES[r.range] || RANGES["4w"];
   const cur = dayList(S.day, R.days), prev = dayList(wb.dayAdd(S.day, -R.days), R.days);
   if (!practices.some(p => p.id === r.metric)) r.metric = practices[0].id;
@@ -47,8 +46,7 @@ function viewReview(){
     if (a.main != null && b.main != null && a.main !== b.main) { const up = a.main > b.main, good = a.lowerBetter ? !up : up; delta = `<span class="d ${good ? "good" : "bad"}">${up ? "↑" : "↓"} ${t("上一段 {v}", { v: b.main })}</span>`; }
     const faith = ["scripture", "prayer"].includes(p.kind);
     return `<button class="stat tile ${sel.id === p.id ? "sel" : ""}" data-metric="${esc(p.id)}"><div class="k">${k.icon} ${esc(p.name || t(k.label))}</div><div class="v">${a.main == null ? "–" : a.main}<small>${t(a.unit || "")}</small></div><div class="small muted">${a.sub}${faith ? "" : ""}</div>${delta}</button>`; };
-  return `${routeNav([{ label: t("回顾"), attrs: 'data-tab="review"' }, { label: t(R.label || "近 4 周") }])}
-  <div class="chips" role="group" aria-label="${t("时间范围")}" style="margin-top:12px">${Object.entries(RANGES).map(([k, v]) => `<button class="chip" data-range="${k}" aria-pressed="${r.range === k}">${t(v.label)}</button>`).join("")}<button class="chip" data-act="rec-open" style="margin-left:auto">📋 ${t("记录")}</button></div>
+  return `<div class="chips" role="group" aria-label="${t("时间范围")}" style="margin-top:12px">${Object.entries(RANGES).map(([k, v]) => `<button class="chip" data-range="${k}" aria-pressed="${r.range === k}">${t(v.label)}</button>`).join("")}<button class="chip" data-act="rec-open" style="margin-left:auto">📋 ${t("记录")}</button></div>
   <div class="stats tiles">${practices.map(tile).join("")}</div>
   <h2>${esc(sel.name || t(kindOf(sel).label))}</h2>
   <div class="panel">${chartHTML(sel, R)}</div>
@@ -90,4 +88,4 @@ function gridHTML(practices){
   <div class="legend"><span style="--c:var(--sage)">${t("做到")}</span><span style="--c:var(--honey)">${t("部分")}</span><span style="--c:var(--rose-soft)">${t("没做 / 超了")}</span><span style="--c:var(--line)">${t("没安排")}</span></div>`;
 }
 
-export { viewReview, summarize, RANGES };
+export { reviewBody, summarize, RANGES };

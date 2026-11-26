@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.4", title: { zh: "新页面「今天 / 习惯」，回顾并进来", en: "New Today / Habits page; Review merged in" }, items: [
+    { k: "new", zh: "今天页的「今日习惯」和「家人」搬到新页面「今天 / 习惯」（点今天页的习惯卡进入），日期补记也在这里；新增习惯用右下角的 ＋。", en: "Today's habits and family moved to a new Today / Habits page (tap the Habits card), including back-dating; add a habit with the + at the bottom right." },
+    { k: "better", zh: "底部的「回顾」页签去掉了，趋势图和最近 28 天格子放在「习惯」页下半部分，「记录」「顶部卡片」「用药」「专注计时」的入口也在这页。", en: "The Review tab is gone: trends and the 28-day grid now sit at the bottom of the Habits page, next to Records, top cards, meds and focus timer." }
+  ] },
   { v: "2026-11-26.3", title: { zh: "统一的路径栏和目录按钮", en: "One breadcrumb bar with a Directory button" }, items: [
     { k: "better", zh: "各子页顶部的路径栏统一样式，左边多了「目录」按钮：点开就能直接跳到同一层的其他页面（健康的就诊 / 化验 / 测量……、任务的今天 / 计划 / 清单、祷告的代祷 / 灵修笔记）。", en: "The path bar at the top of sub-pages now looks the same everywhere, with a Directory button that jumps to sibling pages." },
     { k: "new", zh: "新增了右下角圆形的「＋」按钮样式，后面几版会替换各页的新增按钮。", en: "Added a round + button for the bottom right; it will replace the add buttons in the next releases." }

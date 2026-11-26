@@ -14,7 +14,7 @@ import { viewAsk } from "./ask.js";
 import { releasesView } from "./releases-lazy.js";
 import { viewMe } from "./me.js";
 import { viewPrayer } from "./prayer.js";
-import { viewReview } from "./review.js";
+import { viewHabits } from "./habits-page.js";
 import { openSettings } from "./sheet.js";
 import { viewToday } from "./today.js";
 import { restoreHero } from "./med-hero.js";
@@ -26,10 +26,12 @@ import { pendingCount } from "./tk.js";
 import { crumbHTML, routeNav } from "./ui.js";
 
 /* ============ 渲染 ============ */
-const TAB_LABELS = { today: "今天", tasks: "任务", health: "健康", prayer: "祷告", review: "回顾", me: "我的" };
-const VIEWS = { today: viewToday, tasks: viewTasks, health: viewHealth, prayer: viewPrayer, review: viewReview, me: viewMe };
+const TAB_LABELS = { today: "今天", tasks: "任务", health: "健康", prayer: "祷告", me: "我的" };
+const VIEWS = { today: viewToday, tasks: viewTasks, health: viewHealth, prayer: viewPrayer, me: viewMe };
 /* 子页：挂在某个底部页签下面，顶部显示完整路径（像爱家小助手）：‹ 我的 / 咩咩咩。parent 也可以是另一个子页，路径一路显示到底部页签 */
-const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk }, releases: { parent: "me", label: "发布日志", view: releasesView }, records: { parent: "review", label: "记录", view: viewRecords }, herocfg: { parent: "today", label: "顶部卡片", view: viewHeroCfg } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
+const SUB = { ask: { parent: "me", label: "咩咩咩", view: viewAsk, open: true }, releases: { parent: "me", label: "发布日志", view: releasesView, open: true }, habits: { parent: "today", label: "习惯", view: viewHabits }, records: { parent: "habits", label: "记录", view: viewRecords }, herocfg: { parent: "habits", label: "顶部卡片", view: viewHeroCfg } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
+/** 子页一路往上找到它所在的底部页签（今天 / 习惯 / 顶部卡片 → 今天） */
+const rootOf = tab => { let p = tab; while (SUB[p]) p = SUB[p].parent; return p; };
 function crumbParts(tab){
   const parts = [{ label: SUB[tab].label }]; let p = SUB[tab].parent;
   while (p) { parts.unshift({ tab: p, label: SUB[p] ? SUB[p].label : TAB_LABELS[p] }); p = SUB[p] ? SUB[p].parent : null; }
@@ -41,7 +43,8 @@ function crumbParts(tab){
 const ROUTE_TABS = new Set([...Object.keys(VIEWS), ...Object.keys(SUB)]);
 function readRoute(hash = location.hash){
   const m = /^#\/([^?]*)(?:\?(.*))?$/.exec(hash); if (!m) return null;
-  const [tab, sub, id] = m[1].split("/").map(x => { try { return decodeURIComponent(x); } catch (e) { return ""; } });
+  let [tab, sub, id] = m[1].split("/").map(x => { try { return decodeURIComponent(x); } catch (e) { return ""; } });
+  if (tab === "review") tab = "habits";   // 回顾页已并进「今天 / 习惯」，旧链接转过去
   return ROUTE_TABS.has(tab) ? { tab, sub: sub || "", id: id || "", q: new URLSearchParams(m[2] || "") } : null;
 }
 function routeOf(){
@@ -89,7 +92,7 @@ function backTo(parent){ NAV.back = true; while (NAV.stack.length) { const p = N
 /** 面包屑：第一项带「‹ 」，中间项可点，最后一项加粗当标题 */
 function crumbNav(parts, cls = ""){
   const mini = cls.includes("mb"), cur = S.tab;
-  const dir = mini ? null : ["today", "tasks", "health", "prayer", "me"].map(k => ({ label: t(TAB_LABELS[k]), attrs: `data-tab="${k}"`, on: k === (SUB[cur] ? SUB[cur].parent : cur) }));
+  const dir = mini ? null : ["today", "tasks", "health", "prayer", "me"].map(k => ({ label: t(TAB_LABELS[k]), attrs: `data-tab="${k}"`, on: k === rootOf(cur) }));
   return crumbHTML(parts.map(x => ({ label: t(x.label), attrs: x.tab ? `data-tab="${x.tab}"` : "" })), { back: `data-act="nav-back" data-parent="${parts[parts.length - 2].tab}"`, dir, cls: `route ${cls}`.trim() });
 }
 // 应用切换（姊妹站点共用）：右上角九宫格按钮，宽屏浮层、手机底部抽屉。组件是本应用自己的副本 js/shared/（母版在 home-pantry/shared/）。
@@ -123,13 +126,13 @@ function render(opts){
   if (adoptRoute()) window.scrollTo(0, 0);
   renderStatus();
   trackNav(S.tab);
-  const sub = SUB[S.tab], cur = sub ? sub.parent : S.tab;   // 子页时底部仍高亮它所属的页签
+  const sub = SUB[S.tab], cur = rootOf(S.tab);   // 子页时底部仍高亮它所属的页签
   document.querySelectorAll("nav.tabs button").forEach(b => { if (b.dataset.tab === cur) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
   $("#main").className = S.tab === "today" || S.tab === "health" ? "wide" : "narrow";   // 今天、健康在宽屏用两栏
   const crumb = sub ? crumbNav(crumbParts(S.tab)) : "";
   S.route = null;   // 页面自己画路径（ui.routeNav）时记在这里，迷你栏用
-  const html = crumb + (S.tab === "me" || sub ? v() : (gateHTML() || v()));   // 我的、咩咩咩、发布日志 没登录也能看
+  const html = crumb + (S.tab === "me" || (sub && sub.open) ? v() : (gateHTML() || v()));   // 我的、咩咩咩、发布日志 没登录也能看
   if (opts && opts.bg) keepForms($("#main"), () => { $("#main").innerHTML = html; });
   else $("#main").innerHTML = html;
   restoreHero();   // 今天页顶上的滑动卡：滑回刚才停的那一张

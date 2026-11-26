@@ -31,7 +31,7 @@ function viewToday(){
     ${past ? `<div class="hero-note">${t("正在补记，打卡会记到这一天")}</div>` : ""}</section>`;
   // data-o：手机上的先后顺序；a / b：电脑上的左右栏
   const sec = (id, o, html) => (html ? `<section class="tsec" id="sec-${id}" style="--o:${o}">${html}</section>` : "");
-  const colA = [sec("habits", 3, habitsHTML(day, list)), sec("family", 6, familyHTML(day))].join("");
+  const colA = "";   // 习惯、家人搬到「今天 / 习惯」页（js/habits-page.js）
   const colB = [sec("reading", 1, readingHTML()), sec("tasks", 2, mitBlock() + tasksBlock()), sec("notes", 4, notesHTML()), sec("famtasks", 7, familyTasks(day))].join("");
   const joinNote = isOwner() && S.pending.length ? `<div class="nudge"><b>${t("{n} 人申请加入家庭", { n: S.pending.length })}</b> <button class="chip" data-act="settings">${t("去批准")}</button></div>` : "";
   return `${heroTrackHTML(hero, past)}${releaseBadgeHTML()}${joinNote}${nudgeBar()}${kpisHTML(day, list)}${askEntryHTML()}<div class="tgrid"><div class="tcol tcol-a">${colA}</div><div class="tcol tcol-b">${colB}</div></div>`;
@@ -51,8 +51,8 @@ function kpisHTML(day, list){
   // 习惯（不含读经，读经单独一张）
   const hab = list.filter(p => p.kind !== "scripture"), habLeft = hab.filter(p => !wb.statusOf(p, day).done);
   cards.push(hab.length ? kpiCard({ label: t("习惯"), value: hab.length - habLeft.length, unit: `/${hab.length}`, pct: (hab.length - habLeft.length) / hab.length * 100,
-    sub: habLeft.length ? `${t("还剩")} ${leftText(habLeft.map(p => p.name || t(kindOf(p).label)))}` : `✓ ${t("全部完成")}`, state: habLeft.length ? "" : "done", target: "sec-habits" })
-    : kpiCard({ label: t("习惯"), value: "–", sub: t("今天没有安排"), target: "sec-habits" }));
+    sub: habLeft.length ? `${t("还剩")} ${leftText(habLeft.map(p => p.name || t(kindOf(p).label)))}` : `✓ ${t("全部完成")}`, state: habLeft.length ? "" : "done", target: "tab:habits" })
+    : kpiCard({ label: t("习惯"), value: "–", sub: t("今天没有安排"), target: "tab:habits" }));
   // 任务：今天已完成 + 还没做的（逾期 + 当天）
   if (S.tk && S.tk.loaded && !S.tk.error) {
     const doneN = tk.doneLogs().filter(l => l.day === day).length, od = past ? [] : tk.overdue(), todo = tk.onDay(day).filter(x => !x.virtual), left = [...od, ...todo], total = doneN + left.length;
@@ -109,52 +109,6 @@ async function loadPassage(item, zh, en){
   const chap = (c, enC) => `<h3 style="margin-top:12px">${esc(c.title)}</h3>${c.error ? `<p class="small muted">${t("没取到：")}${esc(c.error)}</p>` : c.verses.map((v, i) => `<p class="verse"><sup>${v.v}</sup>${esc(v.text)}${enC && enC.verses && enC.verses[i] ? `<span class="en">${esc(enC.verses[i].text)}</span>` : ""}</p>`).join("")}`;
   box().innerHTML = zhText.map(c => chap(c, null)).join("");
   if (en) { const enText = await wb.passageText(item, en); if (box()) box().innerHTML = zhText.map((c, i) => chap(c, enText[i])).join(""); }
-}
-
-/* 今日习惯：每种打卡方式一行 */
-function habitsHTML(day, list){
-  const rows = list.filter(p => p.kind !== "scripture");
-  if (!S.wb.practices.length) return `${secHead(t("今日习惯"))}<div class="panel"><div class="empty">${t("还没有习惯。")}<br>${t("一键起步会建立：读经、祷告、锻炼（每周 3 次）、屏幕时长、健康饮食、专注，之后随时改。")}<br><button class="ui-btn" data-tone="primary" data-act="template-apply">${t("一键起步")}</button> <button class="ui-btn" data-tone="ghost" data-act="habit-add">${t("自己添加")}</button></div></div>`;
-  const row = p => { const k = kindOf(p), st = wb.statusOf(p, day), tg = p.target || {}, sc = p.schedule || {};
-    const times = sc.times && sc.times.length ? sc.times.join(" ") : "";
-    let meta = "", acts = "";
-    switch (st.mode) {
-      case "check": meta = st.done ? t("做到了 ✓") : times; acts = `<button class="iconbtn ${st.done ? "ok" : ""}" data-act="check" data-pid="${esc(p.id)}" aria-pressed="${st.done}" aria-label="${t("完成")}">✓</button>`; break;
-      case "count": meta = st.count ? t("今天 {n} 次", { n: st.count }) + (st.done ? " ✓" : "") : times;
-        acts = `${st.count ? `<button class="chip" data-act="count-undo" data-pid="${esc(p.id)}">${t("撤销")}</button>` : ""}<button class="iconbtn ${st.done ? "ok" : ""}" data-act="count-add" data-pid="${esc(p.id)}" aria-label="${t("记一次")}">＋</button>`; break;
-      case "minutes": { const wk = tg.per === "week" ? wb.weekOf(p, day) : null;
-        if (p.kind === "focus") { // 由计时器记录：一段一条；目标是每天几段
-          meta = `${t("今天 {n} 段 · {m} 分钟", { n: st.sessions, m: st.minutes })}${tg.count ? ` / ${t("{n} 段", { n: tg.count })}` : ""}${(tg.count ? st.sessions >= tg.count : st.sessions > 0) ? " ✓" : ""}`;
-          acts = `${st.sessions ? `<button class="chip" data-act="min-list" data-pid="${esc(p.id)}">${st.sessions}</button>` : ""}<button class="ui-btn" data-tone="primary" style="flex:none;min-height:40px;padding:8px 16px" data-act="focus" data-pid="${esc(p.id)}">${t("开始")}</button>`; break; }
-        meta = wk ? `${t("本周 {a}/{b} 次", { a: wk.sessions, b: wk.count || "–" })}${wk.minutesGoal ? ` · ${t("{a}/{b} 分钟", { a: wk.minutes, b: wk.minutesGoal })}` : ` · ${t("{m} 分钟", { m: wk.minutes })}`}${st.sessions ? " · " + t("今天 ✓") : ""}`
-          : `${t("今天 {m} 分钟", { m: st.minutes })}${tg.minutes ? ` / ${tg.minutes}` : ""}${st.done ? " ✓" : ""}`;
-        acts = `${st.sessions ? `<button class="chip" data-act="min-list" data-pid="${esc(p.id)}">${st.sessions}</button>` : ""}<button class="iconbtn ${st.done ? "ok" : ""}" data-act="min-add" data-pid="${esc(p.id)}" aria-label="${t("记一次")}">＋</button>`; break; }
-      case "rating": meta = st.done ? t(RATINGS[st.rating] || "") + (st.log && st.log.data.note ? ` · ${esc(st.log.data.note)}` : "") : t("今天吃得怎么样？");
-        acts = `<span class="seg mini">${[3, 2, 1].map(v => `<button data-act="rate" data-pid="${esc(p.id)}" data-v="${v}" aria-pressed="${st.rating === v}">${t(RATINGS[v])}</button>`).join("")}</span>`; break;
-      case "value": { const unit = t(k.unit || ""); meta = st.done ? `${st.value} ${unit}${tg.max ? ` / ${t("≤ {m}", { m: tg.max })}` : tg.min ? ` / ${t("≥ {m}", { m: tg.min })}` : ""}${st.over ? ` · <span style="color:var(--rose)">${t("超了")}</span>` : st.done ? " ✓" : ""}` : (p.kind === "screen" ? t("今天用了多久？晚上看一眼系统的屏幕使用时间填进来") : t("昨晚睡了几小时？"));
-        acts = `<button class="chip" data-act="value-set" data-pid="${esc(p.id)}">${st.done ? t("改") : t("填")}</button>`; break; }
-      case "slots": meta = `${esc([(p.meta || {}).dose, howText(p.meta, t)].filter(Boolean).join(" · "))}${p.meta && p.meta.stock != null && p.meta.stock !== "" ? ` · ${t("剩 {n}", { n: p.meta.stock })}${+p.meta.stock <= (+p.meta.refillAt || 7) * st.expected ? ` <span style="color:var(--rose)">${t("该补货了")}</span>` : ""}` : ""}`;
-        acts = `<span class="slots">${st.slots.map(s => `<span class="slot"><span class="small muted">${esc(s.time)}</span>${s.log ? `<button class="chip" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(s.time)}" data-v="undo" aria-pressed="true">${s.taken ? t("服了 ✓") : t("跳过")}</button>` : `<button class="chip" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(s.time)}" data-v="taken">${t("服了")}</button><button class="chip" data-act="slot" data-pid="${esc(p.id)}" data-slot="${esc(s.time)}" data-v="skip">${t("跳过")}</button>`}</span>`).join("")}</span>`; break;
-    }
-    return `<div class="habit ${st.done ? "done" : ""} ${["rating", "slots"].includes(st.mode) ? "stack" : ""}"><span class="hi" style="background:${k.color}22;color:${k.color}">${k.icon}</span>
-      <button class="main" data-act="habit-edit" data-pid="${esc(p.id)}"><span class="title">${esc(p.name || t(k.label))}</span><span class="meta">${meta}</span></button>
-      <span class="acts">${acts}</span></div>`; };
-  const done = rows.filter(p => wb.statusOf(p, day).done).length;
-  return `${secHead(t("今日习惯"), chipBtn(t("管理"), 'data-act="habits"'), rows.length ? `${done}/${rows.length}` : "")}
-  <div class="panel" style="padding:4px 10px">${rows.length ? rows.map(row).join("") : `<div class="empty">${t("今天没有安排的习惯。")}</div>`}</div>
-  ${rows.length ? `<p class="small muted" style="margin-top:8px">${t("按周算的（如每周 3 次锻炼）哪天做都算。")}</p>` : ""}`;
-}
-
-/* 家人开给我看的：只读 */
-function familyHTML(day){
-  if (!S.family) return "";
-  const fam = wb.familyToday(day);
-  if (!fam.length) return S.wb.fam.practices.length ? "" : `${secHead(t("家人"))}<div class="panel"><p class="small muted">${t("家人还没有开给你看的习惯。每一项习惯都可以在“管理”里单独设为“家人可见”，互相看到做了没有，彼此提醒。")}</p></div>`;
-  const item = ({ p, st, week }) => { const k = kindOf(p);
-    const txt = week ? t("本周 {a}/{b} 次", { a: week.sessions, b: week.count || "–" }) : st.mode === "minutes" ? t("{m} 分钟", { m: st.minutes }) : st.mode === "value" && st.done ? `${st.value} ${t(k.unit || "")}` : st.mode === "rating" && st.done ? t(RATINGS[st.rating] || "") : st.mode === "slots" ? `${st.taken}/${st.expected}` : st.mode === "count" && st.count ? t("{n} 次", { n: st.count }) : "";
-    return `<span class="fam-item ${st.done ? "done" : ""}">${k.icon} ${esc(p.name || t(k.label))}${txt ? ` <span class="small muted">${txt}</span>` : ""} ${st.done ? "✓" : "○"}</span>`; };
-  return `${secHead(t("家人"))}<div class="panel">${fam.map(m => `<div class="fam"><b>${esc(m.name)}</b><div class="fam-items">${m.items.map(item).join("")}</div></div>`).join("")}
-  <p class="small muted" style="margin-top:8px">${t("只显示对方设为“家人可见”的习惯；祷告清单的内容谁也看不到。")}</p></div>`;
 }
 
 export { viewToday };

@@ -987,3 +987,9 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .fab{color:#131921}}
 body.sheet-open .fab{display:none}
 @media print{.fab{display:none}}
+
+/* 今天 / 习惯 页：日期条（2026-11-26.4） */
+.daybar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 12px}
+.daybar input[type=date]{min-height:var(--ctl-h,44px);border:1px solid var(--line);background:var(--field);border-radius:var(--radius-sm);padding:0 10px;font:inherit;font-size:16px;box-sizing:border-box}
+main:has(.fab){padding-bottom:96px}
+@media (min-width:760px){.fab{right:max(16px,calc(50vw - 360px + 16px))}}
