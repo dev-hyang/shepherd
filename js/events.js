@@ -63,6 +63,7 @@ document.addEventListener("input", ev => { if (ev.target && ev.target.id === "tk
 document.addEventListener("click", async ev => {
   const btn = ev.target.closest("button"); if (!btn) return;
   const d = btn.dataset;
+  if (btn.closest(".dirmenu")) S.fpop = null;   // 目录里点了一项：收起菜单再跳
   if (d.fpop) { togglePop(d.fpop); return; }
   if (d.scroll) { const el = document.getElementById(d.scroll); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   if (d.pagerMore) { if (d.pagerMore === "notes") nts.moreNotes(); else { pg.more(d.pagerMore); render(); } return; }   // 继续加载（js/pager.js）

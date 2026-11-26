@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.3", title: { zh: "统一的路径栏和目录按钮", en: "One breadcrumb bar with a Directory button" }, items: [
+    { k: "better", zh: "各子页顶部的路径栏统一样式，左边多了「目录」按钮：点开就能直接跳到同一层的其他页面（健康的就诊 / 化验 / 测量……、任务的今天 / 计划 / 清单、祷告的代祷 / 灵修笔记）。", en: "The path bar at the top of sub-pages now looks the same everywhere, with a Directory button that jumps to sibling pages." },
+    { k: "new", zh: "新增了右下角圆形的「＋」按钮样式，后面几版会替换各页的新增按钮。", en: "Added a round + button for the bottom right; it will replace the add buttons in the next releases." }
+  ] },
   { v: "2026-11-26.2", title: { zh: "表单排版：短字段可并排", en: "Forms: short fields can sit side by side" }, items: [
     { k: "better", zh: "表单现在支持把数字、日期、时间这类短字段排在同一行，也支持「每周 [ 3 ] 次」这样把前后文字放在输入框两侧（电脑上并排，手机上仍是一列）。后面几版会逐个表单用上。", en: "Forms can now place short fields (numbers, dates, times) on one row and wrap an input with text like “Every week [ 3 ] times”. Side by side on laptop, one column on phone. The next versions apply it form by form." },
   ] },

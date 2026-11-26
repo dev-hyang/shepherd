@@ -967,3 +967,23 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .hpgrid.four .hpd{font-size:11.5px;white-space:nowrap}
 .medact .hbtn.txt{padding:0 14px;white-space:nowrap}
 .hero-sub{margin-top:4px;font-size:13px;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;z-index:1}
+
+/* 统一面包屑的「目录」按钮（点开列出同级页面）和右下角圆形 ＋ 新增按钮（2026-11-26.3） */
+.crumb .crumb-dir{position:relative;margin:0 8px 0 -5px;flex:none}
+.crumb .crumb-menu{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--slate);font:inherit;font-size:14px;font-weight:700;white-space:nowrap}
+.crumb .crumb-menu:hover,.crumb .crumb-menu[aria-expanded="true"]{background:var(--slate-soft)}
+.crumb .crumb-menu:focus-visible{outline:3px solid var(--slate);outline-offset:1px}
+.crumb .dirmenu{width:220px;max-width:calc(100vw - 32px);padding:6px;display:flex;flex-direction:column;gap:2px}
+.crumb .dirmenu[hidden]{display:none}
+.crumb .dir-item{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;min-height:44px;padding:0 12px;border-radius:var(--radius-sm);font-size:15px;color:var(--ink)}
+.crumb .dir-item:hover,.crumb .dir-item:focus-visible{background:var(--slate-soft)}
+.crumb .dir-item[aria-current="page"]{font-weight:700;color:var(--slate);background:var(--slate-soft)}
+.crumb.route.mb .crumb-dir{display:none}
+.fab{position:fixed;right:16px;bottom:calc(56px + env(safe-area-inset-bottom,0px) + 16px);z-index:9;width:56px;height:56px;border-radius:50%;border:0;padding:0;background:var(--slate);color:#fff;font-size:30px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.fab:hover{filter:brightness(1.08)}
+.fab:active{transform:scale(.96)}
+.fab:focus-visible{outline:3px solid var(--slate);outline-offset:3px}
+:root[data-theme="dark"] .fab{color:#131921}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .fab{color:#131921}}
+body.sheet-open .fab{display:none}
+@media print{.fab{display:none}}

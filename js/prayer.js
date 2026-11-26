@@ -14,7 +14,7 @@ function viewPrayer(){
   const v = S.prayerView === "notes" ? "notes" : "pray";
   const nOpen = S.wb.prayers.filter(p => p.status !== "answered").length, nNotes = S.nt && S.nt.loaded && S.nt.stats ? S.nt.stats.mine : 0;
   const tabs = [["pray", t("代祷"), nOpen], ["notes", t("灵修笔记"), nNotes]];
-  return `${routeNav([{ label: t("祷告"), attrs: 'data-pview="pray"' }, { label: v === "notes" ? t("灵修笔记") : t("代祷") }])}
+  return `${routeNav([{ label: t("祷告"), attrs: 'data-pview="pray"' }, { label: v === "notes" ? t("灵修笔记") : t("代祷") }], { dir: tabs.map(([k, l]) => ({ label: l, attrs: `data-pview="${k}"`, on: v === k })) })}
   <div class="seg eq" role="group" aria-label="${t("祷告与灵修")}">${tabs.map(([k, l, n]) => `<button data-pview="${k}" aria-pressed="${v === k}">${l}${n ? ` <span class="cnt">${n}</span>` : ""}</button>`).join("")}</div>
   ${v === "notes" ? viewNotes() : viewPray()}`;
 }

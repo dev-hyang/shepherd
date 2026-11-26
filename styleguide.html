@@ -75,6 +75,11 @@
     <button class="ui-hint" type="button" data-tip="右对齐：靠屏幕右边的问号用这个。" data-tip-align="end" aria-label="说明：右对齐的提示">?</button>
   </div></div>
 
+  <h2>面包屑 + 目录按钮、右下角 ＋</h2>
+  <p class="note">所有子页顶部同一种路径：目录按钮（列出同级页面）＋ 路径；新增一律用右下角圆形 ＋（<code>fab()</code>，见 <code>js/ui.js</code>）。</p>
+  <div class="panel" style="padding:0 16px"><nav class="crumb route" style="position:static;margin:0"><span class="fbar-wrap crumb-dir"><button type="button" class="crumb-menu"><span aria-hidden="true">☰</span> 目录</button></span><button type="button" class="crumb-link">健康</button><span class="sep">/</span><b>就诊</b></nav></div>
+  <div class="row" style="margin-top:12px"><span class="cell"><button type="button" class="fab" style="position:static" aria-label="新增"><span aria-hidden="true">＋</span></button><small>.fab（实际固定在右下角）</small></span></div>
+
   <h2>本站现有的表单控件（对照）</h2>
   <div class="panel">
     <div class="field"><label for="sgA">输入框</label><input id="sgA" type="text" placeholder="例如：数学"></div>

@@ -23,7 +23,7 @@ import { viewHeroCfg } from "./herocfg.js";
 import { viewHealth, openPendingNew } from "./health.js";
 import { viewTasks } from "./tasks.js";
 import { pendingCount } from "./tk.js";
-import { routeNav } from "./ui.js";
+import { crumbHTML, routeNav } from "./ui.js";
 
 /* ============ 渲染 ============ */
 const TAB_LABELS = { today: "今天", tasks: "任务", health: "健康", prayer: "祷告", review: "回顾", me: "我的" };
@@ -86,11 +86,11 @@ window.addEventListener("hashchange", () => { if (adoptRoute()) { render(); wind
 const NAV = { last: null, stack: [], back: false };
 function trackNav(tab){ if (NAV.last && NAV.last !== tab && !NAV.back) { NAV.stack.push(NAV.last); if (NAV.stack.length > 30) NAV.stack.shift(); } NAV.back = false; NAV.last = tab; }
 function backTo(parent){ NAV.back = true; while (NAV.stack.length) { const p = NAV.stack.pop(); if (p !== S.tab) return p; } return parent; }
-const backBtn = parent => `<button type="button" class="crumb-link crumb-back" data-act="nav-back" data-parent="${parent}" aria-label="${t("返回")}">‹ ${t("返回")}</button>`;
 /** 面包屑：第一项带「‹ 」，中间项可点，最后一项加粗当标题 */
 function crumbNav(parts, cls = ""){
-  return `<nav class="crumb ${cls}" aria-label="${t("位置")}">${backBtn(parts[parts.length - 2].tab)}${parts.map((x, i) => `${i ? '<span class="sep">/</span>' : ""}${i === parts.length - 1
-    ? `<b aria-current="page">${t(x.label)}</b>` : `<button type="button" class="crumb-link" data-tab="${x.tab}">${t(x.label)}</button>`}`).join("")}</nav>`;
+  const mini = cls.includes("mb"), cur = S.tab;
+  const dir = mini ? null : ["today", "tasks", "health", "prayer", "me"].map(k => ({ label: t(TAB_LABELS[k]), attrs: `data-tab="${k}"`, on: k === (SUB[cur] ? SUB[cur].parent : cur) }));
+  return crumbHTML(parts.map(x => ({ label: t(x.label), attrs: x.tab ? `data-tab="${x.tab}"` : "" })), { back: `data-act="nav-back" data-parent="${parts[parts.length - 2].tab}"`, dir, cls: `route ${cls}`.trim() });
 }
 // 应用切换（姊妹站点共用）：右上角九宫格按钮，宽屏浮层、手机底部抽屉。组件是本应用自己的副本 js/shared/（母版在 home-pantry/shared/）。
 // 语言切换：地球按钮 + 列表，以后加语言只要在 LOCALES 里加一项。

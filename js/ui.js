@@ -11,10 +11,19 @@ const secHead = (title, actions = "", sub = "") => `<div class="sec-head"><h2>${
 /** 顶部路径（2026-11-12，和其他应用一样）：健康 / 概览、任务 / 计划、健康 / 就诊 / 10/30 年度体检。
     parts = [{ label, attrs }]：最后一项是当前页（加粗），前面的可点（attrs 是点了去哪的 data-*）；back = 「‹ 返回」按钮的属性（第三层才有）；actions = 右边的按钮。
     画的时候记在 S.route，迷你栏（往下滚后顶上那条）跟着显示同一条路径。 */
-function routeNav(parts, { back = "", actions = "" } = {}){
-  S.route = parts;
-  return `<nav class="crumb route" aria-label="${esc(t("位置"))}">${back ? `<button type="button" class="crumb-link crumb-back" ${back} aria-label="${esc(t("返回"))}">‹ ${t("返回")}</button>` : ""}${parts.map((x, i) => `${i ? '<span class="sep">/</span>' : ""}${i === parts.length - 1 ? `<b aria-current="page">${esc(x.label)}</b>` : `<button type="button" class="crumb-link" ${x.attrs || ""}>${esc(x.label)}</button>`}`).join("")}${actions ? `<span class="route-acts">${actions}</span>` : ""}</nav>`;
+/** 统一的面包屑：[目录按钮] [‹ 返回] 路径 / 路径 / 当前页 [右边按钮]。
+    dir = [{ label, attrs, on }]：目录按钮点开后列出的同级 / 下级页面（点一项跳过去）；没有就不画目录按钮。 */
+function crumbHTML(parts, { back = "", actions = "", dir = null, cls = "route" } = {}){
+  const dirBtn = dir && dir.length ? `<span class="fbar-wrap crumb-dir"><button type="button" class="crumb-menu" data-fpop="dir" aria-expanded="${S.fpop === "dir"}" aria-controls="fpop-dir" aria-label="${esc(t("目录"))}"><span aria-hidden="true">☰</span> ${t("目录")}</button>
+    <div class="fpop dirmenu" id="fpop-dir" ${S.fpop === "dir" ? "" : "hidden"} role="menu" aria-label="${esc(t("目录"))}">${dir.map(d => `<button type="button" role="menuitem" class="dir-item" ${d.attrs} ${d.on ? 'aria-current="page"' : ""}>${esc(d.label)}</button>`).join("")}</div></span>` : "";
+  const backBtn = back ? `<button type="button" class="crumb-link crumb-back" ${back} aria-label="${esc(t("返回"))}">‹ ${t("返回")}</button>` : "";
+  const trail = parts.map((x, i) => `${i ? '<span class="sep">/</span>' : ""}${i === parts.length - 1 ? `<b aria-current="page">${esc(x.label)}</b>` : `<button type="button" class="crumb-link" ${x.attrs || ""}>${esc(x.label)}</button>`}`).join("");
+  return `<nav class="crumb ${cls}" aria-label="${esc(t("位置"))}">${dirBtn}${backBtn}${trail}${actions ? `<span class="route-acts">${actions}</span>` : ""}</nav>`;
 }
+/** 页面自己画路径：画的时候记在 S.route，迷你栏（往下滚后顶上那条）跟着显示同一条（迷你栏不带目录按钮） */
+function routeNav(parts, opts = {}){ S.route = parts; return crumbHTML(parts, opts); }
+/** 右下角圆形 ＋ 按钮（新增）：手机在底部页签上方，电脑贴右下角；label 给读屏器 */
+const fab = (attrs, label) => `<button type="button" class="fab" ${attrs} aria-label="${esc(label)}" title="${esc(label)}"><span aria-hidden="true">＋</span></button>`;
 const pageHead = (title, actions = "") => `<div class="page-head"><h1>${title}</h1>${actions ? `<span class="sec-acts">${actions}</span>` : ""}</div>`;
 const chipBtn = (label, attrs, cls = "") => `<button class="chip ${cls}" ${attrs}>${label}</button>`;
 
@@ -40,4 +49,4 @@ function togglePop(id){
 }
 const closePop = () => { if (S.fpop) togglePop("close"); };
 
-export { routeNav, secHead, pageHead, chipBtn, fbar, togglePop, closePop };
+export { crumbHTML, fab, routeNav, secHead, pageHead, chipBtn, fbar, togglePop, closePop };
