@@ -1088,3 +1088,11 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
 }
 .fbar > .fpop{left:auto;right:0}   /* 筛选面板从按钮这一侧（右）展开，和爱家小助手一致 */
 @media (max-width:440px){.fbar:has(.fadd) .fq{flex:1 1 100%}.fbar:has(.fadd) .fadd{margin-left:auto}}   /* 手机：有「新增」按钮时，搜索框独占一行，筛选和新增在下一行，不零散折行 */
+
+/* ===== 表单控件统一（2026-11-26.16）：输入框、下拉、选项按钮同一个圆角（12px）、同高（44px，触屏点按区域）=====
+   数字框带前后缀时只占 5.5em：「每周 [3] 次」一眼看完；选项少的用 ui-seg 一排，多的用下拉。 */
+.field input[type=text],.field input[type=password],.field input[type=number],.field input[type=date],.field input[type=time],.field input[type=search],.field textarea,.field select{border-radius:var(--ctl-r)}
+.seg button{border-radius:var(--ctl-r)}
+.field .fin--num > input{flex:0 0 5.5em;width:5.5em;text-align:center}
+.field .ui-seg{min-height:var(--ctl-h)}
+.field .ui-seg[data-fill] > button{padding:0 4px}

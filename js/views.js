@@ -3,10 +3,13 @@ import * as appSwitcherMod from "./shared/app-switcher.js";
 import * as langSwitcherMod from "./shared/lang-switcher.js";
 import { watchFormMenus } from "./shared/ui-form.js"; watchFormMenus();   // 表单页头 ⋯ 菜单：点外面 / Esc 关上
 import { watchActs } from "./shared/ui-acts.js"; watchActs();   // 按钮条：取消靠前、主按钮靠后（shared/ui.css 的 ui-acts）
+import { setSelectT, initSelectSearch } from "./shared/ui-select.js";
+import { initSelectMulti } from "./shared/ui-select-multi.js";
 import { initInputSuggest } from "./shared/ui-suggest.js"; initInputSuggest();   // 可输入的下拉（input + datalist）：电脑上换成统一的建议面板，触屏用原生（shared/ui-suggest.js）
 import { myName } from "./core/auth.js";
 import { APP_VERSION, SISTER_APPS, THIS_APP } from "./core/config.js";
 import { LOCALES, locale, t } from "./core/i18n.js";
+setSelectT(t); initSelectSearch(); initSelectMulti();   // 下拉统一：选项 ≥ 9 项自动可搜索；多选下拉统一外壳（shared/ui-select*.js）
 import { S } from "./core/state.js";
 import { $, esc, keepForms } from "./core/util.js";
 import { WEEKDAY } from "./data/kinds.js";

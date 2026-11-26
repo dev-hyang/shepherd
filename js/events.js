@@ -49,6 +49,7 @@ document.addEventListener("submit", async ev => {
   try { const x = await tkm.quickAdd(v, wb.viewDay()); render(); if (x) toast(x.due ? t("已加到 {d}", { d: x.due }) : t("已放进收件箱")); } catch (e) { inp.disabled = false; }
   requestAnimationFrame(() => { const i = $("#tkQuick"); if (i) i.focus(); });
 });
+document.addEventListener("change", ev => { if (ev.target && ev.target.matches && ev.target.matches("select[data-redraw]") && getForm()) { readForm(); drawForm(); } });   // 表单里的下拉改了就重画（form-fields.js 的 redraw）
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "tkPrio") { S.tkUi.prio = ev.target.value; pg.reset("tkList"); render(); } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "f_reflection") nts.growText(); });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "prayQ") { S.prayerFilter.q = ev.target.value; pg.reset("prayers"); redrawSearch("prayQ"); } });

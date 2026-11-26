@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.16", title: { zh: "习惯表单重新排版，表单控件统一", en: "Habit form re-laid out; form controls unified" }, items: [
+    { k: "better", zh: "新增 / 编辑习惯：「每周 [3] 次」「每次 [30] 分钟」这类数字写成一行，同类的在电脑上并排；种类、服药时机改成下拉；每天 / 每周、仅自己 / 家人可见、周一到周日用一排切换条。", en: "New / edit habit: numbers read as one line (“Week [3] times”) and pair up on desktop; kind and timing are dropdowns; day/week, privacy and weekdays use one-row switches." },
+    { k: "better", zh: "所有表单的输入框、下拉、选项按钮用同一个圆角和高度；选项很多的下拉可以打字搜索。", en: "All forms share one corner radius and height for inputs, dropdowns and option buttons; long dropdowns are searchable." },
+    { k: "fix", zh: "英文界面的目录补上翻译。", en: "Directory labels are now translated in English." }
+  ] },
   { v: "2026-11-26.15", title: { zh: "搜索、筛选、目录按钮和爱家小助手统一", en: "Search, Filter and Directory buttons match the pantry app" }, items: [
     { k: "better", zh: "搜索框、「筛选」和「目录」按钮一样高、一样的圆角和线条图标；筛选里选了几项，用小圆标显示个数。", en: "Search box, Filter and Directory buttons share one height, radius and line icons; the number of active filters shows as a small badge." },
     { k: "better", zh: "筛选面板和目录面板都有标题行；目录里当前页打勾。", en: "Filter and Directory panels have a title row; the current page is checked in Directory." }

@@ -80,33 +80,36 @@ const kindOpts = () => Object.entries(KINDS).map(([k, v]) => [k, `${v.icon} ${v.
 const fh = title => `<div class="fh">${t(title)}</div>`;   // 表单里的分段小标题
 function practiceFields(){
   const is = (...ks) => d => ks.includes(d.kind), notMed = d => !["med", "supplement"].includes(d.kind);   // 用药不用时间点和日历提醒：只填最短间隔
+  /* 版式：数字类写成一行「前缀 [框] 后缀」（pre / suf），同类两项在电脑上并排（w: "m" = 半行，手机单列）；
+     选项少的用 ui-seg 一排（fill），选项多的用下拉（sel） */
   return [
     { k: "h_basic", type: "html", html: () => fh("基本信息") },
-    { k: "kind", label: "种类", type: "seg", opts: kindOpts(), when: d => !d.id },
-    { k: "name", label: "名称", type: "text", ph: "读经 / 晨跑 / 维生素 D" },
+    { k: "kind", label: "种类", type: "sel", redraw: true, opts: kindOpts(), when: d => !d.id, w: "m" },
+    { k: "name", label: "名称", type: "text", ph: "读经 / 晨跑 / 维生素 D", w: "m", when: d => !d.id },   // 新建：和「种类」下拉并排；编辑（没有种类下拉）：整行
+    { k: "name", label: "名称", type: "text", ph: "读经 / 晨跑 / 维生素 D", when: d => !!d.id },
     { k: "h_goal", type: "html", html: () => fh("目标"), when: is("exercise", "custom", "prayer", "focus", "screen", "sleep") },
-    { k: "per", label: "目标按", type: "seg", opts: [["day", "每天"], ["week", "每周"]], when: is("exercise", "custom") },
-    { k: "count", label: "每周几次", type: "num", ph: "3", when: d => d.per === "week" && ["exercise", "custom"].includes(d.kind) },
-    { k: "count", label: "每天几次", type: "num", ph: "1", when: is("prayer") },
-    { k: "count", label: "每天几段（专注计时器自动记录，这里只是目标）", type: "num", ph: "4", when: is("focus") },
-    { k: "minutes", label: "每次多少分钟（可空）", type: "num", ph: "30", when: is("exercise", "custom") },
-    { k: "max", label: "每天最多多少分钟", type: "num", ph: "120", when: is("screen") },
-    { k: "min", label: "希望每晚睡几小时", type: "num", ph: "7", step: 0.5, when: is("sleep") },
+    { k: "per", label: "目标按", type: "seg", fill: true, opts: [["day", "每天"], ["week", "每周"]], when: is("exercise", "custom") },
+    { k: "count", pre: "每周", suf: "次", type: "num", ph: "3", when: d => d.per === "week" && ["exercise", "custom"].includes(d.kind), w: "m" },
+    { k: "count", pre: "每天", suf: "次", type: "num", ph: "1", when: is("prayer"), w: "m" },
+    { k: "count", pre: "每天", suf: "段", type: "num", ph: "4", hint: "专注计时器自动记录，这里只是目标。", when: is("focus") },
+    { k: "minutes", pre: "每次", suf: "分钟（可空）", type: "num", ph: "30", when: is("exercise", "custom"), w: "m" },
+    { k: "max", pre: "每天最多", suf: "分钟", type: "num", ph: "120", when: is("screen") },
+    { k: "min", pre: "每晚希望睡", suf: "小时", type: "num", ph: "7", step: 0.5, when: is("sleep") },
     { k: "h_dose", type: "html", html: () => fh("剂量与库存"), when: is("med", "supplement") },
-    { k: "dose", label: "剂量", type: "text", ph: "1 片 / 2 粒", when: is("med", "supplement") },
-    { k: "hours", label: "最短间隔（小时，按医嘱；填了今天页的药卡会显示下次可以服药的时间）", type: "num", ph: "6", step: 0.5, when: is("med", "supplement") },
-    { k: "timing", label: "服药时机（按医嘱 / 说明书）", type: "seg", opts: [["", "不限"], ["空腹", "空腹"], ["饭前", "饭前"], ["饭后", "饭后"], ["随餐", "随餐"], ["睡前", "睡前"]], when: is("med", "supplement") },
-    { k: "mins", label: "饭前 / 饭后多少分钟", type: "num", ph: "30", when: d => ["med", "supplement"].includes(d.kind) && ["饭前", "饭后"].includes(d.timing) },
+    { k: "dose", label: "剂量", type: "text", ph: "1 片 / 2 粒", when: is("med", "supplement"), w: "m" },
+    { k: "hours", pre: "最短间隔", suf: "小时", type: "num", ph: "6", step: 0.5, hint: "按医嘱；填了今天页的药卡会显示下次可以服药的时间。", when: is("med", "supplement"), w: "m" },
+    { k: "timing", label: "服药时机（按医嘱 / 说明书）", type: "sel", redraw: true, opts: [["", "不限"], ["空腹", "空腹"], ["饭前", "饭前"], ["饭后", "饭后"], ["随餐", "随餐"], ["睡前", "睡前"]], when: is("med", "supplement"), w: "m" },
+    { k: "mins", pre: "饭前 / 饭后", suf: "分钟", type: "num", ph: "30", when: d => ["med", "supplement"].includes(d.kind) && ["饭前", "饭后"].includes(d.timing), w: "m" },
     { k: "mednote", label: "医嘱备注", type: "text", ph: "如：胃不舒服就停、吃完这盒", when: is("med", "supplement") },
-    { k: "stock", label: "现在还剩多少（可空；每次“服了”自动减一）", type: "num", ph: "30", when: is("med", "supplement") },
-    { k: "refillAt", label: "剩几天的量时提醒补货", type: "num", ph: "7", when: is("med", "supplement") },
-    { k: "hero", label: "在今天页顶部显示「距上次」大卡片（病好了可以关掉）", type: "check", when: is("med", "supplement") },
+    { k: "stock", pre: "现在还剩", suf: "（可空）", type: "num", ph: "30", hint: "每次“服了”自动减一。", when: is("med", "supplement"), w: "m" },
+    { k: "refillAt", pre: "剩", suf: "天的量时提醒补货", type: "num", ph: "7", when: is("med", "supplement"), w: "m" },
+    { k: "hero", label: "在今天首页顶部显示「距上次」大卡片（病好了可以关掉）", type: "check", when: is("med", "supplement") },
     { k: "h_time", type: "html", html: () => fh("日子与提醒"), when: notMed },
-    { k: "days", label: "哪几天", type: "multi", raw: true, opts: weekdayOpts(), hint: "按周算目标的习惯，哪天做都算；这里的日子只决定提醒。", when: notMed },
+    { k: "days", label: "哪几天", type: "multi", fill: true, raw: true, opts: weekdayOpts(), hint: "按周算目标的习惯，哪天做都算；这里的日子只决定提醒。", when: notMed },
     { k: "times", label: "时间点（提醒用，多个用逗号隔开）", type: "text", ph: "07:00, 21:30", when: notMed },
     { k: "remind", label: "进日历订阅提醒", type: "check", when: notMed },
     { k: "h_share", type: "html", html: () => fh("分享与状态") },
-    { k: "share", label: "完成情况开给家人看", type: "seg", opts: [["private", "仅自己"], ["family", "家人可见"]], hint: "家人只看到这项做了没有、分钟数和备注。祷告清单的内容永远只有你自己看得到。" },
+    { k: "share", label: "完成情况开给家人看", type: "seg", fill: true, opts: [["private", "仅自己"], ["family", "家人可见"]], hint: "家人只看到这项做了没有、分钟数和备注。祷告清单的内容永远只有你自己看得到。" },
     { k: "active", label: "进行中", type: "check" }
   ];
 }
