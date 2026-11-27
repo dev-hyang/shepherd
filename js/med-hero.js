@@ -1,3 +1,4 @@
+import { dashBarHTML } from "./shared/ui-dashbar.js";
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc, hm } from "./core/util.js";
@@ -39,14 +40,13 @@ function medCard(p, now){
 }
 
 /** 问候卡 +（今天有药时）药卡，包成可滑动的一排；没有药卡就原样返回问候卡 */
-const cfgBar = `<div class="herocfgbar"><button class="chip" data-tab="herocfg">⚙ ${t("管理卡片")}</button></div>`;
 function heroTrackHTML(greetHero, past){
   if (past) return greetHero;
   const cards = shownCards(S.wb.practices, (S.wb.profile || {}).settings);
-  if (!cards.length) return greetHero ? greetHero + cfgBar : "";
+  if (!cards.length) return greetHero || "";
   const now = new Date(), slides = [greetHero, ...cards.map(c => (c.type === "med" ? medCard(c.p, now) : presetCard(c.key, now)))].filter(Boolean), cur = Math.min(S.heroIdx || 0, slides.length - 1);
   return `<div class="herobox"><div class="herotrack" id="heroTrack" tabindex="0" role="region" aria-roledescription="carousel" aria-label="${esc(t("今天：问候与卡片"))}">${slides.join("")}</div>
-    <div class="herodots" role="group" aria-label="${esc(t("切换卡片"))}">${slides.map((_, i) => `<button class="herodot" data-act="hero-go" data-i="${i}" aria-label="${i + 1}/${slides.length}" aria-current="${i === cur}"></button>`).join("")}</div>${cfgBar}</div>`;
+    ${dashBarHTML(slides.length, cur, { clickable: true, attrs: 'data-act="hero-go"', label: "切换卡片", t })}</div>`;
 }
 
 const track = () => document.getElementById("heroTrack");
@@ -60,7 +60,7 @@ function goHero(i){ const el = track(); if (el) el.scrollTo({ left: i * (el.clie
 document.addEventListener("scroll", e => {
   const el = e.target; if (!el || el.id !== "heroTrack") return;
   const i = Math.round(el.scrollLeft / Math.max(1, el.clientWidth + GAP)); if (i === S.heroIdx) return;
-  S.heroIdx = i; document.querySelectorAll(".herodot").forEach((b, k) => b.setAttribute("aria-current", String(k === i)));
+  S.heroIdx = i; document.querySelectorAll(".herobox .ui-dash").forEach((b, k) => b.setAttribute("aria-current", String(k === i)));
 }, true);
 
 export { heroTrackHTML, restoreHero, goHero };

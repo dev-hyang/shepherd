@@ -1,4 +1,4 @@
-/* 折叠目录树（统一控件）：「目录」面板里的页面列表——按大类折叠，点 › 展开一项、看一项（同一层只展开一个），默认全部收起。
+/* 折叠目录树（统一控件）：「目录」面板里的页面列表——按大类折叠，点 › 展开一项、看一项（同一层只展开一个）；当前页所在的那条路径默认展开，其余收起。
  * 外观取自爱家小助手的嵌套目录（treePop）；样式在 shared/ui.css 的 .ui-tree。
  * 【母版在 home-pantry/shared/】姊妹站各留逐字相同的副本 js/shared/ui-tree.js（check-shared.mjs 会比）。文件不引用站内模块：翻译函数由调用方传 t。
  *
@@ -13,8 +13,9 @@ function node(n, lv, t) {
   const cur = n.on ? ' aria-current="page"' : "", ck = n.on ? '<span class="ui-tree-ck" aria-hidden="true">✓</span>' : "";
   const item = `<button type="button" role="menuitem" class="ui-tree-item${!n.on && hasCur(n) ? " has-cur" : ""}" ${n.attrs || ""}${cur}><span class="ui-tree-lbl">${esc(n.label)}</span>${ck}</button>`;
   if (!n.children || !n.children.length) return `<div class="ui-tree-node" data-lv="${lv}"><div class="ui-tree-row">${item}</div></div>`;
-  return `<div class="ui-tree-node" data-lv="${lv}"><div class="ui-tree-row">${item}<button type="button" class="ui-tree-tg" data-tree-toggle aria-expanded="false" aria-label="${esc(t(n.label))}"><span aria-hidden="true">›</span></button></div>
-    <div class="ui-tree-kids" hidden>${n.children.map(c => node(c, lv + 1, t)).join("")}</div></div>`;
+  const open = hasCur(n);   // 当前页所在的那一层默认展开
+  return `<div class="ui-tree-node" data-lv="${lv}"><div class="ui-tree-row">${item}<button type="button" class="ui-tree-tg" data-tree-toggle aria-expanded="${open}" aria-label="${esc(t(n.label))}"><span aria-hidden="true">›</span></button></div>
+    <div class="ui-tree-kids"${open ? "" : " hidden"}>${n.children.map(c => node(c, lv + 1, t)).join("")}</div></div>`;
 }
 export function treeHTML(nodes, { label = "目录", t = x => x } = {}) {
   return `<nav class="ui-tree" aria-label="${esc(t(label))}">${nodes.map(n => node(n, 0, t)).join("")}</nav>`;

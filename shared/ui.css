@@ -255,3 +255,23 @@ input[data-num] { font-variant-numeric: tabular-nums; }
 .ui-tree-kids { margin-left: 14px; padding-left: 4px; border-left: 2px solid var(--line); }
 .ui-tree-kids[hidden] { display: none; }
 .ui-tree-kids .ui-tree-item { font-weight: 500; }
+
+/* ── 进度虚线条 ui-dashbar（shared/ui-dashbar.js，2026-11-27）──
+ * 一排短横条：当前那条亮（--ink）。默认不带序号（今天页卡片切换）；data-numbered 左边多一句「2 / 5」；条上带 data-done 的是已完成（--ok）。
+ * 可点的横条是 <button>（点按区域 28×28，手机 ≥44px 宽由 ::before 延伸）；不可点的是 <i>。 */
+.ui-dashbar { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 4px 0 0; }
+.ui-dashbar[data-numbered] { justify-content: flex-start; margin: 6px 0 10px; }
+.ui-dashbar-n { flex: none; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ui-dashbar-bars { display: flex; gap: 2px; }
+.ui-dashbar[data-fill] { width: 100%; }
+.ui-dashbar[data-fill] .ui-dashbar-bars { flex: 1 1 auto; }
+.ui-dashbar[data-fill] .ui-dash { flex: 1 1 0; }
+.ui-dash { all: unset; box-sizing: border-box; position: relative; display: grid; place-items: center; width: 28px; height: 28px; }
+button.ui-dash { cursor: pointer; }
+i.ui-dash { height: 12px; }
+.ui-dash::after { content: ""; width: 18px; max-width: 100%; height: 6px; border-radius: 3px; background: var(--line); }
+.ui-dashbar[data-fill] .ui-dash::after { width: 100%; }
+.ui-dash[data-done]::after { background: var(--ok, var(--ink)); }
+.ui-dash[aria-current="true"]::after { background: var(--ink, #1D2733); }
+.ui-dash:focus-visible { outline: 2px solid var(--focus, #1f6feb); border-radius: 6px; }
+@media (pointer: coarse), (max-width: 640px) { button.ui-dash::before { content: ""; position: absolute; top: 50%; left: -2px; right: -2px; height: 44px; transform: translateY(-50%); } }
