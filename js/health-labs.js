@@ -1,3 +1,4 @@
+import { viewSwitchHTML } from "./shared/ui-viewsw.js";
 import { aiReady, askText } from "./ai.js";
 import { LS_PREFIX } from "./core/config.js";
 import { t } from "./core/i18n.js";
@@ -31,7 +32,7 @@ function labItemHTML(who){
       <p class="small muted" style="margin:2px 0 6px">${t("参考 {r}", { r: rangeText(last) || "—" })} · ${t("最近 {d}", { d: fmtDay(last.day) })} · ${t("{n} 次", { n: rows.length })}</p>
       ${bar ? `<span class="hl-rbar big" aria-hidden="true"><i class="ok" style="left:${bar.lo.toFixed(1)}%;width:${(bar.hi - bar.lo).toFixed(1)}%"></i><i class="at" style="left:${bar.at.toFixed(1)}%"></i></span>` : ""}</div>`;
   const chart = chartPanel("lab:" + k, data, { heightCm: null, kid: who.kid });
-  const view = `<div class="seg mini" role="group" aria-label="${esc(t("显示方式"))}"><button data-hl="lab-mode" data-v="rows" aria-pressed="${mode === "rows"}">${t("行")}</button><button data-hl="lab-mode" data-v="timeline" aria-pressed="${mode === "timeline"}">${t("时间线")}</button></div>`;
+  const view = viewSwitchHTML([["rows", "行"], ["timeline", "时间线"]], mode, { attrs: 'data-hl="lab-mode"', label: "显示方式", t });
   const shown = pg.page("hlLabRec", rows);
   const rec = (x, i) => { const g = labFlag(x), prev = rows[rows.indexOf(x) + 1], d = prev ? +(+x.value - +prev.value).toFixed(2) : null, visit = x.visit_id ? S.hl.visits.find(v => v.id === x.visit_id) : null;
     return { g, d, visit, main: `<b class="num sens">${esc(+(+x.value).toFixed(2))}</b> <small class="muted">${esc(x.unit || "")}</small>${g ? ` <span class="ui-badge" data-tone="${g === "high" ? "danger" : "caution"}">${t(g === "high" ? "偏高" : "偏低")}</span>` : ""}${d ? ` <small class="muted">${d > 0 ? "↑" : "↓"} ${Math.abs(d)}</small>` : ""}`,

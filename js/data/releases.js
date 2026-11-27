@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.18", title: { zh: "视图切换改成和爱家小助手一样的按钮", en: "View switch now matches the pantry app" }, items: [
+    { k: "better", zh: "「回顾 / 今日打卡」「行 / 时间线」「按天 / 按月」「分析范围」都换成统一的视图切换按钮：靠右的深色圆角按钮，点开选一种，选完收起。", en: "Review / Daily, Rows / Timeline, By day / month and analysis scope use one shared view-switch button: a dark rounded button on the right; pick a view and it closes." }
+  ] },
   { v: "2026-11-26.17", title: { zh: "其他表单也按新版式排：日期、数字两两一行", en: "Other forms use the new layout: dates and numbers pair up" }, items: [
     { k: "better", zh: "任务、就诊、化验、测量、训练等表单：日期、时间、数字、下拉这类短字段两两一行（手机也是），少选项的用一排切换条。", en: "Task, visit, lab, measurement and workout forms: short fields (date, time, number, dropdown) pair up on one row, also on phones; short choices use one-row switches." }
   ] },

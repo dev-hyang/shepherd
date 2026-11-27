@@ -1,3 +1,4 @@
+import { viewSwitchHTML } from "./shared/ui-viewsw.js";
 import { aiReady, askText } from "./ai.js";
 import { LS_PREFIX } from "./core/config.js";
 import { t } from "./core/i18n.js";
@@ -43,7 +44,7 @@ function reviewHTML(who){
   const data = hl.dataOf(who.key);
   if (!data.visits.length && !data.labs.length && !data.measures.length) return "";
   const m = mode(), a = (profileData(who.key).ai_review || {})[m], busy = S.hlAiBusy === "review:" + m, now = stampOf(data);
-  const seg = `<div class="seg mini hl-rv-modes" role="group" aria-label="${esc(t("分析范围"))}">${MODES.map(([k, l, ic]) => `<button data-hl="rv-mode" data-v="${k}" aria-pressed="${m === k}"><span aria-hidden="true">${ic}</span> ${t(l)}</button>`).join("")}</div>`;
+  const seg = `<div class="ui-vsw-bar">${viewSwitchHTML(MODES.map(([k, l]) => [k, l]), m, { attrs: 'data-hl="rv-mode"', label: "分析范围", t })}</div>`;
   const stale = a && ((m === "recent" && a.ref && a.ref !== recentEvent(data).day) || (a.n != null && now > a.n));
   const meta = a ? `<p class="small muted hl-rv-meta">${t("{d} 分析", { d: fmtDay(String(a.at).slice(0, 10)) })}${stale ? ` · <span class="hl-rv-stale">${m === "recent" && a.ref !== recentEvent(data).day ? t("之后有了新的就诊或化验，可以重新分析") : t("之后又记了 {n} 条，可以重新分析", { n: now - a.n })}</span>` : ""}</p>` : "";
   const btn = `<button class="ui-btn" data-tone="${a && !stale ? "ghost" : "primary"}" data-hl="rv-run" ${busy || !aiReady() ? "disabled" : ""}>${busy ? t("分析中…") : a ? t("重新分析") : t("开始分析")}</button>`;

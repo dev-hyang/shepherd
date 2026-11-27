@@ -1,3 +1,4 @@
+import { viewSwitchHTML } from "./shared/ui-viewsw.js";
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc } from "./core/util.js";
@@ -29,7 +30,7 @@ function trendHTML(by){
     ? dayList(14).map(d => ({ label: String(+d.slice(8)), v: by.get(d) || 0, hi: d === S.day }))
     : [...Array(6)].map((_, i) => { const d = new Date(+S.day.slice(0, 4), +S.day.slice(5, 7) - 1 - (5 - i), 1), key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         return { label: `${d.getMonth() + 1}${t("月")}`, v: [...by].filter(([k]) => k.startsWith(key)).reduce((s, [, n]) => s + n, 0), hi: key === S.day.slice(0, 7) }; });
-  const seg = `<span class="seg mini" role="group" aria-label="${esc(t("时间范围"))}">${[["day", "按天"], ["month", "按月"]].map(([k, l]) => `<button data-tkc="${k}" aria-pressed="${mode === k}">${t(l)}</button>`).join("")}</span>`;
+  const seg = viewSwitchHTML([["day", "按天"], ["month", "按月"]], mode, { attr: "tkc", label: "时间范围", t });
   return `${secHead(t("完成趋势"), seg)}<div class="panel">${barsSVG(items, { label: t("完成趋势"), unit: t("件") })}</div>`;
 }
 /** 待办按分类 */

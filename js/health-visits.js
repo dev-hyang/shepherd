@@ -1,3 +1,4 @@
+import { viewSwitchHTML } from "./shared/ui-viewsw.js";
 import { aiReady, askText } from "./ai.js";
 import { LS_PREFIX } from "./core/config.js";
 import { t } from "./core/i18n.js";
@@ -54,7 +55,7 @@ function visitsListHTML(who){
   const bar = fbar({ id: "hlVisits", groups, q: { id: "hlVq", value: f.q, ph: "搜索：医生、地点、原因、诊断、建议" }, add: { attrs: 'data-hl="new-visit"', label: "就诊" }, extra });
   const shown = pg.page("hlVisits", list);
   const body = !list.length ? `<div class="panel empty">${t("没有符合筛选的就诊。")}</div>` : f.mode === "timeline" ? timelineHTML(shown) : rowsHTML(shown);
-  const modes = `<div class="seg mini" role="group" aria-label="${esc(t("显示方式"))}"><button data-hl="vf" data-k="mode" data-v="rows" aria-pressed="${f.mode !== "timeline"}">☰ ${t("行")}</button><button data-hl="vf" data-k="mode" data-v="timeline" aria-pressed="${f.mode === "timeline"}">⋮ ${t("时间线")}</button></div>`;
+  const modes = viewSwitchHTML([["rows", "行"], ["timeline", "时间线"]], f.mode === "timeline" ? "timeline" : "rows", { attrs: 'data-hl="vf" data-k="mode"', label: "显示方式", t });
   return `${bar}<div class="hl-listbar"><p class="small muted hl-count">${t("{a} / {b} 次就诊", { a: list.length, b: all.length })}${f.sort !== "new" ? ` · ${t({ old: "旧 → 新", kind: "按类型" }[f.sort])}` : ""}</p>${modes}</div>${body}${pg.moreBtn("hlVisits", list.length)}`;
 }
 function rowsHTML(list){

@@ -1,3 +1,4 @@
+import { viewSwitchHTML } from "./shared/ui-viewsw.js";
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc } from "./core/util.js";
@@ -20,7 +21,7 @@ function dayBar(day, past){
     ${past ? `<button class="ui-btn" data-size="sm" data-tone="soft" data-act="day-today">${t("回到今天")}</button><span class="small muted">${t("正在补记，打卡会记到这一天")}</span>` : ""}</div>`;
 }
 /** 视图切换（共享控件 ui-seg）：回顾在前，今日打卡在后；选择记在 S.habView */
-const viewToggle = cur => `<div class="ui-seg habseg" role="group" aria-label="${esc(t("视图"))}" data-fill>${[["review", "回顾"], ["today", "今日打卡"]].map(([v, l]) => `<button type="button" data-hview="${v}" aria-pressed="${cur === v}">${t(l)}</button>`).join("")}</div>`;
+const viewToggle = cur => `<div class="ui-vsw-bar">${viewSwitchHTML([["review", "回顾"], ["today", "今日打卡"]], cur, { attr: "hview", label: "视图", t })}</div>`;
 function viewHabits(){
   const day = wb.viewDay(), past = day !== S.day, list = wb.forDay(day).filter(p => !(p.meta && p.meta.preset));   // 陪伴 / 休息是顶部卡片的记录，不进今日习惯
   const cur = S.habView === "today" ? "today" : "review";
