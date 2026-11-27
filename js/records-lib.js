@@ -29,7 +29,7 @@ function logLine(log, p, t){
     case "rating": main = t(RATINGS[d.rating] || ""); break;
     case "value": main = d.value != null ? `${d.value} ${t(k.unit || "")}`.trim() : ""; break;
     case "count": main = [d.what ? t(whatLabel(d.what)) : "", d.minutes ? t("{m} 分钟", { m: d.minutes }) : ""].filter(Boolean).join(" · ") || t("做到了"); break;
-    case "slots": main = d.taken ? t("服了") : t("跳过"); if (d.slot) main += ` ${d.slot}`; break;
+    case "slots": main = d.taken ? t("服了") : t("跳过"); break;   // 不再附带「时间点」：每行左边已经有真正记下的时间（以前按时间点吃的会显示成 --:--）
     default: main = d.ref ? `${t("读经")} ${d.ref}` : t("做到了");
   }
   return [main, d.note || ""].filter(Boolean).join(" · ");

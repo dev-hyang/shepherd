@@ -16,8 +16,9 @@ test("toTs / dayOfTs / timeOfTs round-trip; missing time = noon", () => {
 
 test("logLine by mode", () => {
   assert.equal(logLine(L({ data: { minutes: 30, type: "走路", note: "公园" } }), exercise, t), "30 分钟 · 走路 · 公园");
-  assert.equal(logLine(L({ practice_id: "m", kind: "med", data: { slot: "08:00", taken: true } }), med, t), "服了 08:00");
-  assert.equal(logLine(L({ practice_id: "m", kind: "med", data: { slot: "20:00", taken: false } }), med, t), "跳过 20:00");
+  assert.equal(logLine(L({ practice_id: "m", kind: "med", data: { slot: "08:00", taken: true } }), med, t), "服了");
+  assert.equal(logLine(L({ practice_id: "m", kind: "med", data: { slot: "--:--", taken: true } }), med, t), "服了");
+  assert.equal(logLine(L({ practice_id: "m", kind: "med", data: { slot: "20:00", taken: false } }), med, t), "跳过");
   assert.equal(logLine(L({ practice_id: null, kind: "scripture", data: { ref: "约 3:16" } }), null, t), "读经 约 3:16");
   assert.equal(logLine(L({ practice_id: null, kind: "prayer", data: {} }), null, t), "做到了");
 });

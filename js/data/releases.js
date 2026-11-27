@@ -3,6 +3,13 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-27.8", title: { zh: "记录点一行编辑、左滑删除；顶部卡片可循环、自动切换", en: "Tap a record to edit, swipe to delete; top cards loop and auto-advance" }, items: [
+    { k: "better", zh: "今天页底部的记录和 习惯 / 记录：去掉每行的「编辑」「删除」按钮，改成点一行编辑、向左滑删除（任务那行是编辑任务、撤销完成）。", en: "In Today's records and Habits / Records the Edit and Delete buttons are gone: tap a row to edit, swipe left to delete (task rows: edit the task, undo completion)." },
+    { k: "fix", zh: "吃药的记录不再显示「--:--」，也不再附带时间点。", en: "Medicine records no longer show --:-- or a time slot." },
+    { k: "new", zh: "今天页顶部卡片下面有了 ‹ 进度横条 › ⚙：当前那条走满就自动换下一张，最后一张之后回到第一张；⚙ 里可选 5 / 10 / 15 / 30 秒、关闭自动切换，也能进「管理卡片」。", en: "Below the top cards: ‹ progress dashes › ⚙. The current dash fills and the next card appears, looping back after the last; ⚙ sets 5 / 10 / 15 / 30 s or turns it off, and opens Manage cards." },
+    { k: "better", zh: "顶部卡片里的按钮行靠右对齐。", en: "The button row inside the top cards is right-aligned." },
+    { k: "better", zh: "进度横条统一成一个控件：可以带序号（2 / 5）也可以不带，还能带 ‹ › 和 ⚙。", en: "The progress dashes are now one shared control: with or without a number (2 / 5), and optionally with ‹ › and ⚙." }
+  ] },
   { v: "2026-11-27.7", title: { zh: "视图切换按钮前加了「切换」；两个视图用小药丸", en: "View-switch button says Switch; two views use a pill" }, items: [
     { k: "better", zh: "视图切换按钮前面加了小字「切换」，一眼看出这里可以切换。", en: "The view-switch button now has a small Switch label in front." },
     { k: "better", zh: "只有两个视图时（如 列表 / 时间轴）用并排的小药丸，两个以上才用下拉的切换条。", en: "With only two views (e.g. List / Timeline) a side-by-side pill is used; with more, the dropdown switch." }

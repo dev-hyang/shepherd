@@ -12,7 +12,7 @@ import * as fz from "./focus.js";
 import { closeSheet, drawForm, getForm, head, openCalendar, openForm, openHabits, openInfo, openPlan, openPractice, openSettings, readForm, showSheet } from "./sheet.js";
 import { render, renderBg } from "./views.js";
 import * as wb from "./wb.js";
-import { goHero } from "./med-hero.js";
+import { goHero, stepHero } from "./med-hero.js";
 import { recAct, setQ } from "./records.js";
 import { heroCfgAct } from "./herocfg.js";
 import { hpAct } from "./hero-presets.js";
@@ -199,6 +199,7 @@ document.addEventListener("click", async ev => {
         openForm(screen ? "今天的屏幕时长" : "昨晚的睡眠", [{ k: "value", label: screen ? "分钟（iPhone：设置 → 屏幕使用时间；Android：数字健康）" : "小时", type: "num", step: screen ? 5 : 0.5 }, ...(screen ? [{ k: "quick", label: "或者大概", type: "seg", raw: true, opts: [30, 60, 90, 120, 180, 240].map(v => [String(v), `${v}`]) }] : [])],
           { value: st.value, quick: "" }, async f => { const v = f.value != null ? f.value : (f.quick ? +f.quick : null); if (v == null) { toast(t("请填一个数")); return; } await wb.setDaily(p, { value: v }); back(); }); break; }
       case "hero-go": goHero(+d.i); break;
+      case "hero-nav": stepHero(+d.d); break;
       case "med-hero-off": { const p = pidOf(d); if (!p) break; await wb.upsertPractice({ ...p, meta: { ...(p.meta || {}), hero: false } }); render(); toast(t("已不再显示；在「习惯与用药」里能重新打开")); break; }
       case "dose": { const p = pidOf(d); if (!p) break; await wb.takeDose(p); render(); toast(t("已记录")); break; }
       case "slot": { const p = pidOf(d); if (!p) break; await wb.setSlot(p, d.slot, d.v === "undo" ? null : d.v === "taken"); render(); break; }

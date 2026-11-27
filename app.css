@@ -904,7 +904,7 @@ textarea[data-autosize]{resize:none;transition:height .08s ease-out}
 .medhero .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .medhero .big small{font-size:.5em;font-weight:500;margin:0 3px 0 1px}
 .medhero .big.num{font-variant-numeric:tabular-nums}
-.medact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;position:relative;z-index:1}
+.medact{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:10px;position:relative;z-index:1}
 .medact .hbtn.txt{min-height:44px;padding:0 16px}
 /* å›žé¡¾ â†’ è®°å½•ï¼šè¡¨æ ¼ / æ—¶é—´çº¿ */
 .recday{margin:16px 0 6px;font-size:16px}

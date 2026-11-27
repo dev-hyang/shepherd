@@ -1,4 +1,4 @@
-import { dashBarHTML } from "./shared/ui-dashbar.js";
+import { dashBarHTML, dashGearHTML, dashSecs, markDash, watchDashCycle } from "./shared/ui-dashbar.js";
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc, hm } from "./core/util.js";
@@ -45,8 +45,9 @@ function heroTrackHTML(greetHero, past){
   const cards = shownCards(S.wb.practices, (S.wb.profile || {}).settings);
   if (!cards.length) return greetHero || "";
   const now = new Date(), slides = [greetHero, ...cards.map(c => (c.type === "med" ? medCard(c.p, now) : presetCard(c.key, now)))].filter(Boolean), cur = Math.min(S.heroIdx || 0, slides.length - 1);
-  return `<div class="herobox"><div class="herotrack" id="heroTrack" tabindex="0" role="region" aria-roledescription="carousel" aria-label="${esc(t("今天：问候与卡片"))}">${slides.join("")}</div>
-    ${dashBarHTML(slides.length, cur, { clickable: true, attrs: 'data-act="hero-go"', label: "切换卡片", t })}</div>`;
+  const secs = dashSecs("shepherd.cardSecs"), manage = `<button type="button" class="ui-dash-opt" data-tab="herocfg">${t("管理卡片")}</button>`;   // ⚙ 菜单：自动切换的秒数 + 管理卡片（显示 / 隐藏、调顺序）
+  return `<div class="herobox" data-dash-host><div class="herotrack" id="heroTrack" tabindex="0" role="region" aria-roledescription="carousel" aria-label="${esc(t("今天：问候与卡片"))}">${slides.join("")}</div>
+    ${dashBarHTML(slides.length, cur, { clickable: true, attrs: 'data-act="hero-go"', nav: true, navAttrs: 'data-act="hero-nav"', gear: dashGearHTML({ secs, extra: manage, t }), secs, label: "切换卡片", t })}</div>`;
 }
 
 const track = () => document.getElementById("heroTrack");
@@ -56,11 +57,14 @@ function restoreHero(){
   el.scrollTo({ left: (S.heroIdx || 0) * (el.clientWidth + GAP), behavior: "instant" });
 }
 function goHero(i){ const el = track(); if (el) el.scrollTo({ left: i * (el.clientWidth + GAP), behavior: "smooth" }); }
+/** 上一张 / 下一张，循环：最后一张再往后回到第一张（自动切换走满也是这样） */
+function stepHero(d){ const n = document.querySelectorAll(".herobox .ui-dash").length; if (n > 1) goHero((((S.heroIdx || 0) + d) % n + n) % n); }
+watchDashCycle({ key: "shepherd.cardSecs", next: () => stepHero(1) });
 // 手滑时记下停在哪一张、同步小圆点（scroll 不冒泡，用捕获）
 document.addEventListener("scroll", e => {
   const el = e.target; if (!el || el.id !== "heroTrack") return;
   const i = Math.round(el.scrollLeft / Math.max(1, el.clientWidth + GAP)); if (i === S.heroIdx) return;
-  S.heroIdx = i; document.querySelectorAll(".herobox .ui-dash").forEach((b, k) => b.setAttribute("aria-current", String(k === i)));
+  S.heroIdx = i; markDash(document.querySelector(".herobox .ui-dashbar"), i);   // 同步横条，进度条从头走
 }, true);
 
-export { heroTrackHTML, restoreHero, goHero };
+export { heroTrackHTML, restoreHero, goHero, stepHero };

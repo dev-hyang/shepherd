@@ -3,6 +3,7 @@
    跨模块调用都在函数体内，循环引用是安全的。 */
 import { t, loadLocaleData } from "./core/i18n.js";
 import { initSwipeRows } from "./swipe-rows.js";
+import { swipeDelete } from "./records.js";
 import "./events.js";
 import "./attach.js";   // AI 附件区 + 会自己长高的文字框（姊妹应用同一份）
 import { initSupabase } from "./core/auth.js";
@@ -30,7 +31,7 @@ async function healStaleModules(){
 if (!(await healStaleModules())) {
   await loadLocaleData();   // English / 繁體：先等字典加载完再第一次画，不闪简体（简体不下载）
   { const v = document.getElementById("appver"); if (v) v.textContent = "v" + APP_VERSION; } // 顶栏版本号：不用翻到最后一页就能对照有没有更新
-  initSwipeRows({ kinds: ["log", "dropped-task", "extra-read"], del: () => t("删除"), release: () => t("松手删除") });   // 行记录左滑删除（js/swipe-rows.js）
+  initSwipeRows({ kinds: ["log", "dropped-task", "extra-read", "rec"], del: () => t("删除"), release: () => t("松手删除"), onDelete: swipeDelete });   // 行记录左滑删除（js/swipe-rows.js）
   // 发布日志：今天页顶上的新版本提示（每个新版本最多 5 次）+ 我的 → 发布日志（js/releases-ui.js）
   if (releaseBadgePossible()) loadReleases();   // 提示还会出现才下载发布日志数据；到了会重画（releases-loaded）
   const redraw = () => { if (!document.querySelector("#sheet").open) renderBg(); };   // 后台重画不冲掉表单里没保存的输入

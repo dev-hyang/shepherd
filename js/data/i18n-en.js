@@ -1322,7 +1322,7 @@ const EN = {
   "今天首页顶部：每种药一张「距上次」卡片，显示 / 隐藏、调顺序": "Top of Today: one “time since last” card per medicine; show / hide, reorder",
   "今日": "Today",
   "灵修": "Devotions",
-  "切换": "Switch", "时间轴": "Timeline", "{h} 小时 {m} 分": "{h} h {m} min", "{h} 小时": "{h} h",
+  "切换": "Switch", "上一张": "Previous card", "下一张": "Next card", "自动切换的时间": "Auto-advance time", "关闭自动切换": "Turn off auto-advance", "{s} 秒": "{s} s", "点一行编辑，向左滑删除。": "Tap a row to edit, swipe left to delete.", "撤销这条完成记录？任务会重新打开。": "Undo this completion? The task will reopen.", "时间轴": "Timeline", "{h} 小时 {m} 分": "{h} h {m} min", "{h} 小时": "{h} h",
   "事项": "Item", "完成任务": "Task done", "撤销完成": "Undo", "当天的记录": "Records for this day", "今天还没有记录。": "No records yet today.", "这天没有记录。": "No records for this day.",
 };
 export { EN };
