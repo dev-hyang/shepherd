@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-27.7", title: { zh: "视图切换按钮前加了「切换」；两个视图用小药丸", en: "View-switch button says Switch; two views use a pill" }, items: [
+    { k: "better", zh: "视图切换按钮前面加了小字「切换」，一眼看出这里可以切换。", en: "The view-switch button now has a small Switch label in front." },
+    { k: "better", zh: "只有两个视图时（如 列表 / 时间轴）用并排的小药丸，两个以上才用下拉的切换条。", en: "With only two views (e.g. List / Timeline) a side-by-side pill is used; with more, the dropdown switch." }
+  ] },
   { v: "2026-11-27.6", title: { zh: "记录列表统一成「列表 / 时间轴」", en: "Record lists unified as List / Timeline" }, items: [
     { k: "new", zh: "新增统一的记录列表（ui-reclist，样子取自宝宝日志）：每行「时间 · 色块 · 内容」，也可切换成带竖线和圆点的时间轴。", en: "New shared record list (ui-reclist, borrowed from Baby log): rows of time · colour · what, or a timeline with a line and dots." },
     { k: "better", zh: "今天页底部的「今天的记录」和 习惯 / 记录 都改用它，「表格」换成「列表」。", en: "Today's records and Habits / Records now use it; Table is replaced by List." }

@@ -40,7 +40,7 @@ const who = l => `${iconOf(l)} ${esc(nameOf(l))}`;
 
 /** 一条记录 → 统一记录列表（shared/ui-reclist.js）的一行：颜色用习惯 / 任务分类的颜色 */
 const colorOf = l => isTask(l) ? tk.catOf((l.data || {}).cat).color : kindOf(pOf(l) || { kind: l.kind }).color;
-const itemOf = l => ({ id: l.id, ts: l.ts, time: hm(l.ts), color: colorOf(l), icon: iconOf(l), title: nameOf(l), sub: lineOf(l), acts: editBtn(l) });
+const itemOf = l => ({ id: l.id, ts: l.ts, time: hm(l.ts), color: colorOf(l), icon: esc(iconOf(l)), title: nameOf(l), sub: lineOf(l), acts: editBtn(l) });
 const styleOf = () => (ui().style === "axis" ? "axis" : "rows");
 const gapText = ms => { const m = Math.round(ms / 60000), h = Math.floor(m / 60); return h ? (m % 60 ? t("{h} 小时 {m} 分", { h, m: m % 60 }) : t("{h} 小时", { h })) : t("{m} 分钟", { m }); };
 const listOf = items => recListHTML(items.map(itemOf), { style: styleOf(), gapText });
