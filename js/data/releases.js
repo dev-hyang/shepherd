@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-27.5", title: { zh: "今天页底部有了统一的「今天的记录」", en: "Today now ends with a unified Today's records list" }, items: [
+    { k: "new", zh: "今天页最下面列出这一天做过的所有事：习惯、读经、祷告、完成的任务，按时间排，可以切换「表格 / 时间线」。", en: "The bottom of Today lists everything done that day — habits, reading, prayer, finished tasks — by time, as a Table or Timeline." },
+    { k: "new", zh: "每一行都能「编辑」和「删除」；任务那一行是「编辑任务」和「撤销完成」。", en: "Every row can be edited and deleted; task rows offer Edit task and Undo." },
+    { k: "better", zh: "「习惯 / 记录」里的每一行也多了「删除」。", en: "Rows in Habits / Records also gain a Delete button." }
+  ] },
   { v: "2026-11-27.4", title: { zh: "习惯改名后，以前的记录保持当时的名字", en: "Renaming a habit no longer rewrites old records" }, items: [
     { k: "fix", zh: "每条打卡都会存下当时习惯的名字：比如以前吃「泰罗」、现在改成「布洛芬」，以前的记录仍然显示「泰罗」。", en: "Each check-in now stores the habit's name at the time: if you took Tylenol and later renamed it to Ibuprofen, old records still say Tylenol." },
     { k: "better", zh: "已经有的记录会在你下一次改名时，自动盖上改名前的名字；这次之前已经改过名的，需要在记录里手动改。", en: "Existing records get stamped with the old name the next time you rename; ones renamed before this update need a manual edit." },

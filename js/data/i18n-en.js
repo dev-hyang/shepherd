@@ -1322,6 +1322,7 @@ const EN = {
   "今天首页顶部：每种药一张「距上次」卡片，显示 / 隐藏、调顺序": "Top of Today: one “time since last” card per medicine; show / hide, reorder",
   "今日": "Today",
   "灵修": "Devotions",
+  "事项": "Item", "完成任务": "Task done", "撤销完成": "Undo", "当天的记录": "Records for this day", "今天还没有记录。": "No records yet today.", "这天没有记录。": "No records for this day.",
 };
 export { EN };
 
