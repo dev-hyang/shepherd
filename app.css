@@ -317,8 +317,8 @@ nav.tabs button{position:relative}
 .lib-group{margin-top:10px}
 .lib-group > summary{cursor:pointer;padding:8px 2px;list-style:none;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;border-bottom:1px solid var(--line)}
 .lib-group > summary::-webkit-details-marker{display:none}
-.lib-group > summary::before{content:"â–¸";color:var(--muted)}
-.lib-group[open] > summary::before{content:"â–¾"}
+.lib-group > summary::before{content:"\25B8";color:var(--muted)}
+.lib-group[open] > summary::before{content:"\25BE"}
 .tk-head .ui-btn{flex:none}
 /* the narrow bar that holds the title and the way back once the header has scrolled away (js/minibar.js) */
 .minibar{position:fixed;top:0;left:0;right:0;z-index:12;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);transform:translateY(-100%);visibility:hidden;transition:transform .18s ease,visibility 0s linear .18s}
@@ -566,7 +566,7 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .ai-ico{vertical-align:-4px;flex:none} .mrow .mi .ai-ico{vertical-align:middle}
 
 .bk-more{margin-top:6px}.bk-more>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);padding:6px 0;list-style:none}
-.bk-more>summary::before{content:"â–¸ ";}.bk-more[open]>summary::before{content:"â–¾ ";}
+.bk-more>summary::before{content:"\25B8 ";}.bk-more[open]>summary::before{content:"\25BE ";}
 .bk-err{margin:6px 0;color:#b4506a;font-size:13px}.bk-err .ui-btn,.bk-err .chip{margin-left:6px}
 
 /* å­˜å‚¨ç”¨é‡ï¼ˆjs/usage.jsï¼‰ï¼šæ‰‹æœºä¸Šä¸Šä¸‹å ã€ç”µè„‘ä¸Šæ•°å­—é å³ï¼›çŠ¶æ€é å›¾æ ‡ + æ–‡å­—ï¼Œä¸åªé é¢œè‰² */
@@ -877,8 +877,8 @@ body.sheet-open .minibar,body.printview .minibar{display:none}
 .att-opt{border:1px dashed var(--line);border-radius:var(--radius-sm);padding:0 12px;background:transparent}
 .att-opt > summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;font-size:14.5px;color:var(--slate);font-weight:600;list-style:none}
 .att-opt > summary::-webkit-details-marker{display:none}
-.att-opt > summary::before{content:"ï¼‹";font-weight:700}
-.att-opt[open] > summary::before{content:"ï¼"}
+.att-opt > summary::before{content:"\FF0B";font-weight:700}
+.att-opt[open] > summary::before{content:"\FF0D"}
 .att-opt[open]{padding-bottom:12px}
 .att-n{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--slate);color:var(--surface);font-size:12px}
 .att-body{display:flex;flex-direction:column;gap:10px}

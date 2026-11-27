@@ -157,7 +157,7 @@ function monthPlan(day){
 }
 function planView(){
   const r = ui().range, day = planDay();
-  return `<div class="seg" role="group" aria-label="${t("范围")}" style="margin:0 0 10px">${[["day", "日"], ["week", "周"], ["month", "月"]].map(([k, l]) => `<button data-tkr="${k}" aria-pressed="${r === k}">${t(l)}</button>`).join("")}</div>
+  return `<div class="ui-seg" data-fill role="group" aria-label="${t("范围")}" style="margin:0 0 10px">${[["day", "日"], ["week", "周"], ["month", "月"]].map(([k, l]) => `<button data-tkr="${k}" aria-pressed="${r === k}">${t(l)}</button>`).join("")}</div>
   ${r === "week" ? weekPlan(day) : r === "month" ? monthPlan(day) : dayPlan(day)}`;
 }
 
