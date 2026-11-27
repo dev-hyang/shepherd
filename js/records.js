@@ -6,13 +6,14 @@ import { PRESETS } from "./hero-presets-lib.js";
 import { draftToLog, filterLogs, groupByDay, logLine, logToDraft, modeFor, nameFor, recFields, recProblem, toTs } from "./records-lib.js";
 import * as pg from "./pager.js";
 import { closeSheet, openForm } from "./sheet.js";
-import { fbar } from "./ui.js";
+import { viewSwitchHTML } from "./shared/ui-viewsw.js";
+import { fab, fbar } from "./ui.js";
 import { render } from "./views.js";
 import * as wb from "./wb.js";
 
 /* ============ 回顾 → 记录：每条打卡一行 ============
    所有习惯（读经、祷告、锻炼、用药……）的打卡记录放在一起：能按习惯 / 时间范围筛选、搜索，
-   表格和时间线两种看法；每条能改日期、时间和内容，能删；「补记」可以指定哪天几点（距上次的计时也跟着准）。
+   表格和时间线两种看法；每条能改日期、时间和内容，能删；右下角 ＋（补记）可以指定哪天几点（距上次的计时也跟着准）。
    只显示自己的记录（家人的只在今天页「家人」里看完成情况）。逻辑在 records-lib.js。 */
 const RANGES = [[7, "近 7 天"], [30, "近 30 天"], [0, "全部"]];
 const ui = () => (S.rec ||= { pid: "all", days: 30, view: "table", q: "" });
@@ -24,11 +25,11 @@ const rowsAll = () => filterLogs(S.wb.logs, { pid: ui().pid, days: ui().days, q:
 function filterBar(){
   const u = ui(), act = (k, v) => `data-act="rec-f" data-k="${k}" data-v="${esc(v)}"`;
   const ps = S.wb.practices.filter(p => !p.archived);
-  return fbar({ id: "rec", title: t("记录"), q: { id: "recQ", value: u.q, ph: "搜索备注、内容" }, add: { attrs: 'data-act="rec-add"', label: "补记" }, groups: [
+  return fbar({ id: "rec", title: t("记录"), q: { id: "recQ", value: u.q, ph: "搜索备注、内容" }, groups: [
     { label: "习惯", opts: [{ label: t("全部"), attrs: act("pid", "all"), on: u.pid === "all" }, ...ps.map(p => ({ label: `${kindOf(p).icon} ${esc(p.name || t(kindOf(p).label))}`, attrs: act("pid", p.id), on: u.pid === p.id }))] },
     { label: "范围", opts: RANGES.map(([d, l]) => ({ label: t(l), attrs: act("days", d), on: u.days === d })) }] });
 }
-const viewSwitch = () => `<div class="chips recsw" style="margin:0" role="group" aria-label="${esc(t("显示方式"))}">${[["table", "表格"], ["line", "时间线"]].map(([v, l]) => `<button class="chip" data-act="rec-f" data-k="view" data-v="${v}" aria-pressed="${ui().view === v}">${t(l)}</button>`).join("")}</div>`;
+const viewSwitch = () => viewSwitchHTML([["table", "表格"], ["line", "时间线"]], ui().view, { attrs: 'data-act="rec-f" data-k="view"', label: "显示方式", t });
 const editBtn = l => `<button class="chip" data-act="rec-edit" data-id="${esc(l.id)}" aria-label="${esc(t("编辑"))}">${t("编辑")}</button>`;
 const wd = day => t("周{d}", { d: t(WEEKDAY[new Date(toTs(day, "")).getDay()]) });
 const who = l => `${iconOf(l)} ${esc(nameFor(l, pOf(l), t))}`;
@@ -44,7 +45,7 @@ function lineHTML(list){
 function viewRecords(){
   const all = rowsAll(), list = pg.page("rec", all);
   const body = !all.length ? `<div class="empty">${S.wb.logs.length ? t("没有符合的记录。") : t("还没有打卡记录。")}</div>` : ui().view === "line" ? lineHTML(list) : tableHTML(list);
-  return `${filterBar()}<div class="hl-listbar"><p class="small muted hl-count">${t("共 {n} 条", { n: all.length })} · ${t("只显示最近 12 周的自己的记录")}</p>${viewSwitch()}</div>${body}${pg.moreBtn("rec", all.length)}`;
+  return `${filterBar()}<div class="hl-listbar"><p class="small muted hl-count">${t("共 {n} 条", { n: all.length })} · ${t("只显示最近 12 周的自己的记录")}</p>${viewSwitch()}</div>${body}${pg.moreBtn("rec", all.length)}${fab('data-act="rec-add"', t("补记"))}`;
 }
 
 /* ---- 编辑 / 补记 ---- */

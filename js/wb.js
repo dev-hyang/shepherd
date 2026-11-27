@@ -140,18 +140,24 @@ function streak(p){
 }
 const stamp = p => (p.share === "family" && S.family) ? { family_id: S.family.id, share: "family" } : { family_id: null, share: "private" };
 async function upsertPractice(f){
-  const old = f.id ? practice(f.id) : null;
+  const old = f.id ? practice(f.id) : null, oldName = old ? old.name : "";
   const row = { user_id: me(), id: f.id || newId(), kind: f.kind || "custom", name: f.name || "", icon: f.icon || "", target: f.target || {}, schedule: f.schedule || {}, meta: f.meta || {},
     share: f.share === "family" ? "family" : "private", sort: f.sort ?? (old ? old.sort : S.wb.practices.length), active: f.active !== false, archived: !!f.archived, updated_at: nowIso() };
   Object.assign(row, stamp(row));
   const data = await run(SB.client.from("wb_practices").upsert(row).select().single());
   put(S.wb.practices, data);
+  if (old && oldName && oldName !== data.name) await stampOldName(data.id, oldName);
   if (old && (old.share !== data.share || old.family_id !== data.family_id)) {
     // 这项的打卡记录跟着改可见性
     await run(SB.client.from("wb_logs").update({ family_id: data.family_id, share: data.share }).eq("user_id", me()).eq("practice_id", data.id));
     S.wb.logs.forEach(l => { if (l.practice_id === data.id) { l.family_id = data.family_id; l.share = data.share; } });
   }
   return data;
+}
+/** 改名时：这项以前还没存名字的记录，盖上改名前的名字（以后再怎么改名，这些记录都保持当时的叫法） */
+async function stampOldName(pid, name){
+  const todo = S.wb.logs.filter(l => l.practice_id === pid && l.user_id === me() && !(l.data && l.data.pname));
+  for (let i = 0; i < todo.length; i += 20) await Promise.all(todo.slice(i, i + 20).map(l => updateLog(l.id, { pname: name })));
 }
 async function deletePractice(id){
   await run(SB.client.from("wb_practices").delete().eq("user_id", me()).eq("id", id));
@@ -166,6 +172,7 @@ async function applyTemplate(){
 /* ---- 打卡记录 ---- */
 async function addLog(kind, pid, data = {}, day = viewDay(), at = null){   // at：补记时指定的几点（毫秒）；不给就是现在，补记别的天默认中午
   const p = pid ? practice(pid) : null;
+  if (p && p.name && data.pname == null) data = { ...data, pname: p.name };   // 存下打卡当时的名字：习惯以后改名，以前的记录不跟着变
   const row = { user_id: me(), id: newId(), practice_id: p ? p.id : null, kind, day, ts: at ?? (day === S.day ? Date.now() : new Date(day + "T12:00:00").getTime()), data, updated_at: nowIso(), ...(p ? stamp(p) : { family_id: null, share: "private" }) };
   const d = await run(SB.client.from("wb_logs").insert(row).select().single()); S.wb.logs.push(d); return d;
 }

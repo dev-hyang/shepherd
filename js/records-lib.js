@@ -17,7 +17,8 @@ function toTs(day, time){
 
 /** 这条记录按哪种方式记的（没有对应习惯的读经 / 祷告记录按它自己的种类） */
 const modeFor = (log, p) => p ? modeOf(p) : modeOf({ kind: log.kind });
-const nameFor = (log, p, t) => p ? (p.name || t(kindOf(p).label)) : t(kindOf({ kind: log.kind }).label);
+/** 记录的名字：优先用打卡当时存下的名字（data.pname），习惯以后改名不会改掉以前的记录 */
+const nameFor = (log, p, t) => log.data && log.data.pname ? log.data.pname : p ? (p.name || t(kindOf(p).label)) : t(kindOf({ kind: log.kind }).label);
 
 /** 一行说明：「30 分钟 · 走路 · 备注」「服了 08:00」「好」… t：翻译函数 */
 function logLine(log, p, t){

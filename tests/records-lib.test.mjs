@@ -1,7 +1,7 @@
 // node --test tests/records-lib.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { toTs, dayOfTs, timeOfTs, logLine, filterLogs, groupByDay, recFields, logToDraft, draftToLog, recProblem } from "../js/records-lib.js";
+import { nameFor, toTs, dayOfTs, timeOfTs, logLine, filterLogs, groupByDay, recFields, logToDraft, draftToLog, recProblem } from "../js/records-lib.js";
 
 const t = (k, v) => (v ? k.replace(/\{(\w+)\}/g, (_, n) => v[n]) : k);
 const exercise = { id: "e", kind: "exercise", name: "" };
@@ -69,4 +69,10 @@ test("count mode (companion / rest presets): what, minutes, fallback", () => {
   assert.equal(recFields("count").some(f => f.k === "what"), false);
   const out = draftToLog({ day: "2026-11-24", time: "09:00", what: "eyes", minutes: null, note: "" }, "count", {});
   assert.equal(out.data.what, "eyes");
+});
+
+test("nameFor keeps the name saved at log time even after the practice is renamed", () => {
+  const renamed = { ...med, name: "布洛芬" };
+  assert.equal(nameFor(L({ practice_id: "m", kind: "med", data: { pname: "泰罗" } }), renamed, t), "泰罗");
+  assert.equal(nameFor(L({ practice_id: "m", kind: "med", data: {} }), renamed, t), "布洛芬");
 });
