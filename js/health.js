@@ -62,7 +62,8 @@ function viewHealth(){
   const addMenu = fabMenu(NEW.map(([k, l, ic]) => ({ icon: ic, label: t(l), attrs: `data-hl="${newAct(k)}"` })), t("记一笔"));
   // 详情页（单次就诊、单个化验项目）不在下拉框里：选中的是它们的上一级
   const body = { overview: overviewHTML, plan: planHTML, workout: workoutHTML, diet: dietHTML, visits: visitsListHTML, visit: visitDetailHTML, labs: labsHTML, lab: labItemHTML, measures: measuresHTML, profile: profileHTML }[ui.view] || overviewHTML;
-  return `<div class="hl-wrap ${ui.show ? "" : "hl-masked"}">${healthRoute(ui)}${filterBar(ui, ppl)}${body(who)}
+  const bodyHtml = body(who);   // 先画页面：页面自己的搜索 / 筛选项登记给 filterBar，合并成一条
+  return `<div class="hl-wrap ${ui.show ? "" : "hl-masked"}">${healthRoute(ui)}${filterBar(ui, ppl, t((VIEWS.find(x => x[0] === parentView(ui.view)) || VIEWS[0])[1]))}${bodyHtml}
     <p class="small muted hl-foot">${t("这里只做记录和按公开指南的提醒，不是诊断；有疑问以医生意见为准。家里的人都看得到这家人的健康记录。")}</p>${addMenu}</div>`;
 }
 

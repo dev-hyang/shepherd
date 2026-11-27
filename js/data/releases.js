@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.20", title: { zh: "筛选面板改成下拉，健康筛选合并成一条", en: "Filter panel uses dropdowns; Health filters merged into one bar" }, items: [
+    { k: "better", zh: "各页的筛选面板里，每一项都改成「名字 + 下拉」，不再是一排按钮。", en: "In every filter panel each item is now a labelled dropdown instead of a row of chips." },
+    { k: "better", zh: "健康页只有一条筛选栏：最左边是页面名（如「就诊」），然后是搜索框和「筛选」；人员、数值显示、类型、地点、排序等都在筛选面板里。", en: "Health has a single filter bar: page name (e.g. Visits) on the left, then search and Filter; person, value display, type, place and sort are all inside the panel." },
+    { k: "better", zh: "去掉就诊页的「＋ 就诊」按钮，新增用右下角的 ＋。", en: "Removed the “+ Visit” button; use the + at the bottom right." }
+  ] },
   { v: "2026-11-26.19", title: { zh: "目录按大类折叠", en: "Directory folds by section" }, items: [
     { k: "better", zh: "「目录」默认按大类收起：今天、任务、健康、祷告、我的；点右边的 › 展开其中一类，展开一类时其他的自动收起。", en: "Directory is collapsed by section by default (Today, Tasks, Health, Prayer, Me); tap › to expand one, which collapses the others." },
     { k: "better", zh: "点大类名字直接去那一页；当前页打勾，所在的大类用强调色提示。", en: "Tap a section name to open that page; the current page is checked and its section is tinted." }

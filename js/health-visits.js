@@ -9,7 +9,8 @@ import { ageYears, labFlag, labName, rangeText } from "./health-lib.js";
 import { UI, fmtDay, lang, openVisit, profileData, visitCard, vitalsText } from "./health.js";
 import * as hl from "./hl.js";
 import * as pg from "./pager.js";
-import { fbar, secHead } from "./ui.js";
+import { secHead } from "./ui.js";
+import { setPageBar } from "./health-nav.js";
 import { render, renderBg } from "./views.js";
 
 /* ============ 健康 · 就诊（2026-11-03） ============
@@ -49,14 +50,14 @@ function visitsListHTML(who){
     ...(years.length > 1 ? [{ label: "年份", opts: [opt("year", "all", t("全部")), ...years.map(y => opt("year", y, y, all.filter(v => v.day.startsWith(y)).length))] }] : []),
     { label: "复诊", opts: [opt("fu", "false", t("不限")), opt("fu", "true", t("只看有复诊日期的"))] }
   ];
-  const chipRow = (label, items) => `<div class="fgroup hl-fextra"><div class="flab">${t(label)}</div><div class="chips" style="margin:0">${items.join("")}</div></div>`;
-  const extra = chipRow("排序", [["new", "新 → 旧"], ["old", "旧 → 新"], ["kind", "按类型"]].map(([v, l]) => `<button class="chip" data-hl="vf" data-k="sort" data-v="${v}" aria-pressed="${f.sort === v}">${t(l)}</button>`))
-    + chipRow("每页", pg.SIZES.filter(n => n >= 10).map(n => `<button class="chip" data-hl="vf-size" data-v="${n}" aria-pressed="${pg.pageSize() === n}">${n}</button>`));
-  const bar = fbar({ id: "hlVisits", groups, q: { id: "hlVq", value: f.q, ph: "搜索：医生、地点、原因、诊断、建议" }, add: { attrs: 'data-hl="new-visit"', label: "就诊" }, extra });
+  // 排序、每页条数也放进同一个筛选面板（plain = 不算筛选）；整条栏由 health-nav 的 filterBar 合并：[就诊] [搜索] [筛选]，不再单独放「＋ 就诊」（右下角 ＋ 菜单里有）
+  groups.push({ label: "排序", plain: true, opts: [["new", "新 → 旧"], ["old", "旧 → 新"], ["kind", "按类型"]].map(([v, l]) => ({ label: t(l), attrs: `data-hl="vf" data-k="sort" data-v="${v}"`, on: f.sort === v })) },
+    { label: "每页", plain: true, opts: pg.SIZES.filter(n => n >= 10).map(n => ({ label: String(n), attrs: `data-hl="vf-size" data-v="${n}"`, on: pg.pageSize() === n })) });
+  setPageBar({ q: { id: "hlVq", value: f.q, ph: "搜索：医生、地点、原因、诊断、建议" }, groups });
   const shown = pg.page("hlVisits", list);
   const body = !list.length ? `<div class="panel empty">${t("没有符合筛选的就诊。")}</div>` : f.mode === "timeline" ? timelineHTML(shown) : rowsHTML(shown);
   const modes = viewSwitchHTML([["rows", "行"], ["timeline", "时间线"]], f.mode === "timeline" ? "timeline" : "rows", { attrs: 'data-hl="vf" data-k="mode"', label: "显示方式", t });
-  return `${bar}<div class="hl-listbar"><p class="small muted hl-count">${t("{a} / {b} 次就诊", { a: list.length, b: all.length })}${f.sort !== "new" ? ` · ${t({ old: "旧 → 新", kind: "按类型" }[f.sort])}` : ""}</p>${modes}</div>${body}${pg.moreBtn("hlVisits", list.length)}`;
+  return `<div class="hl-listbar"><p class="small muted hl-count">${t("{a} / {b} 次就诊", { a: list.length, b: all.length })}${f.sort !== "new" ? ` · ${t({ old: "旧 → 新", kind: "按类型" }[f.sort])}` : ""}</p>${modes}</div>${body}${pg.moreBtn("hlVisits", list.length)}`;
 }
 function rowsHTML(list){
   return `<div class="panel mlist hl-vrows">${list.map(v => { const k = VISIT_KINDS[v.kind] || VISIT_KINDS.other, labs = S.hl.labs.filter(x => x.visit_id === v.id), bad = labs.filter(labFlag).length;

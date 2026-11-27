@@ -1102,3 +1102,13 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
 
 /* 目录面板：折叠树（shared/ui-tree.js）比平铺列表宽一点 */
 .crumb .dirmenu{width:280px}
+
+/* ===== 筛选条（2026-11-26.20）：[页面名] [搜索] [筛选]；面板里每组一个下拉（左名字、右下拉），和爱家小助手一致 ===== */
+.ftitle{flex:none;font-family:var(--f-head);font-size:17px;font-weight:700;margin-right:4px}
+.fbar:has(.ftitle):not(:has(.fq)) .ftitle{margin-right:auto}
+.fpop-fields{display:flex;flex-direction:column;gap:10px}
+.ffield{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}
+.ffield > .flab{margin:0;flex:none;font-size:14px;font-weight:600;color:var(--ink)}
+.ffield > select{flex:0 1 60%;width:60%;min-width:0;height:44px;border:1px solid var(--line);background:var(--field);border-radius:var(--ctl-r);padding:0 10px;font-size:15px}
+@media (max-width:640px),(pointer:coarse){.ffield > select{font-size:16px}}
+@media (max-width:560px){.fbar > .fpop{left:0;right:0;width:auto}}   /* 手机：筛选面板铺满一行 */

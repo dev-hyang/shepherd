@@ -24,7 +24,7 @@ const rowsAll = () => filterLogs(S.wb.logs, { pid: ui().pid, days: ui().days, q:
 function filterBar(){
   const u = ui(), act = (k, v) => `data-act="rec-f" data-k="${k}" data-v="${esc(v)}"`;
   const ps = S.wb.practices.filter(p => !p.archived);
-  return fbar({ id: "rec", q: { id: "recQ", value: u.q, ph: "搜索备注、内容" }, add: { attrs: 'data-act="rec-add"', label: "补记" }, groups: [
+  return fbar({ id: "rec", title: t("记录"), q: { id: "recQ", value: u.q, ph: "搜索备注、内容" }, add: { attrs: 'data-act="rec-add"', label: "补记" }, groups: [
     { label: "习惯", opts: [{ label: t("全部"), attrs: act("pid", "all"), on: u.pid === "all" }, ...ps.map(p => ({ label: `${kindOf(p).icon} ${esc(p.name || t(kindOf(p).label))}`, attrs: act("pid", p.id), on: u.pid === p.id }))] },
     { label: "范围", opts: RANGES.map(([d, l]) => ({ label: t(l), attrs: act("days", d), on: u.days === d })) }] });
 }

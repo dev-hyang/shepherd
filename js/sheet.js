@@ -167,7 +167,7 @@ function openHabits(filter){
   const addAttr = f === "meds" ? 'data-act="habit-add-kind" data-kind="med"' : 'data-act="habit-add"';
   $("#sheetIn").innerHTML = `${head(t("习惯与用药"))}
   <div class="seg eq" role="group" aria-label="${t("分类")}">${tabs.map(([k, l]) => `<button data-hf="${k}" aria-pressed="${f === k}">${t(l)} <span class="cnt">${groups[k].length}</span></button>`).join("")}</div>
-  ${fbar({ id: "hb", q: all.length > 5 ? { id: "habQ", value: S.habitsQ || "", ph: "搜索习惯、药名" } : null, add: { attrs: addAttr, label: f === "meds" ? "用药" : "新增" } })}
+  ${fbar({ id: "hb", title: t("习惯与用药"), q: all.length > 5 ? { id: "habQ", value: S.habitsQ || "", ph: "搜索习惯、药名" } : null, add: { attrs: addAttr, label: f === "meds" ? "用药" : "新增" } })}
   <div class="panel" style="padding:4px 10px">${body}</div>
   <p class="small muted">${t("点一项编辑目标、日子、时间点和提醒。“家人可见”只分享做了没有；删除先归档，归档后再删才会连记录一起删。")}${!S.family ? " " + t("加入家庭后才能开给家人看。") : ""}</p>`;
   showSheet();

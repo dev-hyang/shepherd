@@ -50,10 +50,16 @@ document.addEventListener("submit", async ev => {
   requestAnimationFrame(() => { const i = $("#tkQuick"); if (i) i.focus(); });
 });
 document.addEventListener("change", ev => { if (ev.target && ev.target.matches && ev.target.matches("select[data-redraw]") && getForm()) { readForm(); drawForm(); } });   // 表单里的下拉改了就重画（form-fields.js 的 redraw）
+document.addEventListener("change", ev => {   // 筛选面板里的下拉（ui.js fbar）：选一项 = 点一下它带的 data-* 隐形按钮，页面原来的点击处理照常工作
+  const s = ev.target; if (!s || !s.matches || !s.matches("select[data-fsel]")) return;
+  const a = s.selectedOptions[0] && s.selectedOptions[0].dataset.a; if (!a) return;
+  const host = document.createElement("div"); host.innerHTML = `<button type="button" hidden data-fsel-proxy ${a}></button>`;
+  const btn = host.firstElementChild; document.body.appendChild(btn); btn.click(); btn.remove();
+});
 document.addEventListener("change", ev => { if (ev.target && ev.target.id === "tkPrio") { S.tkUi.prio = ev.target.value; pg.reset("tkList"); render(); } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "f_reflection") nts.growText(); });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "prayQ") { S.prayerFilter.q = ev.target.value; pg.reset("prayers"); redrawSearch("prayQ"); } });
-document.addEventListener("click", ev => { if (S.fpop && !ev.target.closest(".fbar-wrap")) closePop(); });
+document.addEventListener("click", ev => { if (S.fpop && !ev.target.closest(".fbar-wrap, [data-fsel-proxy]")) closePop(); });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "habQ") { S.habitsQ = ev.target.value; openHabits(); const i = $("#habQ"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "recQ") { setQ(ev.target.value); redrawSearch("recQ"); } });
 document.addEventListener("input", ev => { if (ev.target && ev.target.id === "ntQ") nts.onSearch(ev.target.value); });

@@ -183,7 +183,7 @@ function listView(){
       ${ss.map(g => `<h3 class="tk-h" style="margin:8px 4px 2px">${esc(tk.subName(c, g.s))} <span class="muted small">${g.list.length}</span></h3><div class="panel" style="padding:4px 10px">${rows(g.part, { showDue: true })}</div>`).join("")}</details>`;
   }).join("");
   const opt = (key, v, label, on, count) => ({ label, attrs: `data-tkf="${key}" data-v="${esc(v)}"`, on, count });
-  const bar = fbar({ id: "tk", q: { id: "tkQ", value: f.q, ph: "搜索任务" }, 
+  const bar = fbar({ id: "tk", title: t("清单"), q: { id: "tkQ", value: f.q, ph: "搜索任务" }, 
     groups: [
       { label: "状态", opts: [["open", "待办"], ["done", "已完成"], ["dropped", "放弃的"]].map(([v, l]) => opt("st", v, t(l), f.st === v)) },
       { label: "优先级", opts: [["all", "全部"], ["any", "有优先级"], ["hi", "只看高"]].map(([v, l]) => opt("prio", v, t(l), f.prio === v)) },

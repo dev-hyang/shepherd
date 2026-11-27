@@ -32,16 +32,22 @@ const fab = (attrs, label) => `<button type="button" class="fab" ${attrs} aria-l
 const pageHead = (title, actions = "") => `<div class="page-head"><h1>${title}</h1>${actions ? `<span class="sec-acts">${actions}</span>` : ""}</div>`;
 const chipBtn = (label, attrs, cls = "") => `<button class="chip ${cls}" ${attrs}>${label}</button>`;
 
-/** groups: [{ label, opts: [{ label, attrs, on, count? }] }]，每组第一个选项是“不筛选”。q: { id, value, ph }。add: { attrs, label }。extra：面板底部的额外按钮 HTML */
-function fbar({ id, groups = [], q = null, add = null, extra = "" }){
-  const sel = groups.map(g => ({ g, cur: g.opts.find(o => o.on) })).filter(x => x.cur && x.cur !== x.g.opts[0]);
+/** 面板里每组一个下拉（和爱家小助手的筛选面板一样：左边名字，右边下拉）。选项带着原来的 data-* 属性串（data-a），选了以后由 events.js 的 change 处理点一下对应的“隐形按钮”，页面原来的点击处理照常工作。 */
+const optText = o => `${String(o.label).replace(/<[^>]+>/g, "")}${o.count != null ? ` (${o.count})` : ""}`;
+const ffield = g => `<div class="ffield"><label class="flab" for="fsel-${esc(g.id)}">${esc(t(g.label))}</label><select id="fsel-${esc(g.id)}" data-fsel data-nosearch>${g.opts.map(o => `<option value="" data-a="${esc(o.attrs)}" ${o.on ? "selected" : ""}>${optText(o)}</option>`).join("")}</select></div>`;
+/** groups: [{ label, plain?, opts: [{ label, attrs, on, count? }] }]，每组第一个选项是“不筛选”；plain = 排序、每页条数这类不算筛选的（不计数、不出小标签）。
+    q: { id, value, ph }。add: { attrs, label }。title：条最左边的页面名。 */
+function fbar({ id, groups = [], q = null, add = null, title = "" }){
+  const gs = groups.map((g, i) => ({ ...g, id: `${id}-${i}` }));
+  const sel = gs.filter(g => !g.plain).map(g => ({ g, cur: g.opts.find(o => o.on) })).filter(x => x.cur && x.cur !== x.g.opts[0]);
   const open = S.fpop === id;
-  const pop = groups.length || extra ? `<div class="fpop" id="fpop-${id}" ${open ? "" : "hidden"} role="group" aria-label="${esc(t("筛选"))}"><div class="fpop-head"><b>${t("筛选")}</b></div>
-    ${groups.map(g => `<div class="fgroup"><div class="flab">${esc(t(g.label))}</div><div class="chips" style="margin:0">${g.opts.map(o => `<button class="chip" ${o.attrs} aria-pressed="${!!o.on}">${o.label}${o.count != null ? ` <span class="cnt">${o.count}</span>` : ""}</button>`).join("")}</div></div>`).join("")}
-    <div class="fpop-foot">${extra}<button class="chip" data-fpop="close" style="margin-left:auto">${t("完成")}</button></div></div>` : "";
+  const pop = gs.length ? `<div class="fpop" id="fpop-${id}" ${open ? "" : "hidden"} role="group" aria-label="${esc(t("筛选"))}"><div class="fpop-head"><b>${t("筛选")}</b></div>
+    <div class="fpop-fields">${gs.map(ffield).join("")}</div>
+    <div class="fpop-foot"><button class="chip" data-fpop="close" style="margin-left:auto">${t("完成")}</button></div></div>` : "";
   return `<div class="fbar-wrap"><div class="fbar">
+    ${title ? `<b class="ftitle">${esc(title)}</b>` : ""}
     ${q ? `<input type="search" id="${q.id}" class="fq" value="${esc(q.value)}" placeholder="${esc(t(q.ph))}" aria-label="${esc(t(q.ph))}" enterkeyhint="search" autocomplete="off">` : ""}
-    ${groups.length ? `<button class="fbtn ${sel.length ? "on" : ""}" data-fpop="${id}" aria-expanded="${open}" aria-controls="fpop-${id}">${ICON_FILTER}<span>${t("筛选")}</span>${sel.length ? `<b class="fn">${sel.length}</b>` : ""}</button>` : ""}
+    ${gs.length ? `<button class="fbtn ${sel.length ? "on" : ""}" data-fpop="${id}" aria-expanded="${open}" aria-controls="fpop-${id}">${ICON_FILTER}<span>${t("筛选")}</span>${sel.length ? `<b class="fn">${sel.length}</b>` : ""}</button>` : ""}
     ${add ? `<button class="ui-btn fadd" data-tone="primary" ${add.attrs}>＋ ${t(add.label)}</button>` : ""}
     ${pop}</div>
     ${sel.length ? `<div class="fsum">${sel.map(({ g, cur }) => `<button class="fchip" ${g.opts[0].attrs} aria-label="${esc(t("清除"))}">${esc(t(g.label))}：${cur.label} ✕</button>`).join("")}</div>` : ""}</div>`;

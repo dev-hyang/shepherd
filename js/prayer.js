@@ -44,7 +44,7 @@ function viewPray(){
     <button class="main" data-act="prayer-edit" data-id="${esc(p.id)}"><span class="title">${esc(p.text)}</span><span class="meta"><span class="ui-badge" data-tone="accent">${t(PRAYER_CATS[p.category] || "")}</span> ${p.status === "answered" ? t("{d} 应允", { d: p.answered_on || "" }) + (p.answer ? ` · ${esc(p.answer)}` : "") : `${ago(p.last_prayed)}${p.times ? ` · ${t("共 {n} 次", { n: p.times })}` : ""}`}</span></button>
     <span class="acts">${p.status === "answered" ? `<button class="chip" data-act="prayer-reopen" data-id="${esc(p.id)}">${t("继续代祷")}</button>` : `<button class="chip" data-act="prayer-prayed" data-id="${esc(p.id)}">${p.last_prayed === day ? t("再记一次") : t("祷告了")}</button><button class="chip" data-act="prayer-answered" data-id="${esc(p.id)}">${t("应允了")}</button>`}</span></div>`;
   const opt = (attr, v, label, on, count) => ({ label, attrs: `${attr}="${v}"`, on, count });
-  const bar = fbar({ id: "pray", q: { id: "prayQ", value: f.q || "", ph: "搜索代祷事项" },
+  const bar = fbar({ id: "pray", title: t("代祷"), q: { id: "prayQ", value: f.q || "", ph: "搜索代祷事项" },
     groups: [
       { label: "状态", opts: [["open", "代祷中", open.length], ["answered", "已应允", answered.length], ["all", "全部", all.length]].map(([v, l, c]) => opt("data-pf-status", v, t(l), f.status === v, c)) },
       { label: "分类", opts: [opt("data-pf-cat", "all", t("全部"), f.cat === "all"), ...Object.entries(PRAYER_CATS).map(([k, l]) => opt("data-pf-cat", k, t(l), f.cat === k))] }] });

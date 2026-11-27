@@ -9,10 +9,14 @@ import { fbar } from "./ui.js";
    · 人员（第一个 = 我自己，默认就是当前登录的人；选了别人会在条下面显示成可点掉的小标签）
    · 眼睛：健康数值默认遮挡（模糊），打开后显示；每次从别的页进健康页都重新遮上。遮挡只是视觉模糊，不改数据。
    页面的目录按钮在路径栏里（ui.crumbHTML），新增用右下角 ＋ 展开的小菜单（ui.fabMenu）。 */
-function filterBar(ui, ppl){
+/* 页面自己的搜索框 / 筛选项（就诊列表等）先登记在这里，下面的 filterBar 合并成同一条：[页面名] [搜索] [筛选]（人员、数值显示 + 页面自己的项都在筛选面板里） */
+let pageBar = null;
+const setPageBar = spec => { pageBar = spec; };
+function filterBar(ui, ppl, title = ""){
   const who = { label: "人员", opts: ppl.map(p => ({ label: `${p.kid ? "🧒 " : ""}${p.name}${p.me ? ` (${t("我")})` : ""}`, attrs: `data-hl="who" data-key="${p.key}"`, on: p.key === ui.who })) };
   const eye = { label: "👁 健康数值", opts: [{ label: t("隐藏"), attrs: 'data-hl="eye" data-v="0"', on: !ui.show }, { label: t("显示"), attrs: 'data-hl="eye" data-v="1"', on: !!ui.show }] };
-  return fbar({ id: "hl", groups: [who, eye] });
+  const pb = pageBar || {}; pageBar = null;
+  return fbar({ id: "hl", title, q: pb.q || null, groups: [who, eye, ...(pb.groups || [])] });
 }
 
 /** 概览顶部四张卡：待办、上次就诊、异常化验、近 30 天测量。只放条数和日期，不放数值 */
@@ -29,4 +33,4 @@ function summaryHTML(who, data){
     ${kpiCard({ label: `⚖ ${t("近 30 天测量")}`, value: meas.length, unit: t("次"), sub: lm ? t("最近 {d}", { d: lm.day.slice(5).replace("-", "/") }) : t("还没有记录"), target: "hl:measures" })}</div>`;
 }
 
-export { filterBar, summaryHTML };
+export { filterBar, setPageBar, summaryHTML };
