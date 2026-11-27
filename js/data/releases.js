@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-27.9", title: { zh: "「今天」下面直接是四个页面；进度条慢慢走；轮播可绕回", en: "Today now holds its four pages directly; progress fills gradually; carousel wraps" }, items: [
+    { k: "better", zh: "「目录」里不再有「习惯」这一层：今日打卡、回顾、记录、顶部卡片直接放在「今天」下面；路径栏和网址也跟着改成 今天 / 回顾 这样（旧网址仍能打开）。", en: "The Directory no longer has a Habits level: Check-in, Review, Records and Top cards sit directly under Today; the path bar and URLs follow (old URLs still work)." },
+    { k: "fix", zh: "顶部卡片下面的进度横条现在是慢慢变长直到换下一张，而不是最后一下子变满。", en: "The progress dashes under the top cards now fill gradually before switching, instead of jumping to full at the end." },
+    { k: "new", zh: "手指在最后一张卡片还往前滑，会回到第一张（在第一张往回滑则到最后一张）。", en: "Swiping forward on the last card wraps to the first (and backward on the first goes to the last)." }
+  ] },
   { v: "2026-11-27.8", title: { zh: "记录点一行编辑、左滑删除；顶部卡片可循环、自动切换", en: "Tap a record to edit, swipe to delete; top cards loop and auto-advance" }, items: [
     { k: "better", zh: "今天页底部的记录和 习惯 / 记录：去掉每行的「编辑」「删除」按钮，改成点一行编辑、向左滑删除（任务那行是编辑任务、撤销完成）。", en: "In Today's records and Habits / Records the Edit and Delete buttons are gone: tap a row to edit, swipe left to delete (task rows: edit the task, undo completion)." },
     { k: "fix", zh: "吃药的记录不再显示「--:--」，也不再附带时间点。", en: "Medicine records no longer show --:-- or a time slot." },

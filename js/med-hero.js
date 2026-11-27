@@ -1,4 +1,4 @@
-import { dashBarHTML, dashGearHTML, dashSecs, markDash, watchDashCycle } from "./shared/ui-dashbar.js";
+import { dashBarHTML, dashGearHTML, dashSecs, markDash, watchCarouselLoop, watchDashCycle } from "./shared/ui-dashbar.js";
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc, hm } from "./core/util.js";
@@ -60,6 +60,7 @@ function goHero(i){ const el = track(); if (el) el.scrollTo({ left: i * (el.clie
 /** 上一张 / 下一张，循环：最后一张再往后回到第一张（自动切换走满也是这样） */
 function stepHero(d){ const n = document.querySelectorAll(".herobox .ui-dash").length; if (n > 1) goHero((((S.heroIdx || 0) + d) % n + n) % n); }
 watchDashCycle({ key: "shepherd.cardSecs", next: () => stepHero(1) });
+watchCarouselLoop(".herotrack");   // 手指在最后一张还往前滑 → 回到第一张（反过来也一样）
 // 手滑时记下停在哪一张、同步小圆点（scroll 不冒泡，用捕获）
 document.addEventListener("scroll", e => {
   const el = e.target; if (!el || el.id !== "heroTrack") return;
