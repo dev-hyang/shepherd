@@ -7,14 +7,14 @@ import { PRESETS } from "./hero-presets-lib.js";
 import { draftToLog, filterLogs, groupByDay, logLine, logToDraft, modeFor, nameFor, recFields, recProblem, toTs } from "./records-lib.js";
 import * as pg from "./pager.js";
 import { closeSheet, openForm } from "./sheet.js";
-import { viewSwitchHTML } from "./shared/ui-viewsw.js";
-import { fab, fbar, secHead } from "./ui.js";
+import { recListBarHTML, recListHTML } from "./shared/ui-reclist.js";
+import { fab, fbar } from "./ui.js";
 import { render } from "./views.js";
 import * as wb from "./wb.js";
 
 /* ============ 回顾 → 记录：每条打卡一行 ============
    所有习惯（读经、祷告、锻炼、用药……）的打卡记录放在一起：能按习惯 / 时间范围筛选、搜索，
-   表格和时间线两种看法；每条能改日期、时间和内容，能删；右下角 ＋（补记）可以指定哪天几点（距上次的计时也跟着准）。
+   列表和时间轴两种看法；每条能改日期、时间和内容，能删；右下角 ＋（补记）可以指定哪天几点（距上次的计时也跟着准）。
    只显示自己的记录（家人的只在今天页「家人」里看完成情况）。逻辑在 records-lib.js。 */
 const RANGES = [[7, "近 7 天"], [30, "近 30 天"], [0, "全部"]];
 const ui = () => (S.rec ||= { pid: "all", days: 30, view: "table", q: "" });
@@ -31,34 +31,34 @@ function filterBar(){
     { label: "习惯", opts: [{ label: t("全部"), attrs: act("pid", "all"), on: u.pid === "all" }, ...ps.map(p => ({ label: `${kindOf(p).icon} ${esc(p.name || t(kindOf(p).label))}`, attrs: act("pid", p.id), on: u.pid === p.id }))] },
     { label: "范围", opts: RANGES.map(([d, l]) => ({ label: t(l), attrs: act("days", d), on: u.days === d })) }] });
 }
-const viewSwitch = () => viewSwitchHTML([["table", "表格"], ["line", "时间线"]], ui().view, { attrs: 'data-act="rec-f" data-k="view"', label: "显示方式", t });
 /** 每行的「编辑 / 删除」：习惯记录开编辑表单、删掉；任务完成记录打开任务、撤销完成（任务重新打开） */
-const editBtn = l => (isTask(l) ? (tk.task((l.data || {}).task_id) ? `<button class="chip" data-act="tk-edit" data-tid="${esc(l.data.task_id)}" aria-label="${esc(t("编辑"))}">${t("编辑")}</button>` : "") : `<button class="chip" data-act="rec-edit" data-id="${esc(l.id)}" aria-label="${esc(t("编辑"))}">${t("编辑")}</button>`)
-  + (isTask(l) ? `<button class="chip" data-act="tk-undo-log" data-lid="${esc(l.id)}" aria-label="${esc(t("撤销完成"))}">${t("撤销完成")}</button>` : `<button class="chip" data-act="rec-del" data-id="${esc(l.id)}" aria-label="${esc(t("删除"))}">${t("删除")}</button>`);
+const editBtn = l => (isTask(l) ? (tk.task((l.data || {}).task_id) ? `<button class="ui-btn" data-size="sm" data-tone="ghost" data-act="tk-edit" data-tid="${esc(l.data.task_id)}" aria-label="${esc(t("编辑"))}">${t("编辑")}</button>` : "") : `<button class="ui-btn" data-size="sm" data-tone="ghost" data-act="rec-edit" data-id="${esc(l.id)}" aria-label="${esc(t("编辑"))}">${t("编辑")}</button>`)
+  + (isTask(l) ? `<button class="ui-btn" data-size="sm" data-tone="ghost" data-act="tk-undo-log" data-lid="${esc(l.id)}" aria-label="${esc(t("撤销完成"))}">${t("撤销完成")}</button>` : `<button class="ui-btn" data-size="sm" data-tone="ghost" data-act="rec-del" data-id="${esc(l.id)}" aria-label="${esc(t("删除"))}">${t("删除")}</button>`);
 const wd = day => t("周{d}", { d: t(WEEKDAY[new Date(toTs(day, "")).getDay()]) });
 const nameOf = l => isTask(l) ? ((l.data || {}).title || t("任务")) : nameFor(l, pOf(l), t);
 const who = l => `${iconOf(l)} ${esc(nameOf(l))}`;
 
-function tableHTML(list){
-  return `<table class="rectable"><thead><tr><th>${t("时间")}</th><th>${t("事项")}</th><th>${t("记录")}</th><th></th></tr></thead><tbody>${list.map(l =>
-    `<tr><td class="rt-when"><b>${esc(l.day.slice(5).replace("-", "/"))}</b> <span class="muted">${esc(wd(l.day))} ${hm(l.ts)}</span></td><td class="rt-who">${who(l)}</td><td class="rt-line">${esc(lineOf(l))}</td><td class="rt-act">${editBtn(l)}</td></tr>`).join("")}</tbody></table>`;
-}
-function lineHTML(list, { noDay = false } = {}){
-  return groupByDay(list).map(g => `${noDay ? "" : `<h3 class="recday">${esc(g.day.slice(5).replace("-", "/"))} <small class="muted">${esc(wd(g.day))}${g.day === S.day ? ` · ${t("今天")}` : ""}</small></h3>`}
-    <ol class="recline">${g.items.map(l => `<li><span class="rl-time num">${hm(l.ts)}</span><span class="rl-dot" aria-hidden="true">${iconOf(l)}</span><div class="rl-body"><b>${esc(nameOf(l))}</b><div class="small muted">${esc(lineOf(l))}</div></div>${editBtn(l)}</li>`).join("")}</ol>`).join("");
-}
+/** 一条记录 → 统一记录列表（shared/ui-reclist.js）的一行：颜色用习惯 / 任务分类的颜色 */
+const colorOf = l => isTask(l) ? tk.catOf((l.data || {}).cat).color : kindOf(pOf(l) || { kind: l.kind }).color;
+const itemOf = l => ({ id: l.id, ts: l.ts, time: hm(l.ts), color: colorOf(l), icon: iconOf(l), title: nameOf(l), sub: lineOf(l), acts: editBtn(l) });
+const styleOf = () => (ui().style === "axis" ? "axis" : "rows");
+const gapText = ms => { const m = Math.round(ms / 60000), h = Math.floor(m / 60); return h ? (m % 60 ? t("{h} 小时 {m} 分", { h, m: m % 60 }) : t("{h} 小时", { h })) : t("{m} 分钟", { m }); };
+const listOf = items => recListHTML(items.map(itemOf), { style: styleOf(), gapText });
+/** 一天一段：「11/27 周五」标题 + 这天的记录；今天页只有一天，不要标题 */
+const dayBlocks = (list, { noDay = false } = {}) => groupByDay(list).map(g => `${noDay ? "" : `<h3 class="recday">${esc(g.day.slice(5).replace("-", "/"))} <small class="muted">${esc(wd(g.day))}${g.day === S.day ? ` · ${t("今天")}` : ""}</small></h3>`}${listOf(g.items)}`).join("");
+const styleBar = left => recListBarHTML({ left, style: styleOf(), attrs: 'data-act="rec-style"', t });
 function viewRecords(){
   const all = rowsAll(), list = pg.page("rec", all);
-  const body = !all.length ? `<div class="empty">${S.wb.logs.length ? t("没有符合的记录。") : t("还没有打卡记录。")}</div>` : ui().view === "line" ? lineHTML(list) : tableHTML(list);
-  return `${filterBar()}<div class="hl-listbar"><p class="small muted hl-count">${t("共 {n} 条", { n: all.length })} · ${t("只显示最近 12 周的自己的记录")}</p>${viewSwitch()}</div>${body}${pg.moreBtn("rec", all.length)}${fab('data-act="rec-add"', t("补记"))}`;
+  const body = !all.length ? `<div class="empty">${S.wb.logs.length ? t("没有符合的记录。") : t("还没有打卡记录。")}</div>` : dayBlocks(list);
+  return `${filterBar()}${styleBar(`<p class="small muted hl-count" style="margin:0">${t("共 {n} 条", { n: all.length })} · ${t("只显示最近 12 周的自己的记录")}</p>`)}${body}${pg.moreBtn("rec", all.length)}${fab('data-act="rec-add"', t("补记"))}`;
 }
 
-/** 今天页底部：这一天做过的所有事（习惯、读经、祷告、任务完成……）放在一起，表格 / 时间线两种看法，每行能改、能删 */
+/** 今天页底部：这一天做过的所有事（习惯、读经、祷告、任务完成……）放在一起，列表 / 时间轴两种看法，每行能改、能删 */
 function todayRecordsHTML(day){
-  const list = S.wb.logs.filter(l => l.day === day).sort((a, b) => b.ts - a.ts), u = ui(), view = u.tview || "line";
-  const sw = viewSwitchHTML([["table", "表格"], ["line", "时间线"]], view, { attrs: 'data-act="rec-tv"', label: "显示方式", t });
-  const body = !list.length ? `<div class="empty">${t(day === S.day ? "今天还没有记录。" : "这天没有记录。")}</div>` : view === "table" ? tableHTML(list) : lineHTML(list, { noDay: true });
-  return `${secHead(t(day === S.day ? "今天的记录" : "当天的记录"), "", list.length ? t("{n} 条", { n: list.length }) : "")}<div class="ui-vsw-bar">${sw}</div>${body}`;
+  const list = S.wb.logs.filter(l => l.day === day).sort((a, b) => b.ts - a.ts);
+  const title = `<h2 style="margin:0">${t(day === S.day ? "今天的记录" : "当天的记录")}${list.length ? ` <span class="small muted">${t("{n} 条", { n: list.length })}</span>` : ""}</h2>`;
+  if (!list.length) return `<div class="ui-recbar"><div class="ui-recbar-l">${title}</div></div><div class="empty">${t(day === S.day ? "今天还没有记录。" : "这天没有记录。")}</div>`;
+  return `${styleBar(title)}${dayBlocks(list, { noDay: true })}`;
 }
 
 /* ---- 编辑 / 补记 ---- */
@@ -94,7 +94,7 @@ async function recAct(act, d){
     case "rec-new": pickPractice(d.pid); break;
     case "rec-add": pickPractice(ui().pid !== "all" ? ui().pid : ""); break;
     case "rec-open": { ui().pid = d.pid || "all"; S.tab = "records"; S.fpop = null; pg.reset("rec"); render(); window.scrollTo(0, 0); break; }
-    case "rec-tv": ui().tview = d.v; render(); break;
+    case "rec-style": ui().style = d.v; render(); break;
     case "rec-del": { if (!confirm(t("删除这条记录？删掉后不能恢复。"))) break; await wb.deleteLogWithStock(d.id); toast(t("已删除")); render(); break; }
     case "rec-edit": { const l = S.wb.logs.find(x => x.id === d.id); if (l) openRec(l); break; }
   }

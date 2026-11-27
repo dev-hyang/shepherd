@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-27.6", title: { zh: "记录列表统一成「列表 / 时间轴」", en: "Record lists unified as List / Timeline" }, items: [
+    { k: "new", zh: "新增统一的记录列表（ui-reclist，样子取自宝宝日志）：每行「时间 · 色块 · 内容」，也可切换成带竖线和圆点的时间轴。", en: "New shared record list (ui-reclist, borrowed from Baby log): rows of time · colour · what, or a timeline with a line and dots." },
+    { k: "better", zh: "今天页底部的「今天的记录」和 习惯 / 记录 都改用它，「表格」换成「列表」。", en: "Today's records and Habits / Records now use it; Table is replaced by List." }
+  ] },
   { v: "2026-11-27.5", title: { zh: "今天页底部有了统一的「今天的记录」", en: "Today now ends with a unified Today's records list" }, items: [
     { k: "new", zh: "今天页最下面列出这一天做过的所有事：习惯、读经、祷告、完成的任务，按时间排，可以切换「表格 / 时间线」。", en: "The bottom of Today lists everything done that day — habits, reading, prayer, finished tasks — by time, as a Table or Timeline." },
     { k: "new", zh: "每一行都能「编辑」和「删除」；任务那一行是「编辑任务」和「撤销完成」。", en: "Every row can be edited and deleted; task rows offer Edit task and Undo." },
