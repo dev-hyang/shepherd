@@ -1,7 +1,8 @@
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc } from "./core/util.js";
-import { dirItems } from "./nav-tree.js";
+import { dirTree } from "./nav-tree.js";
+import { treeHTML } from "./shared/ui-tree.js";
 
 /* ============ 共用版式（今天 / 任务 / 祷告 / 笔记 都用这几块，手机和电脑一致）============
    secHead：区块标题 + 右侧小按钮（同一种写法，不再每页各写各的 h2 + chip）。
@@ -18,9 +19,9 @@ const secHead = (title, actions = "", sub = "") => `<div class="sec-head"><h2>${
     画的时候记在 S.route，迷你栏（往下滚后顶上那条）跟着显示同一条路径。 */
 /** 统一的面包屑：[目录按钮] 路径 / 路径 / 当前页 [右边按钮]。没有「返回」按钮：往上一层点路径，回上一页用浏览器后退（网址和路径一致）。 */
 function crumbHTML(parts, { actions = "", cls = "route" } = {}){
-  const dir = cls.includes("mb") ? null : dirItems();   // 目录 = 整棵页面树（js/nav-tree.js），每页一样；迷你栏不画
+  const dir = cls.includes("mb") ? null : dirTree();   // 目录 = 整棵页面树（js/nav-tree.js），每页一样；迷你栏不画
   const dirBtn = dir && dir.length ? `<span class="fbar-wrap crumb-dir"><button type="button" class="crumb-menu" data-fpop="dir" aria-expanded="${S.fpop === "dir"}" aria-controls="fpop-dir" aria-label="${esc(t("目录"))}">${ICON_MENU}<span>${t("目录")}</span></button>
-    <div class="fpop dirmenu" id="fpop-dir" ${S.fpop === "dir" ? "" : "hidden"} role="menu" aria-label="${esc(t("目录"))}"><div class="fpop-head"><b>${t("目录")}</b></div>${dir.map(d => `<button type="button" role="menuitem" class="dir-item" data-lvl="${d.lvl || 0}" ${d.attrs} ${d.on ? 'aria-current="page"' : ""}>${esc(d.label)}</button>`).join("")}</div></span>` : "";
+    <div class="fpop dirmenu" id="fpop-dir" ${S.fpop === "dir" ? "" : "hidden"} role="menu" aria-label="${esc(t("目录"))}"><div class="fpop-head"><b>${t("目录")}</b></div>${treeHTML(dir, { label: "目录", t })}</div></span>` : "";
   const trail = parts.map((x, i) => `${i ? '<span class="sep">/</span>' : ""}${i === parts.length - 1 ? `<b aria-current="page">${esc(x.label)}</b>` : `<button type="button" class="crumb-link" ${x.attrs || ""}>${esc(x.label)}</button>`}`).join("");
   return `<nav class="crumb ${cls}" aria-label="${esc(t("位置"))}">${dirBtn}${trail}${actions ? `<span class="route-acts">${actions}</span>` : ""}</nav>`;
 }

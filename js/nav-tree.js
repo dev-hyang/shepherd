@@ -26,15 +26,11 @@ function currentHash(){
   if (tab === "health") { const v = ({ visit: "visits", lab: "labs" })[hu.view] || hu.view; return !v || v === "overview" ? "#/health" : "#/health/" + v; }
   return "#/" + tab;
 }
-/** 展平成目录项：[{ label, attrs, on, lvl }]；健康「概览」就是健康根页，不重复列 */
-function dirItems(){
-  const cur = currentHash(), out = [];
-  const walk = (nodes, lvl, parentHash) => nodes.forEach(([label, hash, kids]) => {
-    if (!(parentHash && hash === parentHash)) out.push({ label: t(label), attrs: `data-go="${hash}"`, on: hash === cur, lvl });
-    if (kids) walk(kids, lvl + 1, hash);
-  });
-  walk(TREE, 0, "");
-  return out;
+/** 目录树结点（给 shared/ui-tree.js）：[{ label, attrs, on, children }]；健康「概览」就是健康根页，不重复列 */
+function dirTree(){
+  const cur = currentHash();
+  const walk = (nodes, parentHash) => nodes.filter(([, hash]) => !(parentHash && hash === parentHash)).map(([label, hash, kids]) => ({ label: t(label), attrs: `data-go="${hash}"`, on: hash === cur, children: kids ? walk(kids, hash) : null }));
+  return walk(TREE, "");
 }
 
-export { dirItems, currentHash, TREE };
+export { dirTree, currentHash, TREE };

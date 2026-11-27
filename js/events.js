@@ -64,7 +64,7 @@ document.addEventListener("input", ev => { if (ev.target && ev.target.id === "tk
 document.addEventListener("click", async ev => {
   const btn = ev.target.closest("button"); if (!btn) return;
   const d = btn.dataset;
-  if (btn.closest(".dirmenu, .fab-menu")) S.fpop = null;   // 目录里点了一项：收起菜单再跳
+  if (btn.closest(".dirmenu, .fab-menu") && !btn.matches("[data-tree-toggle]")) S.fpop = null;   // 目录里点了一项：收起菜单再跳
   if (d.fpop) { togglePop(d.fpop); return; }
   if (d.go) {   // 目录里点一页：跳到它的网址（js/nav-tree.js）；网址一变 views.js 的 hashchange 负责重画，浏览器后退能回来
     S.fpop = null; S.pick = null; pg.resetAll(); close();

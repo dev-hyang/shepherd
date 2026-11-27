@@ -237,3 +237,21 @@ input[data-num] { font-variant-numeric: tabular-nums; }
 .ui-vsw-item:hover, .ui-vsw-item:focus-visible { background: var(--surface-2, var(--bg)); }
 .ui-vsw-item[aria-checked="true"] { background: var(--surface-2, var(--bg)); font-weight: 600; }
 .ui-vsw-ok { margin-left: auto; font-size: 13px; }
+
+/* ── 折叠目录树 ui-tree（shared/ui-tree.js；外观取自爱家小助手的嵌套目录，2026-11-26）──
+ * 按大类折叠：点文字去这一页，点右边的 › 展开 / 收起，同一层只展开一个；当前页打 ✓，当前页所在的大类文字用强调色（--sel-accent）。 */
+.ui-tree { display: flex; flex-direction: column; }
+.ui-tree-row { display: flex; align-items: stretch; }
+.ui-tree-item { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 8px; background: none; color: inherit; font: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
+.ui-tree-item:hover, .ui-tree-item:focus-visible { background: var(--surface-2, var(--bg)); }
+.ui-tree-item[aria-current="page"] { background: var(--surface-2, var(--bg)); color: var(--sel-accent, inherit); }
+.ui-tree-item.has-cur { color: var(--sel-accent, inherit); }
+.ui-tree-lbl { flex: 1 1 auto; min-width: 0; }
+.ui-tree-ck { flex: none; font-weight: 700; }
+.ui-tree-tg { flex: none; width: 44px; border: 0; border-radius: 8px; background: none; color: var(--muted, inherit); font: inherit; font-size: 20px; line-height: 1; cursor: pointer; }
+.ui-tree-tg:hover, .ui-tree-tg:focus-visible { background: var(--surface-2, var(--bg)); }
+.ui-tree-tg > span { display: inline-block; transition: transform .15s; }
+.ui-tree-tg[aria-expanded="true"] > span { transform: rotate(90deg); }
+.ui-tree-kids { margin-left: 14px; padding-left: 4px; border-left: 2px solid var(--line); }
+.ui-tree-kids[hidden] { display: none; }
+.ui-tree-kids .ui-tree-item { font-weight: 500; }

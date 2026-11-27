@@ -3,6 +3,7 @@ import * as appSwitcherMod from "./shared/app-switcher.js";
 import * as langSwitcherMod from "./shared/lang-switcher.js";
 import { watchFormMenus } from "./shared/ui-form.js"; watchFormMenus();   // 表单页头 ⋯ 菜单：点外面 / Esc 关上
 import { watchActs } from "./shared/ui-acts.js"; watchActs();   // 按钮条：取消靠前、主按钮靠后（shared/ui.css 的 ui-acts）
+import { watchTree } from "./shared/ui-tree.js"; watchTree();   // 目录树：› 展开 / 收起（shared/ui-tree.js）
 import { watchViewSwitch } from "./shared/ui-viewsw.js"; watchViewSwitch();   // 视图切换：点外面 / Esc 收起（shared/ui-viewsw.js）
 import { setSelectT, initSelectSearch } from "./shared/ui-select.js";
 import { initSelectMulti } from "./shared/ui-select-multi.js";

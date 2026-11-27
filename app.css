@@ -1099,3 +1099,6 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
 
 /* 表单里的短字段（日期、时间、数字、下拉）两两一行，手机也并排：w: "h" */
 .fgrid > .field--h{grid-column:span 3}
+
+/* 目录面板：折叠树（shared/ui-tree.js）比平铺列表宽一点 */
+.crumb .dirmenu{width:280px}

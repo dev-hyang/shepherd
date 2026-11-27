@@ -3,6 +3,10 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-26.19", title: { zh: "目录按大类折叠", en: "Directory folds by section" }, items: [
+    { k: "better", zh: "「目录」默认按大类收起：今天、任务、健康、祷告、我的；点右边的 › 展开其中一类，展开一类时其他的自动收起。", en: "Directory is collapsed by section by default (Today, Tasks, Health, Prayer, Me); tap › to expand one, which collapses the others." },
+    { k: "better", zh: "点大类名字直接去那一页；当前页打勾，所在的大类用强调色提示。", en: "Tap a section name to open that page; the current page is checked and its section is tinted." }
+  ] },
   { v: "2026-11-26.18", title: { zh: "视图切换改成和爱家小助手一样的按钮", en: "View switch now matches the pantry app" }, items: [
     { k: "better", zh: "「回顾 / 今日打卡」「行 / 时间线」「按天 / 按月」「分析范围」都换成统一的视图切换按钮：靠右的深色圆角按钮，点开选一种，选完收起。", en: "Review / Daily, Rows / Timeline, By day / month and analysis scope use one shared view-switch button: a dark rounded button on the right; pick a view and it closes." }
   ] },
