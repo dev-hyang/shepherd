@@ -13,7 +13,6 @@ const S = {
   day: dayKey(Date.now()),   // 真正的今天
   pick: null,              // 今天页“补记”选的过去某一天（null = 今天）；见 wb.viewDay()
   review: { range: "4w", metric: "" },
-  habView: "review",       // 今天 / 习惯：review 回顾（最近 28 天等）| today 今日打卡
   prayerFilter: { status: "open", cat: "all", q: "" },
   prayerView: "home",      // 祷告页：home 首页 | read 读经 | notes 灵修 | pray 祷告
   fpop: null,              // 当前展开的筛选面板（见 ui.js）

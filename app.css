@@ -1105,3 +1105,13 @@ svg.bars .bar-v{font-size:11px;fill:var(--ink)}svg.bars .bar-l{font-size:11px;fi
 .ffield > select{flex:0 1 60%;width:60%;min-width:0;height:44px;border:1px solid var(--line);background:var(--field);border-radius:var(--ctl-r);padding:0 10px;font-size:15px}
 @media (max-width:640px),(pointer:coarse){.ffield > select{font-size:16px}}
 @media (max-width:560px){.fbar > .fpop{left:0;right:0;width:auto}}   /* 手机：筛选面板铺满一行 */
+
+/* ===== 今天 / 习惯 四个页面顶上的导航小卡片（js/habits-nav.js）：今日打卡 · 回顾 · 记录 · 顶部卡片，四页都固定在最上面 ===== */
+.hnav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.hnav-card{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;padding:6px 4px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);color:var(--ink);cursor:pointer;text-align:center}
+.hnav-card:hover{background:var(--surface-2)}
+.hnav-card:focus-visible{outline:3px solid var(--focus,#1D2733);outline-offset:2px}
+.hnav-card[aria-current="page"]{background:var(--btn-primary-bg,var(--ink));border-color:var(--btn-primary-bg,var(--ink));color:var(--btn-primary-ink,var(--surface))}
+.hnav-ico{font-size:18px;line-height:1}
+.hnav-lbl{font-size:13.5px;font-weight:600;line-height:1.2;white-space:nowrap}
+@media (min-width:641px){.hnav-card{flex-direction:row;gap:8px;min-height:48px;padding:0 12px}}

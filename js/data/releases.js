@@ -3,6 +3,11 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-27.3", title: { zh: "今天 / 习惯拆成四个页面，顶上有导航小卡片", en: "Today / Habits split into four pages with top nav cards" }, items: [
+    { k: "new", zh: "「习惯」下面现在有四个页面：今日打卡、回顾、记录、顶部卡片，每页最上面都有同一排导航小卡片，点一下就切换。", en: "Habits now has four pages — Check-in, Review, Records, Top cards — each with the same row of nav cards at the top." },
+    { k: "better", zh: "进「习惯」（包括从今天页的卡片点进来）默认就是「今日打卡」；「目录」里也能看到这四页。", en: "Opening Habits (including from the Today cards) lands on Check-in; the Directory lists all four pages." },
+    { k: "better", zh: "任务 / 计划里的「日 / 周 / 月」改用统一的视图切换条。", en: "Day / Week / Month in Tasks / Plan uses the shared view switch." }
+  ] },
   { v: "2026-11-26.20", title: { zh: "筛选面板改成下拉，健康筛选合并成一条", en: "Filter panel uses dropdowns; Health filters merged into one bar" }, items: [
     { k: "better", zh: "各页的筛选面板里，每一项都改成「名字 + 下拉」，不再是一排按钮。", en: "In every filter panel each item is now a labelled dropdown instead of a row of chips." },
     { k: "better", zh: "健康页只有一条筛选栏：最左边是页面名（如「就诊」），然后是搜索框和「筛选」；人员、数值显示、类型、地点、排序等都在筛选面板里。", en: "Health has a single filter bar: page name (e.g. Visits) on the left, then search and Filter; person, value display, type, place and sort are all inside the panel." },

@@ -1,4 +1,3 @@
-import { viewSwitchHTML } from "./shared/ui-viewsw.js";
 import { t } from "./core/i18n.js";
 import { S } from "./core/state.js";
 import { esc } from "./core/util.js";
@@ -8,9 +7,9 @@ import { reviewBody } from "./review.js";
 import { chipBtn, fab, secHead } from "./ui.js";
 import * as wb from "./wb.js";
 
-/* ============ 今天 / 习惯：视图切换 [回顾 | 今日打卡] ============
-   回顾（默认）：时间范围、各习惯汇总、最近 28 天格子；今日打卡：日期（可补记）→ 今日习惯 → 常用入口 → 家人。
-   顶部计时卡（距上次用药）已搬到今天首页；新增习惯用右下角 ＋。 */
+/* ============ 今天 / 习惯：今日打卡（本页）+ 回顾 ============
+   今日打卡（默认）：日期（可补记）→ 今日习惯 → 常用入口 → 家人。回顾：时间范围、各习惯汇总、最近 28 天格子。
+   四个页面（今日打卡 / 回顾 / 记录 / 顶部卡片）顶上的导航小卡片在 habits-nav.js，由 views.js 统一加在最上面。新增习惯用右下角 ＋。 */
 
 const link = (attrs, icon, title, desc) => `<button class="ui-row mrow" ${attrs}><span class="mi" aria-hidden="true">${icon}</span><span class="mt"><b>${title}</b><small>${desc}</small></span><span class="ui-chev" aria-hidden="true">›</span></button>`;
 /** 日期条：‹ 日期 ›，选以前的日子就是补记（打卡会记到那一天） */
@@ -20,21 +19,16 @@ function dayBar(day, past){
     <button class="ui-btn" data-size="sm" data-tone="ghost" data-act="day-next" aria-label="${t("后一天")}" ${past ? "" : "disabled"}>›</button>
     ${past ? `<button class="ui-btn" data-size="sm" data-tone="soft" data-act="day-today">${t("回到今天")}</button><span class="small muted">${t("正在补记，打卡会记到这一天")}</span>` : ""}</div>`;
 }
-/** 视图切换（共享控件 ui-seg）：回顾在前，今日打卡在后；选择记在 S.habView */
-const viewToggle = cur => `<div class="ui-vsw-bar">${viewSwitchHTML([["review", "回顾"], ["today", "今日打卡"]], cur, { attr: "hview", label: "视图", t })}</div>`;
 function viewHabits(){
   const day = wb.viewDay(), past = day !== S.day, list = wb.forDay(day).filter(p => !(p.meta && p.meta.preset));   // 陪伴 / 休息是顶部卡片的记录，不进今日习惯
-  const cur = S.habView === "today" ? "today" : "review";
-  const body = cur === "review" ? reviewBody() : `${dayBar(day, past)}${habitsHTML(day, list)}
+  return `${dayBar(day, past)}${habitsHTML(day, list)}
   <div class="panel mlist" style="margin-top:14px;padding:0">
-    ${link('data-tab="herocfg"', "⏱", t("顶部卡片"), t("今天首页顶部：每种药一张「距上次」卡片，显示 / 隐藏、调顺序"))}
     ${link('data-act="meds"', "💊", t("用药与保健品"), t("剂量、时间点、库存与补货提醒"))}
     ${link('data-act="focus"', "🍅", t("专注计时"), t("番茄工作法，完成的段自动记录"))}
-    ${link('data-tab="records"', "▤", t("记录"), t("所有打卡一行一条，能改、能补记"))}
   </div>
-  ${familyHTML(day)}`;
-  return `${viewToggle(cur)}${body}${fab('data-act="habit-add"', t("新增习惯"))}`;
+  ${familyHTML(day)}${fab('data-act="habit-add"', t("新增习惯"))}`;
 }
+const viewReview = () => reviewBody();
 
 /* 今日习惯：每种打卡方式一行 */
 function habitsHTML(day, list){
@@ -83,4 +77,4 @@ function familyHTML(day){
 }
 
 
-export { viewHabits };
+export { viewHabits, viewReview };

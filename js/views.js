@@ -18,7 +18,8 @@ import { WEEKDAY } from "./data/kinds.js";
 import { releasesView } from "./releases-lazy.js";
 import { viewMe } from "./me.js";
 import { viewPrayer } from "./prayer.js";
-import { viewHabits } from "./habits-page.js";
+import { viewHabits, viewReview } from "./habits-page.js";
+import { habitsNavHTML, HABIT_TABS } from "./habits-nav.js";
 import { openSettings } from "./sheet.js";
 import { viewToday } from "./today.js";
 import { restoreHero } from "./med-hero.js";
@@ -33,7 +34,7 @@ import { crumbHTML, routeNav } from "./ui.js";
 const TAB_LABELS = { today: "今天", tasks: "任务", health: "健康", prayer: "祷告", me: "我的" };
 const VIEWS = { today: viewToday, tasks: viewTasks, health: viewHealth, prayer: viewPrayer, me: viewMe };
 /* 子页：挂在某个底部页签下面，顶部显示完整路径（像爱家小助手）：‹ 我的 / 咩咩咩。parent 也可以是另一个子页，路径一路显示到底部页签 */
-const SUB = { releases: { parent: "me", label: "发布日志", view: releasesView, open: true }, habits: { parent: "today", label: "习惯", view: viewHabits }, records: { parent: "habits", label: "记录", view: viewRecords }, herocfg: { parent: "habits", label: "顶部卡片", view: viewHeroCfg } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
+const SUB = { releases: { parent: "me", label: "发布日志", view: releasesView, open: true }, habits: { parent: "today", label: "习惯", view: viewHabits }, review: { parent: "habits", label: "回顾", view: viewReview }, records: { parent: "habits", label: "记录", view: viewRecords }, herocfg: { parent: "habits", label: "顶部卡片", view: viewHeroCfg } };   // 发布日志：js/releases-ui.js，数据在 js/data/releases.js
 /** 子页一路往上找到它所在的底部页签（今天 / 习惯 / 顶部卡片 → 今天） */
 const rootOf = tab => { let p = tab; while (SUB[p]) p = SUB[p].parent; return p; };
 function crumbParts(tab){
@@ -49,8 +50,8 @@ function readRoute(hash = location.hash){
   if (hash === "" || hash === "#" || hash === "#/") return { tab: "today", sub: "", id: "", q: new URLSearchParams() };   // 没有 # = 今天首页（浏览器后退回到首页时要认得）
   const m = /^#\/([^?]*)(?:\?(.*))?$/.exec(hash); if (!m) return null;
   let [tab, sub, id, id2] = m[1].split("/").map(x => { try { return decodeURIComponent(x); } catch (e) { return ""; } });
-  if (tab === "review") tab = "habits"; if (tab === "ask") tab = "today";   // 回顾页已并进「今天 / 习惯」，旧链接转过去
-  // 网址和路径栏一致：#/today/habits[/records|/herocfg]、#/me/releases、#/health/visits/<id>、#/health/labs/<项目>；旧写法（#/habits、#/health/visit/<id>…）仍认
+  if (tab === "ask") tab = "today";
+  // 网址和路径栏一致：#/today/habits[/checkin|/review|/records|/herocfg]、#/me/releases、#/health/visits/<id>、#/health/labs/<项目>；旧写法（#/habits、#/health/visit/<id>…）仍认
   if (tab === "today" && sub === "habits") { tab = SUB[id] && SUB[id].parent === "habits" ? id : "habits"; sub = id = ""; }
   else if (tab === "me" && sub === "releases") { tab = "releases"; sub = ""; }
   else if (tab === "health" && (sub === "visits" || sub === "labs") && id) { sub = sub === "visits" ? "visit" : "lab"; }
@@ -63,6 +64,7 @@ function routeOf(){
     const seg = u.view === "visit" ? "visits" : u.view === "lab" ? "labs" : u.view;   // 路径和路径栏一致：健康 / 就诊 / <某次就诊> → #/health/visits/<id>
     return `#/health${u.view && u.view !== "overview" ? "/" + seg + (id ? "/" + enc(id) : "") : ""}${u.who ? "?who=" + enc(u.who) : ""}`;
   }
+  if (S.tab === "habits") return "#/today/habits/checkin";   // 今日打卡（习惯的默认页；#/today/habits 也认）
   if (SUB[S.tab]) { const names = []; let p = S.tab; while (SUB[p]) { names.unshift(p); p = SUB[p].parent; } return `#/${p}/${names.join("/")}`; }   // 子页：#/today/habits/records、#/me/releases
   if (S.tab === "tasks" && S.tkUi && S.tkUi.seg !== "home") return "#/tasks/" + S.tkUi.seg;
   if (S.tab === "prayer" && S.prayerView !== "home") return "#/prayer/" + S.prayerView;
@@ -136,7 +138,7 @@ function render(opts){
   renderStatus();
   const sub = SUB[S.tab], cur = rootOf(S.tab);   // 子页时底部仍高亮它所属的页签
   document.querySelectorAll("nav.tabs button").forEach(b => { if (b.dataset.tab === cur) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-  const v = sub ? sub.view : VIEWS[S.tab] || viewToday;
+  const v0 = sub ? sub.view : VIEWS[S.tab] || viewToday, v = HABIT_TABS.has(S.tab) ? () => habitsNavHTML(S.tab) + v0() : v0;   // 习惯的四个页面顶上都有导航小卡片
   $("#main").className = "";   // 所有页面同一个宽度（--page-w，app.css）；今天页在宽屏自己分两栏
   const crumb = sub ? crumbNav(crumbParts(S.tab)) : "";
   S.route = null;   // 页面自己画路径（ui.routeNav）时记在这里，迷你栏用

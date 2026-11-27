@@ -6,7 +6,7 @@ import { S } from "./core/state.js";
    网址写法在 views.js（routeOf / readRoute）；这里的 hash 要和它们一致。 */
 const TREE = [
   ["今天", "#/", [
-    ["习惯", "#/today/habits", [["记录", "#/today/habits/records"], ["顶部卡片", "#/today/habits/herocfg"]]]]],
+    ["习惯", "#/today/habits", [["今日打卡", "#/today/habits/checkin"], ["回顾", "#/today/habits/review"], ["记录", "#/today/habits/records"], ["顶部卡片", "#/today/habits/herocfg"]]]]],
   ["任务", "#/tasks", [["今日", "#/tasks/today"], ["清单", "#/tasks/list"], ["计划", "#/tasks/plan"]]],
   ["健康", "#/health", [["概览", "#/health"], ["就诊", "#/health/visits"], ["化验", "#/health/labs"], ["测量", "#/health/measures"], ["计划", "#/health/plan"], ["训练", "#/health/workout"], ["饮食", "#/health/diet"], ["档案", "#/health/profile"]]],
   ["祷告", "#/prayer", [["读经", "#/prayer/read"], ["灵修", "#/prayer/notes"], ["祷告", "#/prayer/pray"]]],
@@ -17,7 +17,8 @@ const TREE = [
 function currentHash(){
   const tab = S.tab, hu = S.hlUi || {};
   if (tab === "today") return "#/";
-  if (tab === "habits") return "#/today/habits";
+  if (tab === "habits") return "#/today/habits/checkin";
+  if (tab === "review") return "#/today/habits/review";
   if (tab === "records") return "#/today/habits/records";
   if (tab === "herocfg") return "#/today/habits/herocfg";
   if (tab === "releases") return "#/me/releases";
