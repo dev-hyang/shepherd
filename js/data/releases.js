@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-27.11", title: { zh: "⚙ 菜单展开时显示在最上面", en: "The ⚙ menu now opens on top" }, items: [
+    { k: "fix", zh: "点开顶部卡片下面的 ⚙ 后，菜单现在显示在最上层，不会再被上方的目录行 / 顶部小条挡住。", en: "The ⚙ menu under the top cards now opens above everything, instead of being cut off by the breadcrumb row or the top bar." }
+  ] },
   { v: "2026-11-27.10", title: { zh: "「切换」视图按钮更好认", en: "The view switch button is easier to spot" }, items: [
     { k: "better", zh: "视图切换按钮前面加了「切换」小字和竖线，后面加了 ▾，一眼看出这是切换视图的按钮（和爱家小助手一样）。", en: "The view switch button now has a “Switch” label with a divider and a ▾, so it is clearly a view switcher (same as the Pantry app)." },
   ] },
