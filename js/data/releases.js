@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-27.10", title: { zh: "「切换」视图按钮更好认", en: "The view switch button is easier to spot" }, items: [
+    { k: "better", zh: "视图切换按钮前面加了「切换」小字和竖线，后面加了 ▾，一眼看出这是切换视图的按钮（和爱家小助手一样）。", en: "The view switch button now has a “Switch” label with a divider and a ▾, so it is clearly a view switcher (same as the Pantry app)." },
+  ] },
   { v: "2026-11-27.9", title: { zh: "「今天」下面直接是四个页面；进度条慢慢走；轮播可绕回", en: "Today now holds its four pages directly; progress fills gradually; carousel wraps" }, items: [
     { k: "better", zh: "「目录」里不再有「习惯」这一层：今日打卡、回顾、记录、顶部卡片直接放在「今天」下面；路径栏和网址也跟着改成 今天 / 回顾 这样（旧网址仍能打开）。", en: "The Directory no longer has a Habits level: Check-in, Review, Records and Top cards sit directly under Today; the path bar and URLs follow (old URLs still work)." },
     { k: "fix", zh: "顶部卡片下面的进度横条现在是慢慢变长直到换下一张，而不是最后一下子变满。", en: "The progress dashes under the top cards now fill gradually before switching, instead of jumping to full at the end." },
