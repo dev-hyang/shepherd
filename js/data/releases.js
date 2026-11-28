@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-27.12", title: { zh: "⚙ 菜单上方放不下时向下展开", en: "The ⚙ menu opens downward when there's no room above" }, items: [
+    { k: "fix", zh: "⚙ 菜单离屏幕顶部太近、上面放不下时，现在会改成向下展开，不再被顶部栏挡住或伸到屏幕外。", en: "When the ⚙ menu is too close to the top of the screen, it now opens downward instead of being hidden behind the top bar or running off screen." }
+  ] },
   { v: "2026-11-27.11", title: { zh: "⚙ 菜单展开时显示在最上面", en: "The ⚙ menu now opens on top" }, items: [
     { k: "fix", zh: "点开顶部卡片下面的 ⚙ 后，菜单现在显示在最上层，不会再被上方的目录行 / 顶部小条挡住。", en: "The ⚙ menu under the top cards now opens above everything, instead of being cut off by the breadcrumb row or the top bar." }
   ] },
