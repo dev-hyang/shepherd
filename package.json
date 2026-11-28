@@ -7,7 +7,7 @@
     "test": "node --test tests/*.test.mjs",
     "build": "node scripts/build.mjs",
     "build:dev": "node scripts/build.mjs --dev",
-    "check:dist": "node scripts/build.mjs --check"
+    "check:dist": "node scripts/build.mjs --check && node scripts/bump-version.mjs --check"
   },
   "devDependencies": {
     "esbuild": "^0.28.2"

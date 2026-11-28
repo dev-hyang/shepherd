@@ -3,6 +3,9 @@
    写给家人看的话：标题一句话，要点 1–4 条、每条一句，不写技术词。k：new 新功能 / better 改进 / fix 修复。
    页面和样式在 js/releases-ui.js（四个姊妹应用共用，别单独改）。 */
 export const RELEASES = [
+  { v: "2026-11-28.2", title: { zh: "内部整理（界面和用法不变）", en: "Behind-the-scenes tidy-up (no change to how it looks or works)" }, items: [
+    { k: "better", zh: "整理了发布时的版本号检查；界面和操作都和上一版一样。", en: "Tidied up the release version checks; nothing changes in how the app looks or works." }
+  ] },
   { v: "2026-11-28.1", title: { zh: "下拉框在屏幕上下放不下时自动调整", en: "Dropdowns now fit the screen" }, items: [
     { k: "better", zh: "下拉选项和「筛选」面板往下放不下时，会选上面或下面空间大的一边，并把框高缩到刚好放得下，选项多时框内出滚动条。", en: "Dropdowns and the filter panel open toward the side with more room and shrink to fit, scrolling inside when there are many options." }
   ] },
